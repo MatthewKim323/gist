@@ -147,6 +147,39 @@ export function findDuplicates(group: F[]): Map<string, string> {
   return mergedInto;
 }
 
+// A fact that says something is missing / unknown / not done. Buried items hide across event keys and
+// dates, so each such fact also gets a group of its nearest neighbours from other sources, ignoring keys.
+const ABSENCE = /\b(missing|unknown|not (yet )?(been )?(obtained|received|produced|located|found|contacted|investigated|requested|served|provided|in (the )?file)|never (been )?(obtained|received|produced|contacted|investigated|collected|requested)|no one|nobody|none (obtained|in file|on file)|searching for|search(ed)? for|trying to (locate|find|obtain)|outstanding|unanswered|still (need|waiting|not)|have not|has not|hasn't|haven't)\b/i;
+const ABSENCE_NEIGHBOURS = 8;
+const ABSENCE_MIN_COS = 0.55;
+
+export function absenceGroups(facts: F[]): F[][] {
+  const out: F[][] = [];
+  for (const f of facts) {
+    if (!f.vec || !ABSENCE.test(`${f.summary} ${f.quote}`)) continue;
+    const near = facts
+      .filter((o) => o.vec && baseSource(o.source_ref) !== baseSource(f.source_ref))
+      .map((o) => ({ o, s: cos(f.vec!, o.vec!) }))
+      .filter((x) => x.s >= ABSENCE_MIN_COS)
+      .sort((a, b) => b.s - a.s)
+      .slice(0, ABSENCE_NEIGHBOURS)
+      .map((x) => x.o);
+    if (near.length) out.push([f, ...near]);
+  }
+  return out;
+}
+
+/** Drop groups whose fact set is contained in a bigger group. */
+function dedupGroups(groups: F[][]): F[][] {
+  const sets = groups.map((g) => ({ g, ids: new Set(g.map((f) => f.id)) })).sort((a, b) => b.ids.size - a.ids.size);
+  const kept: typeof sets = [];
+  for (const x of sets) {
+    if (kept.some((k) => [...x.ids].every((id) => k.ids.has(id)))) continue;
+    kept.push(x);
+  }
+  return kept.map((k) => k.g);
+}
+
 const Finding = z.object({
   type: z.enum(["contradiction", "buried"]),
   title: z.string(),
@@ -232,14 +265,26 @@ export async function reconcileMatter(ctx: RunCtx): Promise<{ groups: number; re
     });
   }
 
-  const reviewable = groups
-    .map((g) => g.filter((f) => !merges.has(f.id)))
-    .filter((g) => new Set(g.map((f) => baseSource(f.source_ref))).size >= 2);
+  const live = facts.filter((f) => !merges.has(f.id));
+  const reviewable = dedupGroups([
+    ...groups.map((g) => g.filter((f) => !merges.has(f.id))),
+    ...absenceGroups(live),
+  ]).filter((g) => new Set(g.map((f) => baseSource(f.source_ref))).size >= 2);
 
   const limit = pLimit(6);
   const results = await Promise.all(reviewable.map((g, i) =>
     limit(() => reviewGroup(ctx, g, `cluster ${i + 1}/${reviewable.length} (${g.length} facts)`).catch(() => [] as Finding_[]))));
-  const findings = results.flat();
+  // Overlapping groups can surface the same finding twice: keep the more severe of any pair sharing most claims.
+  const rank = { high: 3, medium: 2, low: 1 } as const;
+  const findings: Finding_[] = [];
+  for (const fd of results.flat().sort((a, b) => rank[b.severity] - rank[a.severity] || b.claims.length - a.claims.length)) {
+    const ids = new Set(fd.claims.map((c) => c.fact.id));
+    const dup = findings.some((k) => {
+      const shared = k.claims.filter((c) => ids.has(c.fact.id)).length;
+      return shared / Math.min(ids.size, k.claims.length) >= 0.5;
+    });
+    if (!dup) findings.push(fd);
+  }
 
   const rows = findings.map((fd) => {
     const keys = fd.claims.map((c) => c.fact.event_key).filter(Boolean) as string[];
