@@ -34,6 +34,22 @@ async function firstMatterId(): Promise<number> {
   return id;
 }
 
+function Loading() {
+  const [t, setT] = useState(0);
+  useEffect(() => {
+    const i = setInterval(() => setT((x) => x + 1), 1000);
+    return () => clearInterval(i);
+  }, []);
+  return (
+    <div className="gd-wrap gd-loading">
+      <div className="gd-kicker">Opening the file{t > 2 ? ` · ${t}s` : ""}</div>
+      <div className="gd-skel gd-skel--title" />
+      <div className="gd-skel gd-skel--bar" />
+      <div className="gd-skel gd-skel--block" />
+    </div>
+  );
+}
+
 const NAV = [
   ["phase", "Phase"],
   ["money", "Money"],
@@ -61,11 +77,20 @@ export default function Dashboard({ matterId: givenId, fixture: givenFixture }: 
       try {
         const qid = params.get("id");
         const id = givenId ?? (qid ? Number(qid) : await firstMatterId());
+        // Show the last digest from this tab instantly while the fresh one loads (session only).
+        const key = `gist:digest:${id}`;
+        try {
+          const cached = sessionStorage.getItem(key);
+          if (cached && live) setLoad({ state: "ready", digest: JSON.parse(cached) as Digest, fixture: false });
+        } catch {}
         const raw = await getJson<Digest | { digest: Digest }>(`/api/matter/${id}/digest`);
         const digest = "digest" in raw ? raw.digest : raw;
         if (live) setLoad({ state: "ready", digest, fixture: false });
+        try {
+          sessionStorage.setItem(key, JSON.stringify(digest));
+        } catch {}
       } catch (e) {
-        if (live) setLoad({ state: "error", message: (e as Error).message });
+        if (live) setLoad((prev) => (prev.state === "ready" ? prev : { state: "error", message: (e as Error).message }));
       }
     })();
     return () => {
@@ -105,12 +130,7 @@ export default function Dashboard({ matterId: givenId, fixture: givenFixture }: 
   return (
     <div className="gd-root" ref={scroller} data-lenis-prevent>
       {load.state === "loading" ? (
-        <div className="gd-wrap gd-loading">
-          <div className="gd-kicker">Opening the file</div>
-          <div className="gd-skel gd-skel--title" />
-          <div className="gd-skel gd-skel--bar" />
-          <div className="gd-skel gd-skel--block" />
-        </div>
+        <Loading />
       ) : null}
       {load.state === "error" ? (
         <div className="gd-wrap gd-errorbox">
