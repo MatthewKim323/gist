@@ -22,6 +22,8 @@ export class ToMatterTransition extends Transition {
     store.Gl!.globalUniforms.fogFar.value = menu.scene.fog.far;
     store.isTouch || store.Gl!.fluidSim.enable();
     menu.addEvents();
+    // matter content (timeline, dashboard) sits above the GL canvas (z-40)
+    store.ASScroll.containerElement.style.zIndex = "50";
     gsap
       .timeline({
         defaults: { duration: 3, ease: "power4.inOut" },

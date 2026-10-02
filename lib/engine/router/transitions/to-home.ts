@@ -47,7 +47,9 @@ export class ToHomeTransition extends Transition {
             menu.savePass.enabled = false;
             menu.renderPass.enabled = false;
             menu.removePreSceneEvents();
+            menu.transitionPass.enabled = false;
             store.Gl!.fluidSim.disable();
+            store.ASScroll.containerElement.style.removeProperty("z-index");
             removeView(from);
             done();
           },
