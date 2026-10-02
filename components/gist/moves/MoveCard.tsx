@@ -14,6 +14,13 @@ import { refreshMoves, setMove } from "./store";
 
 const PARTY: Record<string, string> = { provider: "var(--o-provider)", client: "var(--o-client)", defense: "var(--o-defense)", carrier: "var(--o-carrier)", firm: "var(--o-firm)", court: "var(--o-court)" };
 
+const KIND: Record<string, string> = { doc: "Doc", email: "Email", note: "Note", call: "Call", task: "Task", fact: "Fact", comm: "Message", bill: "Bill" };
+function chipLabel(ref: string): string {
+  const [k, rest = ""] = ref.split(":");
+  const page = /#p(\d+)/.exec(rest)?.[1];
+  return `${KIND[k] ?? k}${page ? ` p${page}` : ""}`;
+}
+
 function openTab(tab: string) {
   window.dispatchEvent(new CustomEvent("gist:open-tab", { detail: { tab } }));
 }
@@ -141,17 +148,17 @@ export default function MoveCard({ matterId, move, n, onDone, compact }: {
           {move.cites.map((c, i) => (
             <button key={`${c.source_ref}-${i}`} type="button" className="gmv-chip gmv-chip--cite" title={c.quote ?? c.label ?? c.source_ref}
               onClick={() => window.dispatchEvent(new CustomEvent("gist:open-cite", { detail: { ref: c.source_ref, quote: c.quote, label: c.label } }))}>
-              {c.label ? c.label.split(" · ")[0] : c.source_ref}
+              {chipLabel(c.source_ref)}
             </button>
           ))}
         </div>
         {!done && !msg ? (
           <div className="gmv-card__actions">
-            <Button size={compact ? "sm" : "md"} arrow disabled={busy} onClick={() => void run(move.primary)}>
+            <Button size="sm" arrow disabled={busy} onClick={() => void run(move.primary)}>
               {open === "draft" ? "Hide draft" : move.primary.label}
             </Button>
             {!compact && move.secondary.map((s) => (
-              <Button key={s.label} size="sm" variant="border" onClick={() => void run(s)}>{s.label}</Button>
+              <Button key={s.label} size="xs" variant="border" onClick={() => void run(s)}>{s.label}</Button>
             ))}
           </div>
         ) : move.status === "done" && !move.auto ? (

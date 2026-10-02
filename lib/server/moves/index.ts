@@ -42,7 +42,7 @@ function draftFor(drafts: AgentAction[], keys: string[], kind: AgentAction["kind
 }
 
 function draftAction(d: AgentAction | null, keys: string[], who: string): MoveAction {
-  return { kind: "open_draft", label: d ? `Review the draft to ${who}` : `Draft it for ${who}`, payload: { actionId: d?.id ?? null, requirementKeys: keys } };
+  return { kind: "open_draft", label: d ? "Review & send the draft" : "Draft it now", payload: { actionId: d?.id ?? null, requirementKeys: keys } };
 }
 
 const DRAFT_DONE = (d: AgentAction | null) => d && (d.status === "approved" || d.status === "sent_manually")
@@ -80,7 +80,7 @@ function build(d: Digest, drafts: AgentAction[], subs: SubLite[], shares: ShareL
       title: `Chase ${name}'s ${gs.some((g) => /bill/i.test(g.label)) && gs.every((g) => /bill/i.test(g.label)) ? "bills" : "records"}`,
       why, unblocks: unblocks(gs.length, total, next), party: name, owner: "provider",
       cites: cites(gs), primary: draftAction(draft, keys, name),
-      secondary: [{ kind: "open_share", label: `Share status with ${name}`, payload: { providerId: cid } }, { kind: "mark_done", label: "Mark done", payload: {} }],
+      secondary: [{ kind: "open_share", label: "Share status", payload: { providerId: cid } }, { kind: "mark_done", label: "Mark done", payload: {} }],
       autoNote: DRAFT_DONE(draft),
     });
   });
@@ -138,7 +138,7 @@ function build(d: Digest, drafts: AgentAction[], subs: SubLite[], shares: ShareL
       title: `Share case status with ${name}`,
       why: owes ? `they owe ${plural(owes, "item")} and have no live link` : `${lane?.visits.length ?? 0} visits on file, no live status link`,
       unblocks: null, party: name, owner: "provider", cites: [],
-      primary: { kind: "open_share", label: `Share with ${name}`, payload: { providerId: cid } },
+      primary: { kind: "open_share", label: "Share case status", payload: { providerId: cid } },
       secondary: [{ kind: "mark_done", label: "Mark done", payload: {} }],
       autoNote: active.has(cid) ? `Share link live for ${name}` : null,
     });
