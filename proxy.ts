@@ -27,6 +27,8 @@ const FIRM_APIS = [
   /^\/api\/actions(\/|$)/,
   // Ask gist reads the whole case file and the user's memory.
   /^\/api\/assistant(\/|$)/,
+  // The MCP endpoint reads every case (it has its own bearer token).
+  /^\/api\/mcp(\/|$)/,
 ];
 
 export async function proxy(req: NextRequest) {
