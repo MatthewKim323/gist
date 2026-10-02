@@ -100,6 +100,15 @@ async function gather(matterId: number, data: MatterData, sig: Signals, r: Expan
   return { snips: uniq.slice(0, 30), extra };
 }
 
+/** Models sometimes wrap refs in brackets, add spaces, or drop the page; map back to a provided ref. */
+function resolveRef(raw: string, allowed: Set<string>): string | null {
+  const r = raw.replace(/[\[\]\s]/g, "").replace(/^document:/, "doc:");
+  if (allowed.has(r)) return r;
+  const base = r.split("#")[0];
+  for (const a of allowed) if (a.split("#")[0] === base) return a;
+  return null;
+}
+
 function evidenceText(snips: Snip[], extra: string[]): string {
   return [...snips.map((s) => `[${s.ref}]${s.date ? ` (${s.date})` : ""} ${s.text}`), ...extra.map((e) => `[signal] ${e}`)].join("\n\n");
 }
@@ -127,8 +136,10 @@ export async function checkOne(ctx: RunCtx, data: MatterData, sig: Signals, r: E
         modelOk = true;
         status = out.status;
         owed = status === "have" ? null : out.owed_by ?? r.owner;
-        evidence = out.evidence.filter((e) => allowed.has(e.source_ref))
+        evidence = out.evidence.map((e) => ({ ...e, source_ref: resolveRef(e.source_ref, allowed) }))
+          .filter((e): e is { source_ref: string; quote: string } => e.source_ref != null)
           .map((e) => ({ source_ref: e.source_ref, quote: e.quote, label: sig.label(e.source_ref) }));
+        if (out.evidence.length && !evidence.length) await t.event(`dropped refs: ${out.evidence.map((e) => e.source_ref).join(" ").slice(0, 120)}`);
         note = out.note.replace(/[\u2014\u2013]/g, ", ");
         if (status === "have" && evidence.length === 0) { status = "partial"; note = `${note} (no citable evidence returned)`; }
       } catch (e) {
@@ -179,6 +190,9 @@ export async function checkOne(ctx: RunCtx, data: MatterData, sig: Signals, r: E
     if (!modelOk && snips.length && confidence == null) {
       throw new Error("gate: no model or auditor available");
     }
+
+    if (status !== "have" && !owed) owed = r.owner;
+    if (status === "have") owed = null;
 
     const providerTasks = r.provider_contact_id != null
       ? sig.actions.filter((a) => a.id.startsWith("task:") && a.owner === "provider" && r.provider_name && a.owner_name && a.owner_name.toLowerCase().includes(r.provider_name.toLowerCase().split(/\W+/).find((w) => w.length >= 5) ?? "\u0000"))
