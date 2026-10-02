@@ -1,0 +1,18 @@
+# secrets
+.env
+.env*
+!.env.example
+
+# deps / build
+node_modules/
+.next/
+out/
+dist/
+.vercel/
+*.tsbuildinfo
+next-env.d.ts
+
+# local-only research (case data + eval answer key: keep out of the repo so nothing reads as hardcoded)
+docs/research/private/
+
+.DS_Store
