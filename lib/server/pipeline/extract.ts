@@ -116,8 +116,13 @@ export async function buildShards(matterId: number, opts: { includeDocs?: boolea
         "doc_pages",
       );
       const live = pages.filter((p) => p.text && p.text.trim().length > 20);
-      for (let i = 0; i < live.length; i += PAGES_PER_SLICE) {
-        const slice = live.slice(i, i + PAGES_PER_SLICE);
+      // Fixed page windows (1-10, 11-20, ...) so a page finishing OCR later only changes its own slice.
+      const windows = new Map<number, typeof live>();
+      for (const p of live) {
+        const w = Math.floor((p.page - 1) / PAGES_PER_SLICE);
+        windows.set(w, [...(windows.get(w) ?? []), p]);
+      }
+      for (const slice of windows.values()) {
         const sources = slice.map((p) => ({ ref: `doc:${d.clio_id}#p${p.page}`, text: p.text!.trim(), date: null }));
         const docAttrs = `document="${esc(d.name ?? String(d.clio_id))}"${d.folder ? ` folder="${esc(d.folder)}"` : ""}${d.received_at ? ` received="${d.received_at.slice(0, 10)}"` : ""}`;
         shards.push({
