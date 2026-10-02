@@ -1,0 +1,26 @@
+{
+  "source": "eval/reference/answer-key.md section 1.8 (items 1-21, hand-condensed; #22 is a list of pleaded defenses, not a contradiction)",
+  "items": [
+    {"id": "k01", "title": "Accident accounts: client has given several inconsistent accounts of the crash mechanism (Metro-North merged into him vs his car struck theirs vs sideswiped by a truck and hit the sidewalk), plus Ferrara's own account on a different road"},
+    {"id": "k02", "title": "Prior injuries: client said none at intake and 'not applicable' under oath, but his own records show a 2011 left ankle fracture"},
+    {"id": "k03", "title": "Scope of employment said to be never investigated, while the incident report marks Ferrara On-Duty heading to the jobsite"},
+    {"id": "k04", "title": "Notes say Kyle Pullano was never contacted, but the firm subpoenaed him for an EBT"},
+    {"id": "k05", "title": "Incident report described as missing / not produced, but it is annexed to defendants' response"},
+    {"id": "k06", "title": "Notes say no police report obtained, but the sworn discovery response says a police accident report is annexed"},
+    {"id": "k07", "title": "Notes say no scene photos, but the sworn response says plaintiff has 22 photographs"},
+    {"id": "k08", "title": "Coverage: Metro-North self-insured / no limit vs $100k/$300k confirmed vs Travelers policy on the incident report cover sheet"},
+    {"id": "k09", "title": "Index number mismatch (150940/2024 vs 160000/2024) and statute of limitations / another action pending exposure"},
+    {"id": "k10", "title": "IME dates in Clio (Sept 2026) conflict with the dates inside the IME reports (March 2026)"},
+    {"id": "k11", "title": "IME watchdog: conflicting accounts of which exam the watchdog attended and how long each exam lasted"},
+    {"id": "k12", "title": "Note says expert reports were served before the service emails were sent"},
+    {"id": "k13", "title": "Who is holding up the second surgery: client deferring vs surgeon vs scheduling vs re-evaluation"},
+    {"id": "k14", "title": "Document dates in Clio do not match the filing dates printed in the documents"},
+    {"id": "k15", "title": "Calendar shows a compliance conference held 2025-04-15, but the letter to the judge says no preliminary conference was set"},
+    {"id": "k16", "title": "Client lives in Texas but claims weekly PT and chiropractic in New York"},
+    {"id": "k17", "title": "Client claims total disability vs IME says he can return to work without restrictions"},
+    {"id": "k18", "title": "PT frequency stated as weekly in some items and twice a week in others; PT discharged in 2023 but notes continue"},
+    {"id": "k19", "title": "Request counts in task/calendar text (third, fourth request) do not match the actual number of approaches"},
+    {"id": "k20", "title": "Medical causation: clean CT the day after vs TBI on DTI months later; glenoid hypoplasia; defense experts say no trauma / resolved"},
+    {"id": "k21", "title": "Duplicate items: identical email bodies, repeated no-fault exhaustion notices, Medicaid lien dates out of order"}
+  ]
+}
