@@ -1,3 +1,5 @@
+# Third-party notices
+
 
 The pilot mascot (`lib/captain/**`, `components/gist/pilot/Bot.tsx`) is adapted from MIT-licensed work:
 
