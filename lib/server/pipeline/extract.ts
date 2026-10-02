@@ -192,6 +192,12 @@ export async function extractMatter(ctx: RunCtx, opts: { includeDocs?: boolean; 
   const limit = pLimit(opts.concurrency ?? Number(process.env.SWARM_CONCURRENCY ?? 8));
   const stats: ExtractStats = { shards: shards.length, cached: 0, failed: 0, facts_new: 0, facts_kept: 0, verified: 0, rejected: 0, review: 0, cost: 0 };
   const liveKeys = new Set<string>();
+  // Active facts per extraction key, read once (a count per shard is a slow scan under load).
+  const activeByKey = new Map<string, number>();
+  for (const f of await pageAll<{ extraction_key: string }>(
+    (a, b) => db().from("facts").select("extraction_key").eq("matter_id", ctx.matterId).is("superseded_at", null).range(a, b),
+    "facts by key",
+  )) activeByKey.set(f.extraction_key, (activeByKey.get(f.extraction_key) ?? 0) + 1);
   const toAudit: AuditInput[] = [];
   let lastError = "";
 
@@ -203,9 +209,8 @@ export async function extractMatter(ctx: RunCtx, opts: { includeDocs?: boolean; 
     // One failed shard must not sink the run: its task tile shows failed, the rest carry on.
     try { await ctx.task("extract", shard.label, async (t) => {
       // Facts for this exact shard content already exist: nothing to do, and they keep their audit status.
-      const existing = await db().from("facts").select("id", { count: "exact", head: true })
-        .eq("matter_id", ctx.matterId).eq("extraction_key", key).is("superseded_at", null);
-      if ((existing.count ?? 0) > 0) {
+      const existing = { count: activeByKey.get(key) ?? 0 };
+      if (existing.count > 0) {
         t.cached();
         t.facts(existing.count ?? 0);
         stats.cached++;

@@ -53,12 +53,8 @@ export async function countStats(matterId: number, runId: string) {
     factCount("verified"), factCount("rejected"), factCount("needs_review"), factCount("pending"),
     db().from("agent_tasks").select("cost_usd").eq("run_id", runId),
   ]);
-  let pages = 0;
-  for (const d of docs.data ?? []) {
-    if (d.version_id == null) continue;
-    const r = await db().from("doc_pages").select("page", head).eq("doc_id", d.clio_id).eq("version_id", d.version_id);
-    pages += r.count ?? 0;
-  }
+  const ids = (docs.data ?? []).filter((d) => d.version_id != null).map((d) => d.clio_id);
+  const pages = ids.length ? (await db().from("doc_pages").select("page", head).in("doc_id", ids)).count ?? 0 : 0;
   return {
     entries: entries.count ?? 0,
     pages,
