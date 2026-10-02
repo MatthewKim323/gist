@@ -127,6 +127,7 @@ export default function Pilot({ rootRef }: { rootRef: React.RefObject<HTMLElemen
     let dipX = 0;
     let scanned: HTMLElement | null = null;
     let stopScan: (() => void) | null = null;
+    let settled = false;
     let raf = 0;
     let last = performance.now();
 
@@ -151,6 +152,7 @@ export default function Pilot({ rootRef }: { rootRef: React.RefObject<HTMLElemen
           dipX = Math.sign(p.x - t.x) * 14;
         }
         lastKey = t.key;
+        settled = false;
         setSide(t.side);
       }
       if (now < launchAt) {
@@ -174,7 +176,10 @@ export default function Pilot({ rootRef }: { rootRef: React.RefObject<HTMLElemen
 
       const speed = Math.hypot(p.vx, p.vy);
       const dist = Math.hypot(goal.x - p.x, goal.y - p.y);
-      const travelling = now < launchAt || dist > 10 || speed > 40;
+      // hysteresis: once settled on a card, small drift (the page carry scrolling under it) doesn't count as
+      // flying again; only a real hop does. Without this the scan state flips on and off twice a second.
+      const travelling = now < launchAt || (settled ? dist > 90 : dist > 10 || speed > 40);
+      settled = !travelling;
       setM(travelling ? "flying" : t.mode);
 
       // arc: lift while moving sideways fast; bank into the turn; stretch along the velocity
