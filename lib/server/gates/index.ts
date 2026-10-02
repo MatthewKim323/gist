@@ -7,7 +7,7 @@ import { structured } from "../llm";
 import { jev, jevAvailable } from "../jev";
 import type { RunCtx } from "../pipeline/ctx";
 import type { Citation, Fact, GateItem, GateStatus, Owner, Phase } from "@/lib/types";
-import { computeSignals, type Signals, type MatterData } from "../signals";
+import { computeSignals, type Signals, type MatterData, type ContactInfo } from "../signals";
 import { requirementsFor, type ExpandedRequirement } from "./playbook";
 
 export { PLAYBOOK, requirementsFor } from "./playbook";
@@ -29,8 +29,8 @@ async function getSearch(): Promise<SearchFn | null> {
 }
 
 /** Keyword fallback over chunks (no embeddings) when retrieval is unavailable. */
-async function keywordSearch(matterId: number, q: string, k: number) {
-  const r = await db().rpc("hybrid_search", { p_matter: matterId, q_text: q, q_embs: [], match_count: k, kinds: null });
+async function keywordSearch(matterId: number, q: string, k: number, kinds: string[] | null = null) {
+  const r = await db().rpc("hybrid_search", { p_matter: matterId, q_text: q, q_embs: [], match_count: k, kinds });
   return ((r.data ?? []) as { cite: string; header: string; body: string; event_date: string | null }[]).slice(0, k);
 }
 
@@ -42,16 +42,37 @@ const GateOut = z.object({
   note: z.string(),
 });
 
-const SYSTEM = `You check one requirement on a New York personal-injury case file against the evidence provided.
-Decide the status from the evidence ONLY:
-- have: the evidence shows the item is actually in the file / done.
-- partial: some of it is in (e.g. records only through an earlier date, a total without an itemized bill, requested but incomplete).
-- missing: nothing in the evidence shows it is in the file, or the file says it was never obtained.
-- conflicting: sources in the evidence disagree about whether it exists or what it says.
-A note saying something "will be sent" or "to follow" is not "have". A request is not receipt.
+const SYSTEM = `You check one requirement on a New York personal-injury case file against the evidence provided (notes, emails, calls, tasks, and document pages).
+Decide the status from the evidence ONLY. Be decisive:
+- have: the file itself contains the item (a document page, an attachment received, a confirmed fact). Cite the source that contains it.
+- missing: nothing in the evidence shows the item in the file, OR a source says it is outstanding, requested, being searched for, "to follow", or never received.
+- conflicting: sources disagree on whether it exists or what it says. In particular, if a note or email says the item is missing / not obtained / never done, but a document page in the evidence contains it or says it was annexed, served or produced, the status is conflicting and you must cite both sides (the document page first).
+- partial: ONLY when the evidence names a specific subset that is in and a specific subset that is not (e.g. records through one date but not after; one report received, another not). The note must then state exactly what is missing. If you cannot name the missing part, choose missing or have instead.
+A request is not receipt. A promise is not receipt. A total without line items is not an itemized bill.
 owed_by: who must act next to close it (client, provider, defense, carrier, firm, court); null if have.
-evidence: up to 4 items; source_ref must be copied exactly from a [ref] tag in the evidence, quote copied verbatim (short).
-note: one plain sentence for the attorney (what is in, what is not, dates). No legal advice beyond the file. Never use em dashes.`;
+evidence: up to 4 items; source_ref copied exactly from a [ref] tag, quote copied verbatim (short). Prefer document pages when they bear on it.
+note: one or two plain sentences for the attorney: what is in, what is not, with dates. Name the missing item concretely. No legal advice. Never use em dashes.`;
+
+function isMaterial(r: ExpandedRequirement): boolean {
+  return r.eventKeys.some((k) => k.startsWith("material") || k.startsWith("liability") || k.startsWith("witness") || k.startsWith("coverage"))
+    || (r.kinds ?? []).includes("material");
+}
+
+/** The contact who owes an item, from the matter's own contacts and relationship roles. */
+export function ownerContact(owner: Owner | null, providerId: number | null, contacts: Map<number, ContactInfo>): ContactInfo | null {
+  if (!owner) return null;
+  if (providerId != null) return contacts.get(providerId) ?? null;
+  const all = [...contacts.values()];
+  const pick = (o: Owner, prefer: RegExp[]) => {
+    const pool = all.filter((c) => c.owner === o);
+    for (const re of prefer) { const hit = pool.find((c) => re.test(`${c.role ?? ""} ${c.name}`)); if (hit) return hit; }
+    return pool[0] ?? null;
+  };
+  if (owner === "client") return all.find((c) => c.owner === "client") ?? null;
+  if (owner === "defense") return pick("defense", [/counsel|attorney|law|llp|pllc|esq/i, /party|defendant|owner/i]);
+  if (owner === "carrier") return pick("carrier", [/claims|adjust|administrator|liability/i, /insur/i]);
+  return null;
+}
 
 function factSnips(facts: Fact[], r: ExpandedRequirement): Snip[] {
   const hit = facts.filter((f) => {
@@ -83,6 +104,16 @@ async function gather(matterId: number, data: MatterData, sig: Signals, r: Expan
       }
       snips.push({ ref, date: h.event_date, text: `${h.header} ${h.body}`.slice(0, 1500) });
     }
+  }
+  // material items: also search document pages directly, so items buried in the file surface
+  if (isMaterial(r)) {
+    let docHits: { cite: string; header: string; body: string; event_date: string | null }[] = [];
+    try {
+      docHits = search ? await search(matterId, r.search[0], { k: 6, expand: false, kinds: ["doc"] } as never) : await keywordSearch(matterId, r.search[0], 6, ["doc"]);
+    } catch {
+      try { docHits = await keywordSearch(matterId, r.search[0], 6, ["doc"]); } catch { docHits = []; }
+    }
+    for (const h of docHits) snips.unshift({ ref: h.cite, date: h.event_date, text: `${h.header} ${h.body}`.slice(0, 1800) });
   }
   // deterministic context: pending tasks and comms silence for this provider / requirement
   const extra: string[] = [];
@@ -158,9 +189,10 @@ export async function checkOne(ctx: RunCtx, data: MatterData, sig: Signals, r: E
             type: "choice",
             instructions: "Based only on the evidence, is this requirement satisfied in the case file?",
             criteria: {
-              have: "The evidence shows the item is actually in the file or done.",
-              partial: "Some of it is in the file, or it is incomplete, outdated, or only promised.",
-              missing: "The evidence does not show the item in the file.",
+              have: "The file itself contains the item (a document page, a received attachment, or a confirmed fact).",
+              partial: "A specific named part is in the file and a specific named part is not (for example records only through an earlier date).",
+              missing: "Nothing in the evidence shows the item in the file, or a source says it is outstanding, requested, promised, or never received.",
+              conflicting: "Sources disagree on whether it exists, e.g. a note says it was never obtained while a document page contains or annexes it.",
             },
           },
         }, { purpose: "gate.jev", matterId: ctx.matterId, runId: ctx.runId });
@@ -200,9 +232,10 @@ export async function checkOne(ctx: RunCtx, data: MatterData, sig: Signals, r: E
     const due = providerTasks.map((a) => a.due_date).filter(Boolean).sort()[0] ?? null;
     const s = r.provider_contact_id != null ? sig.comm.get(r.provider_contact_id) : undefined;
 
+    const oc = status === "have" ? null : ownerContact(owed, owed === "provider" ? r.provider_contact_id : null, sig.contacts);
     const item: GateItem = {
       requirement_key: r.key, phase: r.phase as Phase, label: r.label, status,
-      owed_by: owed, owed_by_contact_id: r.provider_contact_id, owed_by_name: r.provider_name,
+      owed_by: owed, owed_by_contact_id: oc?.id ?? null, owed_by_name: oc?.name ?? null,
       due_date: status === "have" ? null : due,
       days_outstanding: status !== "have" && s?.unanswered[0] ? Math.round((Date.parse(sig.today) - Date.parse(s.unanswered[0].date)) / 86_400_000) : null,
       evidence, note, confidence,

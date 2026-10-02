@@ -5,6 +5,7 @@ import { db } from "../db";
 import { env } from "../env";
 import { structured } from "../llm";
 import type { RunCtx } from "../pipeline/ctx";
+import { ownerContact } from "../gates";
 import type { Citation, Contradiction, Digest, Fact, GateItem, Phase } from "@/lib/types";
 import { computeSignals, markViewed, sinceLastOpened, type Signals, type MatterData } from "../signals";
 
@@ -25,11 +26,12 @@ async function loadGates(matterId: number, sig: Sig): Promise<GateItem[]> {
   const rank = { missing: 0, conflicting: 1, partial: 2, have: 3 } as Record<string, number>;
   return (data ?? [])
     .map((g): GateItem => {
-      const cid = g.owed_by_contact_id != null ? Number(g.owed_by_contact_id) : null;
+      const stored = g.owed_by_contact_id != null ? Number(g.owed_by_contact_id) : null;
+      const cid = g.status === "have" ? null : stored ?? ownerContact(g.owed_by, null, sig.contacts)?.id ?? null;
       const s = cid != null ? sig.comm.get(cid) : undefined;
       return {
         requirement_key: g.requirement_key, phase: g.phase as Phase, label: g.label, status: g.status,
-        owed_by: g.owed_by, owed_by_contact_id: cid,
+        owed_by: g.status === "have" ? null : g.owed_by, owed_by_contact_id: cid,
         owed_by_name: cid != null ? sig.contacts.get(cid)?.name ?? null : null,
         due_date: g.due_date,
         days_outstanding: g.status !== "have" && s?.unanswered[0] ? Math.max(0, Math.round((Date.parse(sig.today) - Date.parse(s.unanswered[0].date)) / 86_400_000)) : null,
