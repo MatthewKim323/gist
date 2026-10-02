@@ -84,3 +84,13 @@ bun run dev                     # http://127.0.0.1:3777/matter
 ```
 
 Clio OAuth: create a developer app with read-only scopes and set the redirect to `http://127.0.0.1:3000/api/clio/callback` (Clio rejects `localhost`), or seed `CLIO_ACCESS_TOKEN` / `CLIO_REFRESH_TOKEN`.
+
+## Use it from Claude (MCP)
+
+gist ships a read-only MCP server so a lawyer can brief, search and cite a case from Claude Desktop or Claude Code: `list_cases`, `get_digest`, `get_phase_checklist`, `get_contradictions`, `search_case`, `get_fact`, `get_source`, `ask_case`. Nothing it does writes to the case or calls Clio.
+
+```bash
+claude mcp add gist -- bun run --cwd /absolute/path/to/gist mcp
+```
+
+Claude Desktop config, the bearer-token HTTP endpoint (`/api/mcp`) and the tool reference are in [docs/MCP.md](docs/MCP.md).
