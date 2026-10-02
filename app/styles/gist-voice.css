@@ -8,7 +8,8 @@
   --gv-accent: #9fb8ff;
   --gv-level: 0;
   position: fixed;
-  right: 24px;
+  /* bottom-right belongs to the Ask gist OS dock */
+  left: 24px;
   bottom: 24px;
   z-index: 1000;
   width: min(380px, calc(100vw - 32px));
