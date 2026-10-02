@@ -6,6 +6,7 @@ import { seamWipe } from "@/lib/engine/seam";
 import Dashboard from "@/components/gist/dashboard/Dashboard";
 import PipelineTimeline from "@/components/gist/pipeline/PipelineTimeline";
 import { createMockSource } from "@/components/gist/pipeline/mock";
+import { createReplaySource } from "@/components/gist/pipeline/replay";
 
 type Phase = "boot" | "pipeline" | "digest";
 
@@ -27,7 +28,21 @@ export default function MatterView() {
   useEffect(() => {
     const p = new URLSearchParams(window.location.search);
     const run = p.get("run");
-    if (p.get("sim") === "1") {
+    const replay = p.get("replay");
+    if (replay) {
+      // ?replay=<runId> or ?replay=best: play a recorded run back (recording / demo)
+      (replay === "best"
+        ? fetch("/api/pipeline/replay", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).then((j: { runId?: string; matterId?: number } | null) => j)
+        : Promise.resolve({ runId: replay, matterId: undefined as number | undefined })
+      )
+        .then((j) => {
+          if (!j?.runId) return setPhase("digest");
+          setMatterId(j.matterId);
+          setRunId(j.runId);
+          setPhase("pipeline");
+        })
+        .catch(() => setPhase("digest"));
+    } else if (p.get("sim") === "1") {
       setSim(true);
       setPhase("pipeline");
     } else if (run) {
@@ -59,13 +74,16 @@ export default function MatterView() {
   }, []);
 
   const source = useMemo(() => (sim ? createMockSource({ mode: "cold", speed: 1, seed: 7 }) : undefined), [sim]);
+  // real runs go through the replay source: a run still in flight streams live, a finished one (a stale ?run=,
+  // demo mode, ?replay=) plays its recorded rows back instead of opening already green
+  const replaySource = useMemo(() => (runId ? createReplaySource() : undefined), [runId]);
   const toDigest = () => void seamWipe(() => flushSync(() => setPhase("digest")));
 
   if (phase === "boot") return null;
   if (phase === "pipeline") {
     if (source) return <PipelineTimeline key={source.runId} runId={source.runId} source={source} onComplete={toDigest} />;
     // a failed run still lands on the dashboard: it shows the last good digest and the gaps
-    if (runId) return <PipelineTimeline runId={runId} onComplete={toDigest} onFailed={toDigest} />;
+    if (runId) return <PipelineTimeline key={runId} runId={runId} source={replaySource} onComplete={toDigest} onFailed={toDigest} />;
   }
   return <Dashboard matterId={matterId} />;
 }

@@ -119,7 +119,8 @@ export default function PipelineTimeline({
   const [caseTotals, setCaseTotals] = useState<CaseTotals | null>(null);
   const matterId = (run as { matter_id?: number } | null)?.matter_id;
   useEffect(() => {
-    if (!matterId || source) return;
+    // the simulated source has no real case behind it; real and replayed runs do
+    if (!matterId || (source && !("replayInfo" in source))) return;
     let live = true;
     fetch(`/api/matter/${matterId}/digest?peek=1`, { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : null))
@@ -294,7 +295,17 @@ export default function PipelineTimeline({
             <span className={`gp-live gp-live--${state.live}`} />
             <span>{liveLabel(state.live, runOver)}</span>
             <span className="gp-kicker__sep">/</span>
-            <span>run {runId.slice(0, 8)}</span>
+            {(source as { replayInfo?: { runId: string; recordedAt: string | null } | null } | undefined)?.replayInfo ? (
+              <span>
+                replay of run {runId.slice(0, 8)}
+                {(() => {
+                  const at = (source as unknown as { replayInfo: { recordedAt: string | null } }).replayInfo.recordedAt;
+                  return at ? ` · recorded ${new Date(at).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}` : "";
+                })()}
+              </span>
+            ) : (
+              <span>run {runId.slice(0, 8)}</span>
+            )}
           </div>
           <h1 className="gp-title">
             <DecryptedText text={status === "done" ? "case digested" : "digesting the case"} animateOn="mount" speed={42} />
