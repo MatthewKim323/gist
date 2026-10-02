@@ -962,3 +962,23 @@
   height: 1px;
   transform-origin: 0 50%;
 }
+
+/* thought line beside each card (in the date slot, across the spine) */
+.gp-date__stack {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+.gp-thought {
+  letter-spacing: normal;
+  text-transform: none;
+}
+.gp-thought .thought-line__steps {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.8em;
+}
+@media only screen and (min-width: 1170px) {
+  .gp-tl .vertical-timeline-element:not(.vertical-timeline-element--left) .gp-date__stack {
+    align-items: flex-end;
+  }
+}

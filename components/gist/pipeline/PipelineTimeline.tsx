@@ -12,6 +12,7 @@ import type { AgentRole, AgentTask } from "@/lib/types";
 import DecryptedText from "./DecryptedText";
 import Waves from "./Waves";
 import Pilot from "@/components/gist/pilot/Pilot";
+import ThoughtLine from "@/components/gist/thought/ThoughtLine";
 import type { PipelineSource } from "./source";
 import { usePipelineRun } from "./usePipelineRun";
 import {
@@ -345,7 +346,12 @@ const StageNode = memo(function StageNode({ stage, on, now, side }: { stage: Sta
       className={`gp-node gp-node--${def.role} gp-node--${stage.state} ${on ? "is-on" : "is-off"}`}
       visible={on}
       position={side}
-      date={date}
+      date={
+        <span className="gp-date__stack">
+          <span className="gp-date__time">{date}</span>
+          {on && <StageThought stage={stage} elapsedMs={elapsed} />}
+        </span> as unknown as string /* the library types date as string but renders any node */
+      }
       dateClassName="gp-date"
       icon={<StageIcon index={stage.index} state={stage.state} />}
       iconClassName={`gp-icon gp-icon--${stage.state}`}
@@ -372,6 +378,51 @@ const StageNode = memo(function StageNode({ stage, on, now, side }: { stage: Sta
     </VerticalTimelineElement>
   );
 });
+
+// What each stage is doing, said as a person would, for the thought line beside its card.
+const THINK: Record<string, [working: string, done: string]> = {
+  sync: ["Reading Clio", "Read Clio in"],
+  ocr: ["Reading the scans", "Read the scans in"],
+  extract: ["Pulling facts with quotes", "Pulled facts in"],
+  verify: ["Checking every quote", "Checked quotes in"],
+  jev: ["Auditing the claims", "Audited claims in"],
+  embed: ["Indexing the case", "Indexed in"],
+  reconcile: ["Cross-checking sources", "Cross-checked in"],
+  gate: ["Checking the phase gates", "Checked gates in"],
+  synth: ["Writing the story", "Wrote the story in"],
+};
+
+/** The agent's thought line: the latest task events of this stage, newest last (counts only, from the rows). */
+function StageThought({ stage, elapsedMs }: { stage: StageView; elapsedMs: number | null }) {
+  const [working, done] = THINK[stage.def.role] ?? [stage.def.title, "Done in"];
+  // ThoughtLine ticks every step but the last, so the trace is the last finished tasks (really done) and,
+  // while the stage works, one running task as the live last line.
+  const steps = useMemo(() => {
+    const line = (t: AgentTask) => [t.shard_label ?? `task ${t.id}`, t.last_event ?? t.status].join(" · ");
+    const finished = stage.tasks
+      .filter((t) => t.finished_at && (t.status === "done" || t.status === "cached" || t.status === "failed") && !isSkipped(t))
+      .sort((a, b) => Date.parse(a.finished_at!) - Date.parse(b.finished_at!))
+      .slice(-3)
+      .map(line);
+    const live = stage.state === "working" ? stage.tasks.find((t) => t.status === "running") : undefined;
+    return live ? [...finished, line(live)] : finished;
+  }, [stage.tasks, stage.state]);
+  if (stage.state === "skipped") return null;
+  return (
+    <ThoughtLine
+      className="gp-thought"
+      label={stage.state === "cached" ? "Answering from cache" : `${working}…`}
+      doneLabel={stage.state === "cached" ? "From cache in" : stage.state === "failed" ? "Stopped after" : done}
+      working={stage.state === "working"}
+      elapsed={elapsedMs == null ? undefined : elapsedMs / 1000}
+      steps={steps}
+      glyph="sparkle"
+      fontSize={13}
+      color="rgba(228, 231, 241, 0.86)"
+      collapseOnSettle
+    />
+  );
+}
 
 function tileTitle(t: AgentTask) {
   const bits = [t.shard_label ?? `task ${t.id}`, t.status];
