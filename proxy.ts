@@ -18,6 +18,8 @@ const FIRM_APIS = [
   /^\/api\/cases(\/|$)/,
   // The firm-wide radar reads every case.
   /^\/api\/radar(\/|$)/,
+  // The case knowledge graph reads the whole case file.
+  /^\/api\/graph(\/|$)/,
   // The share composer (create, preview any config, revoke) is firm-only.
   /^\/api\/share(\/|$)/,
   // Autopilot (state, feed, manual check) and the cron entry are firm-only.
