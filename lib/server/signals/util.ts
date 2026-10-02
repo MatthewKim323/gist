@@ -118,7 +118,7 @@ export function makeLabeler(items: ItemRow[], docs: DocRow[]): Labeler {
     if (!it) return `${KIND_LABEL[kind] ?? kind} ${id}`;
     if (it.kind === "field") return `Clio field · ${it.title ?? id}`;
     const parts = [KIND_LABEL[it.kind] ?? it.kind];
-    const day = prettyDay(it.occurred_at);
+    const day = ["relationship", "contact"].includes(it.kind) ? null : prettyDay(it.occurred_at);
     if (day) parts.push(day);
     if (it.title) parts.push(it.title.length > 80 ? `${it.title.slice(0, 77)}...` : it.title);
     return parts.join(" · ");
