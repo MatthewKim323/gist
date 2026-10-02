@@ -21,6 +21,8 @@ const FIRM_APIS = [
   // Autopilot (state, feed, manual check) and the cron entry are firm-only.
   /^\/api\/autopilot(\/|$)/,
   /^\/api\/cron(\/|$)/,
+  // Agent drafts (propose, list, approve/dismiss) are firm-only.
+  /^\/api\/actions(\/|$)/,
 ];
 
 export async function proxy(req: NextRequest) {
