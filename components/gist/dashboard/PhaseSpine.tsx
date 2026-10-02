@@ -115,7 +115,11 @@ export default function PhaseSpine({ d }: { d: Digest }) {
               {state === "current" ? (
                 <div className="gd-stage__time">
                   {durationLabel(d.phase.time_in_stage_days)}
-                  {d.matter.stage_since ? <span className="gd-dim"> · since {fmtShort(d.matter.stage_since)}</span> : null}
+                  {d.matter.stage_since ? (
+                    <span className="gd-dim">
+                      {durationLabel(d.phase.time_in_stage_days) ? " · " : ""}since {fmtShort(d.matter.stage_since)}
+                    </span>
+                  ) : null}
                 </div>
               ) : null}
             </li>

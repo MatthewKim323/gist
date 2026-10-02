@@ -57,7 +57,7 @@ export function RedFlags({ d }: { d: Digest }) {
                 <span className={`gd-sev gd-sev--${f.severity}`}>{f.severity}</span>
                 <h3>{f.title}</h3>
               </header>
-              <div className="gd-flag__claims" style={{ gridTemplateColumns: `repeat(${Math.min(f.claims.length, 3)}, minmax(0, 1fr))` }}>
+              <div className="gd-flag__claims" style={{ gridTemplateColumns: `repeat(${f.claims.length === 4 ? 2 : Math.min(f.claims.length, 3)}, minmax(0, 1fr))` }}>
                 {f.claims.map((c, i) => (
                   <div key={i} className="gd-claim">
                     <div className="gd-claim__meta">
