@@ -260,6 +260,23 @@
     color 0.8s var(--gp-ease),
     box-shadow 0.8s var(--gp-ease);
 }
+/* small node marks: the library default (60px / 40px) overpowers the cards */
+.gp-tl .vertical-timeline-element-icon.gp-icon {
+  height: 26px;
+  left: 6.5px;
+  top: 7px;
+  width: 26px;
+}
+@media only screen and (min-width: 1170px) {
+  .gp-tl.vertical-timeline--two-columns .vertical-timeline-element-icon.gp-icon,
+  .gp-tl .vertical-timeline--two-columns .vertical-timeline-element-icon.gp-icon {
+    height: 30px;
+    left: 50%;
+    margin-left: -15px;
+    top: 15px;
+    width: 30px;
+  }
+}
 .gp-icon__inner {
   align-items: center;
   display: flex;
