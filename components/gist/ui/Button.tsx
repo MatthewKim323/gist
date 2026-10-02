@@ -51,28 +51,61 @@ function Inner(props: ButtonProps) {
   useEffect(() => {
     const node = el.current;
     if (!node) return;
-    let btn: SvgButton | null = null;
-    try {
-      btn = new SvgButton(node);
-    } catch (e) {
-      console.warn("[Button] SvgButton failed, CSS fallback", e);
+    // Small buttons stay on the CSS pill: SvgButton's corner radii are tuned for the home size and
+    // read as blobs at sm/xs.
+    if (size !== "md") {
       node.classList.add("gb--nosvg");
       return;
     }
-    node.classList.add("gb--svg");
-    return () => {
-      // Full teardown so a re-mount (React strict mode, HMR) builds on clean markup.
+    let btn: SvgButton | null = null;
+    let ro: ResizeObserver | null = null;
+    let built = { w: 0, h: 0 };
+
+    const teardown = () => {
       try {
         btn?.contentTimeline?.kill();
         btn?.borderTimeline?.kill();
         btn?.destroy();
         btn?.canvas?.remove();
       } catch {}
+      btn = null;
       node.querySelectorAll(".js-btn-content-cloned").forEach((n) => n.remove());
       gsap.set(node.querySelectorAll(".js-btn-content, .js-btn-icon"), { clearProps: "transform" });
       node.classList.remove("gb--svg");
     };
-  }, []);
+
+    const build = () => {
+      const w = node.clientWidth;
+      const h = node.clientHeight;
+      // Only build on a real, laid-out size; rebuild if the size changes meaningfully.
+      if (w < 8 || h < 8 || node.getClientRects().length === 0) return;
+      if (btn && Math.abs(w - built.w) < 2 && Math.abs(h - built.h) < 2) return;
+      teardown();
+      try {
+        btn = new SvgButton(node);
+        built = { w, h };
+        node.classList.remove("gb--nosvg");
+        node.classList.add("gb--svg");
+      } catch (e) {
+        console.warn("[Button] SvgButton failed, CSS fallback", e);
+        teardown();
+        node.classList.add("gb--nosvg");
+      }
+    };
+
+    node.classList.add("gb--nosvg");
+    const raf = requestAnimationFrame(build);
+    if (typeof ResizeObserver !== "undefined") {
+      ro = new ResizeObserver(() => build());
+      ro.observe(node);
+    }
+    return () => {
+      cancelAnimationFrame(raf);
+      ro?.disconnect();
+      teardown();
+      node.classList.remove("gb--nosvg");
+    };
+  }, [size]);
 
   const cls = [
     "btn btn--regular",
