@@ -62,3 +62,42 @@ Attorney side, for the doctor view:
 ## Why Jev
 
 Jev is a judge, not a writer. It answers typed yes/no/choice questions with a calibrated confidence in under a second for fractions of a cent. That makes it cheap enough to check every claim and every outgoing snippet, which a big model can't do economically. Low-confidence items go to a "needs attorney eyes" tray instead of being shown as fact.
+
+## Update 10:40: attorney feedback (from an attorney at the event)
+
+What should surface:
+- updates on each phase
+- current status of the case
+- action items
+- materials needed to move to the next phase
+- materials the firm already has vs materials it's missing
+
+This reframes the dashboard around the **phase**. The other panels hang off it.
+
+### Phase spine (the hero of the lawyer view)
+
+Uses the matter stages that already exist in Clio: Intake, Treatment, Demand, Negotiation, Litigation, Trial, Disbursement, Closed.
+
+For the current phase, show:
+1. **Where we are.** Stage, time in stage, what moved recently.
+2. **Gate checklist to the next phase.** A requirement list per phase comes from a generic PI playbook in config. It's domain knowledge and has nothing case-specific in it. Each requirement gets a status, decided by the swarm and verified by Jev:
+   - **have**: cites the doc, note, or email that satisfies it
+   - **partial**: e.g. records received only through 2023
+   - **missing**: nothing in the file
+   - **conflicting**: sources disagree
+3. **Who owes each missing item.** Client, provider, defense, carrier, or firm, plus due date, days outstanding, and request count.
+4. **Action items.** Clio tasks plus the missing-material gaps, split into overdue, upcoming, and waiting on.
+
+### Why this connects the two halves
+
+Missing materials owed by a **provider** become that provider's "what the firm needs from your office" list on their share link. The gap on the firm side and the ask on the provider side are the same list, so one view closes the loop. Deck quotes covered: "what does the firm need from my office right now", "what's waiting on someone else", "tell me when the case moves".
+
+### Example gates (generic playbook; case items computed live, never written into code)
+
+- **Treatment -> Demand:** complete records + itemized bills from every provider, MMI or a future-care plan, wage-loss docs, police report, photos, liability evidence, coverage confirmed.
+- **Litigation -> Trial / resolution:** discovery responses complete, depositions (parties and witnesses), IME reports and rebuttal, expert disclosures (medical, economic), outstanding motions, final specials.
+
+### New roles
+
+- **Gate checker:** for each requirement, the swarm searches facts and docs (via hybrid search) and proposes a status with a citation. Jev `choice` (have / partial / missing) confirms it with a confidence score. Low confidence goes to the "needs attorney eyes" list.
+- **Client comms:** a client-facing portal is out of scope, since the deck asks for firm + providers. We surface client-owed items, last real client contact, and a drafted check-in message the attorney can copy. We never send it or write it to Clio.
