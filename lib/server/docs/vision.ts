@@ -1,6 +1,7 @@
 import "server-only";
 import { z } from "zod";
-import { structured, type CallMeta, type Usage } from "../llm";
+import sharp from "sharp";
+import { structured, openai, logCall, costOf, type CallMeta, type Usage } from "../llm";
 import { env } from "../env";
 
 export const PAGE_TYPES = ["medical_record", "bill", "police_report", "pleading", "correspondence", "id", "other"] as const;
@@ -26,6 +27,15 @@ export function jpegUrl(buf: Buffer, mime = "image/jpeg"): string {
 }
 
 export async function ocrImage(img: Buffer, meta: CallMeta, hint?: string): Promise<{ data: OcrResult; usage: Usage; model: string }> {
+  try {
+    return await ocrStructured(img, meta, hint);
+  } catch {
+    // Most often the provider's recitation filter tripping on court boilerplate. Fall back to strips.
+    return ocrStrips(img, meta, hint);
+  }
+}
+
+async function ocrStructured(img: Buffer, meta: CallMeta, hint?: string) {
   const model = env.swarmModel();
   const { data, usage } = await structured({
     model,
@@ -43,6 +53,50 @@ export async function ocrImage(img: Buffer, meta: CallMeta, hint?: string): Prom
     reasoning: "low",
   });
   return { data: { ...data, confidence: Math.max(0, Math.min(1, data.confidence)) }, usage, model };
+}
+
+const ClassifySchema = OcrSchema.pick({ page_type: true, has_diagnosis: true });
+
+/** Transcribe in overlapping horizontal strips as plain text, keeping partial output, then classify separately. */
+async function ocrStrips(img: Buffer, meta: CallMeta, hint?: string, parts = 4) {
+  const model = env.swarmModel();
+  const m = await sharp(img).metadata();
+  const W = m.width!, H = m.height!, h = Math.ceil(H / parts), overlap = Math.round(H * 0.02);
+  const total: Usage = { input: 0, output: 0, cached: 0, cost: 0, latencyMs: 0 };
+  let partial = false;
+  const texts = await Promise.all(Array.from({ length: parts }, async (_, i) => {
+    const top = Math.max(0, i * h - overlap);
+    const height = Math.min(H - top, h + 2 * overlap);
+    const strip = await sharp(img).extract({ left: 0, top, width: W, height }).jpeg({ quality: 85 }).toBuffer();
+    const t0 = Date.now();
+    const res = await openai().responses.create({
+      model,
+      reasoning: { effort: "low" },
+      instructions: "Transcribe every legible word in this image strip verbatim, in reading order, keeping line breaks. Output only the transcription.",
+      input: [{ role: "user", content: [{ type: "input_image", image_url: jpegUrl(strip), detail: "high" }] }],
+    });
+    const u = res.usage;
+    const usage: Usage = { input: u?.input_tokens ?? 0, output: u?.output_tokens ?? 0, cached: u?.input_tokens_details?.cached_tokens ?? 0, cost: 0, latencyMs: Date.now() - t0 };
+    usage.cost = costOf(model, usage.input, usage.output, usage.cached);
+    await logCall(model, "openai", { ...meta, purpose: `${meta.purpose}_strip` }, usage);
+    total.input += usage.input; total.output += usage.output; total.cached += usage.cached; total.cost += usage.cost;
+    if (res.status !== "completed") partial = true;
+    return (res.output_text ?? "").trim();
+  }));
+  const cls = await structured({
+    model,
+    system: "Classify this scanned case-file page. page_type: medical_record, bill, police_report, pleading (court filings, summons, complaint, subpoenas), correspondence, id (identity documents), other. has_diagnosis: true when it states a diagnosis, impression or ICD code.",
+    input: [{ role: "user", content: [
+      { type: "input_text", text: hint ? `Page: ${hint}` : "Classify." },
+      { type: "input_image", image_url: jpegUrl(img), detail: "low" },
+    ] }],
+    schema: ClassifySchema,
+    schemaName: "page_class",
+    meta,
+  });
+  total.input += cls.usage.input; total.output += cls.usage.output; total.cost += cls.usage.cost;
+  const text = texts.filter(Boolean).join("\n") + (partial ? "\n[transcription incomplete: provider filter truncated part of this page]" : "");
+  return { data: { text, page_type: cls.data.page_type, has_diagnosis: cls.data.has_diagnosis, confidence: partial ? 0.6 : 0.85 }, usage: total, model };
 }
 
 const FaceSchema = z.object({

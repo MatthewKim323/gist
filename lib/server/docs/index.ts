@@ -112,7 +112,9 @@ async function ocrDoc(ctx: RunCtx, d: DocRow, limit: ReturnType<typeof pLimit>, 
         jobs.push(limit(async () => {
           try {
             const img = await renderPage(pdf, p);
-            const r = await ocrImage(img, { purpose: "ocr", matterId: ctx.matterId, runId: ctx.runId }, `${p} of ${n}${d.name ? `, document "${d.name}"` : ""}`);
+            const meta = { purpose: "ocr", matterId: ctx.matterId, runId: ctx.runId };
+            const hint = `${p} of ${n}${d.name ? `, document "${d.name}"` : ""}`;
+            const r = await ocrImage(img, meta, hint);
             t.usage({ input: r.usage.input, output: r.usage.output, cost: r.usage.cost });
             ocr++;
             rows.push({ doc_id: d.clio_id, version_id: version, page: p, text: r.data.text, source: "ocr", ocr_model: r.model, page_type: r.data.page_type, has_diagnosis: r.data.has_diagnosis, confidence: r.data.confidence });

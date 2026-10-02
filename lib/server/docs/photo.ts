@@ -34,7 +34,8 @@ async function findIdPage(matterId: number): Promise<Candidate | null> {
       if (p.text && ID_TEXT.test(p.text)) score += 2;
       if (p.source === "ocr") score += 1;        // photo IDs are scans
       if ((d.page_count ?? mine.length) <= 2) score += 1; // ID scans are short
-      if (score >= 3) cands.push({ doc_id: d.clio_id, page: p.page, storage_path: d.storage_path, score });
+      // A text mention alone is not enough (plenty of records say "licensed"); need the type or the name.
+      if ((p.page_type === "id" || nameHit) && score >= 3) cands.push({ doc_id: d.clio_id, page: p.page, storage_path: d.storage_path, score });
     }
     if (nameHit && !mine.length) cands.push({ doc_id: d.clio_id, page: 1, storage_path: d.storage_path, score: 3 });
   }
