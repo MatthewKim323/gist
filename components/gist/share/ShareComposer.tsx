@@ -116,7 +116,10 @@ export default function ShareComposer({ matterId, initialProviderId, onClose, cl
   const loadShares = useCallback(async () => {
     const r = await fetch(`/api/share?matterId=${matterId}`, { cache: "no-store" });
     const d = (await r.json()) as { shares?: ShareListItem[] };
-    setShares(d.shares ?? []);
+    const list = d.shares ?? [];
+    sharesRef.current = list;
+    setShares(list);
+    return list;
   }, [matterId]);
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch on mount, state lands async
@@ -163,10 +166,16 @@ export default function ShareComposer({ matterId, initialProviderId, onClose, cl
       .channel(`share-views-${matterId}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "share_views" }, (payload) => {
         const row = payload.new as { share_id?: string };
-        const s = sharesRef.current.find((x) => x.id === row.share_id);
-        if (!s) return;
-        toast(`${s.provider_name ?? "Provider"} opened the link`);
-        loadShares().catch(() => null);
+        const known = sharesRef.current.find((x) => x.id === row.share_id);
+        if (known) toast(`${known.provider_name ?? "Provider"} opened the link`);
+        // A link published seconds ago may not be in the list yet: refresh, then decide.
+        loadShares()
+          .then((list) => {
+            if (known) return;
+            const s = list.find((x) => x.id === row.share_id);
+            if (s) toast(`${s.provider_name ?? "Provider"} opened the link`);
+          })
+          .catch(() => null);
       })
       .subscribe();
     return () => {
@@ -215,6 +224,15 @@ export default function ShareComposer({ matterId, initialProviderId, onClose, cl
       const d = await r.json();
       if (!r.ok) throw new Error(d.error ?? "publish failed");
       setPublished({ url: d.url, provider: d.share.provider_name ?? provider?.name ?? "Provider", held: d.findings?.length ?? 0 });
+      // Optimistic row so an open that lands before the list refresh still toasts.
+      sharesRef.current = [
+        {
+          id: d.share.id, provider_contact_id: providerId, provider_name: d.share.provider_name, created_at: new Date().toISOString(),
+          expires_at: d.share.expires_at, revoked_at: null, state: "active", view_count: 0, last_viewed_at: null, views: [],
+        },
+        ...sharesRef.current,
+      ];
+      setShares(sharesRef.current);
       await loadShares();
     } catch (e) {
       setErr((e as Error).message);

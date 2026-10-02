@@ -286,8 +286,8 @@ export async function buildProviderDraft(
     if (config.coverage_detail === "exact") {
       const limit = num(money.coverage_limit?.value);
       if (limit) {
+        // Explicit attorney opt-in, computed in code: not sent through the gate (it would flag any dollar figure).
         detail = `Policy limit on file: ${limit.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 })}`;
-        snippets.push({ key: "coverage:detail", section: "coverage_tier", text: detail });
       }
     }
     coverage = { tier, detail };
