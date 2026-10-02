@@ -151,11 +151,6 @@ function matchQuote(q: string, norm: string, map: number[]): { score: number; ch
   return { score: ov.score, charStart: map[starts[ov.tokenStart] ?? 0] ?? null };
 }
 
-/** Normalized source text around the quote: the whole item when it is short and structured. */
-function nearby(text: string, charStart: number | null, len: number): string {
-  if (text.length <= 1500 || charStart == null) return normalize(text.slice(0, 1500));
-  return normalize(text.slice(Math.max(0, charStart - 400), charStart + len * 2 + 400));
-}
 
 export function verifyFacts(raw: RawFact[], sources: Map<string, SourceText>): VerifiedFact[] {
   const normCache = new Map<string, ReturnType<typeof normalizeWithMap>>();
@@ -189,20 +184,20 @@ export function verifyFacts(raw: RawFact[], sources: Map<string, SourceText>): V
 
     const out: VerifiedFact = { ...base, quote_verified: true, quote_score: score, char_start: charStart, status: "pending", reject_reason: null };
 
-    // Dates and amounts are what lawyers act on, so code must find them: in the quote, or in the
-    // source right around the quote (structured headers like "Date: ..." sit next to the text).
-    // The item's own date (an email's sent date) also counts: "spoke with client today".
-    const near = nearby(src.text, charStart, q.length);
+    // Dates and amounts are what lawyers act on, so code must find them in the cited source itself
+    // (one note, email or page): in the quote, or elsewhere in that source, like a "Date:" header or a
+    // page's report date. The item's own date (an email's sent date) also counts.
+    const near = norm;
     if (f.event_date) {
       const sameAsItem = src.date && src.date.slice(0, 10) === f.event_date.slice(0, 10);
       if (!sameAsItem && !hasDate(q, f.event_date) && !hasMonthYear(q, f.event_date) && !hasDate(near, f.event_date)) {
         out.status = "needs_review";
-        out.reject_reason = "event_date not found near quote";
+        out.reject_reason = "event_date not found in source";
       }
     }
     if (f.amount_usd != null && !hasAmount(q, f.amount_usd) && !hasAmount(near, f.amount_usd)) {
       out.status = "needs_review";
-      out.reject_reason = out.reject_reason ? `${out.reject_reason}; amount not found near quote` : "amount not found near quote";
+      out.reject_reason = out.reject_reason ? `${out.reject_reason}; amount not found in source` : "amount not found in source";
     }
     return out;
   });

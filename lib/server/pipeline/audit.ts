@@ -20,7 +20,8 @@ export interface AuditInput {
 }
 
 const AUTO_ACCEPT = 0.8;
-const MAX_STATE_CHARS = 80_000; // ~20k tokens, well under Jev's ~32k state cap
+// Jev reads best with one source in view: pack only small sources together (well under the ~32k token cap).
+const MAX_STATE_CHARS = 12_000;
 const MAX_SOURCE_CHARS = 40_000;
 const MAX_QUESTIONS = 40;
 
@@ -82,7 +83,7 @@ export async function auditFacts(ctx: RunCtx, facts: AuditInput[]): Promise<numb
     await writeResults(facts.map(quoteOnly));
     return 0;
   }
-  const limit = pLimit(6);
+  const limit = pLimit(10);
   let total = 0;
   await Promise.all(batches(facts).map((b) => limit(async () => {
     try {
