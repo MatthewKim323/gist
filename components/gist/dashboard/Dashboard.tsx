@@ -40,6 +40,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { fmtUsd, initials } from "./format";
 import SessionChip from "@/components/gist/auth/SessionChip";
+import { AssistantDock } from "@/components/gist/assistant/AssistantDock";
 
 type Load =
   | { state: "loading" }
@@ -264,6 +265,7 @@ export default function Dashboard({ matterId: givenId, fixture: givenFixture }: 
             <footer className="gd-foot">Drafted for attorney review · Reads Clio, writes nothing · Every figure links to its source</footer>
           </div>
           <SourceDrawer cite={cite} matterId={digest.matter.id} fixture={fixture} onClose={close} />
+          {fixture ? null : <AssistantDock matterId={digest.matter.id} tab={tab} caseName={digest.matter.client_name} />}
           {share && !fixture
             ? createPortal(
                 <ShareSheet key={shareKey} matterId={digest.matter.id} open onClose={closeShare} initialProviderId={share.providerId} />,

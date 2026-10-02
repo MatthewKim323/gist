@@ -282,7 +282,7 @@ export function AssistantDock({ matterId, tab: tabProp, caseName: caseProp }: As
             key="panel"
             className="ga-panel"
             role="dialog"
-            aria-label="Ask gist"
+            aria-label="gist OS"
             initial={{ opacity: 0, y: 14, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.98 }}
@@ -290,11 +290,11 @@ export function AssistantDock({ matterId, tab: tabProp, caseName: caseProp }: As
           >
             <header className="ga-head">
               <div className="ga-head__title">
-                <span className="ga-head__name">Ask gist</span>
+                <span className="ga-head__name">gist OS</span>
                 {caseName ? <span className="ga-head__case">{caseName}</span> : null}
               </div>
               <div className="ga-head__right">
-                {tab && TAB_LABEL[tab] ? <span className="ga-tabchip" title="gist reads the tab you're on">Viewing {TAB_LABEL[tab]}</span> : null}
+                {tab && TAB_LABEL[tab] ? <span className="ga-tabchip" title="gist OS reads the tab you're on">Viewing {TAB_LABEL[tab]}</span> : null}
                 <Button size="xs" variant="border" onClick={newThread} title="Start a new thread">New</Button>
                 <button type="button" className="ga-x" aria-label="Close" onClick={() => setOpen(false)}>×</button>
               </div>
@@ -359,7 +359,7 @@ export function AssistantDock({ matterId, tab: tabProp, caseName: caseProp }: As
       <button
         type="button"
         className="ga-launch"
-        aria-label={open ? "Close Ask gist" : "Ask gist about this case"}
+        aria-label={open ? "Close gist OS" : "Ask gist OS about this case"}
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
         data-busy={busy || undefined}
@@ -375,7 +375,7 @@ export function AssistantDock({ matterId, tab: tabProp, caseName: caseProp }: As
           state={face}
           playing
         />
-        {!open ? <span className="ga-launch__label">Ask gist</span> : null}
+        {!open ? <span className="ga-launch__label">Ask gist OS</span> : null}
         {unread ? <span className="ga-launch__dot" /> : null}
       </button>
     </div>
