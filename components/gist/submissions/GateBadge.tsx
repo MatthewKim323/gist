@@ -6,7 +6,9 @@ import { useSubmissions } from "./store";
 
 export default function GateBadge({ matterId, requirementKey, fixture }: { matterId: number | null; requirementKey: string; fixture?: boolean }) {
   const rows = useSubmissions(fixture ? null : matterId);
-  const hit = rows?.find((r) => r.gate_requirement_key === requirementKey && r.status !== "dismissed");
+  const mine = rows?.filter((r) => r.gate_requirement_key === requirementKey) ?? [];
+  // A pending answer needs the attorney's eyes first; otherwise show the accepted one.
+  const hit = mine.find((r) => r.status === "pending") ?? mine.find((r) => r.status === "accepted");
   if (!hit) return null;
   const who = hit.provider_name ?? "provider";
   return (
