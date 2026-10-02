@@ -20,6 +20,7 @@ import SubmissionsInbox from "@/components/gist/submissions/Inbox";
 import AgentDrafts from "@/components/gist/actions/AgentDrafts";
 import { FactsFunnel, MoneyBars } from "./Charts";
 import Brief from "./Brief";
+import CaseGraph from "@/components/gist/graph/CaseGraph";
 import NextMoves from "@/components/gist/moves/NextMoves";
 import { AnimatePresence, motion } from "motion/react";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -35,6 +36,7 @@ import {
   Share08Icon,
   Stethoscope02Icon,
   Task01Icon,
+  NeuralNetworkIcon,
   Link04Icon,
   Layers01Icon,
   Tick02Icon,
@@ -87,6 +89,7 @@ type TabId =
   | "phase"
   | "money"
   | "flags"
+  | "graph"
   | "actions"
   | "drafts"
   | "treatment"
@@ -103,6 +106,7 @@ const TABS: { group: string; items: { id: TabId; label: string; icon: IconT }[] 
       { id: "phase", label: "Phase & gates", icon: Route02Icon },
       { id: "money", label: "Money", icon: MoneyBag02Icon },
       { id: "flags", label: "Red flags", icon: Alert02Icon },
+      { id: "graph", label: "Graph", icon: NeuralNetworkIcon },
     ],
   },
   {
@@ -312,6 +316,8 @@ function Panel({ tab, d, fixture, rejected }: { tab: TabId; d: Digest; fixture: 
       );
     case "flags":
       return <RedFlags d={d} />;
+    case "graph":
+      return <CaseGraph matterId={d.matter.id} />;
     case "actions":
       return <Actions d={d} />;
     case "drafts":
