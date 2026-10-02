@@ -142,7 +142,12 @@ async function callWithBackoff<T>(fn: () => Promise<T>): Promise<T> {
     } catch (e) {
       const status = (e as { status?: number }).status;
       const code = (e as { code?: string }).code;
-      if (code === "insufficient_quota" || code === "credit_balance_exhausted") throw e;
+      // Quota errors have been intermittent (balance near zero, auto top-up): a few slow retries, then give up.
+      if (code === "insufficient_quota" || code === "credit_balance_exhausted") {
+        if (attempt >= 3) throw e;
+        await new Promise((r) => setTimeout(r, 5000 * 2 ** attempt));
+        continue;
+      }
       if ((status === 429 || (status ?? 0) >= 500) && attempt < 5) {
         await new Promise((r) => setTimeout(r, 1000 * 2 ** attempt + Math.random() * 500));
         continue;
@@ -176,7 +181,7 @@ export async function extractMatter(ctx: RunCtx, opts: { includeDocs?: boolean; 
   const model = env.swarmModel();
   const shards = await buildShards(ctx.matterId, opts);
   const providerId = await providerIndex(ctx.matterId);
-  const limit = pLimit(opts.concurrency ?? 10);
+  const limit = pLimit(opts.concurrency ?? Number(process.env.SWARM_CONCURRENCY ?? 8));
   const stats: ExtractStats = { shards: shards.length, cached: 0, failed: 0, facts_new: 0, facts_kept: 0, verified: 0, rejected: 0, review: 0, cost: 0 };
   const liveKeys = new Set<string>();
   const toAudit: AuditInput[] = [];
