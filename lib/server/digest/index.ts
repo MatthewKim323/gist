@@ -147,6 +147,7 @@ const StoryOut = z.object({
 const STORY_SYSTEM = `You write the 5-bullet "story so far" an attorney reads before touching a New York personal-injury file.
 Use ONLY the facts and signals given. Every bullet must cite 1-4 refs copied exactly from the [ref] tags.
 Bullets, in order: (1) what happened and when; (2) injuries and treatment, including what is still unresolved; (3) where the case is procedurally and what is holding it up; (4) money: value vs coverage, specials, liens, using only the numbers given; (5) the biggest risk or contradiction in the file.
+If an item is listed under ITEMS THE FILE CONTRADICTS ITSELF ON, never say it is missing or was never obtained; say the notes say X but the document shows Y, and cite both.
 Each bullet: one or two plain sentences, specific (dates, names, amounts from the input), no hedging filler, no legal advice, no em dashes. Never invent a number or date.`;
 
 function signalLines(sig: Sig): string[] {
@@ -181,7 +182,12 @@ function storyInput(sig: Sig, flags: Contradiction[], gates: GateItem[]): { text
     lines.push("", "CONTRADICTIONS");
     for (const c of flags.slice(0, 8)) lines.push(`${c.claims.map((x) => `[${x.source_ref}]`).join("")} (${c.severity}) ${c.title}: ${c.why_it_matters}`);
   }
-  const open = gates.filter((g) => g.status !== "have").slice(0, 12);
+  const conflicting = gates.filter((g) => g.status === "conflicting");
+  if (conflicting.length) {
+    lines.push("", "ITEMS THE FILE CONTRADICTS ITSELF ON (a source says missing or not done, another source in the file has it; never call these simply absent)");
+    for (const g of conflicting) lines.push(`${g.evidence.slice(0, 3).map((e) => `[${e.source_ref}]`).join("") || "[signal]"} ${g.label}: ${g.note ?? "sources disagree"}`);
+  }
+  const open = gates.filter((g) => g.status === "missing" || g.status === "partial").slice(0, 12);
   if (open.length) {
     lines.push("", "OPEN GATE ITEMS");
     for (const g of open) lines.push(`${g.evidence[0] ? `[${g.evidence[0].source_ref}]` : "[signal]"} ${g.label}: ${g.status}${g.owed_by ? `, owed by ${g.owed_by}${g.owed_by_name ? ` (${g.owed_by_name})` : ""}` : ""}`);
