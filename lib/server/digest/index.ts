@@ -88,8 +88,9 @@ async function cost(matterId: number): Promise<Digest["cost"]> {
   }
   const { data: run } = await db().from("agent_runs").select("id").eq("matter_id", matterId).order("started_at", { ascending: false }).limit(1).maybeSingle();
   const last = run ? rows.filter((r) => r.run_id === run.id).reduce((s, r) => s + Number(r.cost_usd ?? 0), 0) : 0;
-  // "To digest" is what one cold pass over the case costs, not the sum of every dev rerun: per pipeline unit
-  // (each extraction shard, and each other stage) take its most expensive single run, then add those up.
+  // "To digest" is what the first cold pass over the case cost, not the sum of every rerun: per pipeline unit
+  // (each extraction shard, and each other stage) take the earliest run that actually paid for it (rows are in id
+  // order, so the first run seen per unit is the first time it ran), then add those up.
   // Interactive calls (ask, share previews, search) are not part of digesting the case.
   const unitOf = (purpose: string) => {
     if (purpose.startsWith("extract:")) return purpose;
@@ -106,7 +107,10 @@ async function cost(matterId: number): Promise<Digest["cost"]> {
     perUnitRun.set(unit, runs);
   }
   let cold = 0;
-  for (const runs of perUnitRun.values()) cold += Math.max(...runs.values());
+  for (const runs of perUnitRun.values()) {
+    const first = [...runs.values()].find((v) => v > 0);
+    cold += first ?? 0;
+  }
   return { cold_usd: Math.round(cold * 10000) / 10000, last_run_usd: Math.round(last * 10000) / 10000, models: [...new Set(rows.map((r) => r.model))] };
 }
 

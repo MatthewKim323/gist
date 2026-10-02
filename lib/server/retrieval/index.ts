@@ -165,7 +165,7 @@ export async function indexMatter(ctx: RunCtx): Promise<{ total: number; embedde
   });
 
   let cost = 0;
-  const result = await ctx.task("embed", `${todo.length} chunks`, async (t) => {
+  const result = await ctx.task("embed", `${want.length} chunks`, async (t) => {
     if (stale.length) {
       for (let i = 0; i < stale.length; i += 500) must(await db().from("chunks").delete().in("id", stale.slice(i, i + 500)), "chunks delete");
     }
