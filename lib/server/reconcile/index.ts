@@ -308,8 +308,13 @@ export async function reconcileMatter(ctx: RunCtx): Promise<{ groups: number; re
   ]).filter((g) => new Set(g.map((f) => baseSource(f.source_ref))).size >= 2);
 
   const limit = pLimit(6);
+  let failedGroups = 0;
   const results = await Promise.all(reviewable.map((g, i) =>
-    limit(() => reviewGroup(ctx, g, `cluster ${i + 1}/${reviewable.length} (${g.length} facts)`).catch(() => [] as Finding_[]))));
+    limit(() => reviewGroup(ctx, g, `cluster ${i + 1}/${reviewable.length} (${g.length} facts)`).catch(() => { failedGroups++; return [] as Finding_[]; }))));
+  // A partial review (quota, timeouts) must never replace a complete set of findings with an incomplete one.
+  if (reviewable.length && failedGroups > reviewable.length * 0.2) {
+    throw new Error(`reconcile: ${failedGroups}/${reviewable.length} groups failed, kept previous findings`);
+  }
   // Overlapping groups can surface the same finding twice: keep the more severe of any pair sharing most claims.
   const rank = { high: 3, medium: 2, low: 1 } as const;
   const findings: Finding_[] = [];

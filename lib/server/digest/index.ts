@@ -79,16 +79,34 @@ function injuries(facts: Fact[], sig: Sig): Digest["injuries"] {
 }
 
 async function cost(matterId: number): Promise<Digest["cost"]> {
-  const rows: { run_id: string | null; model: string; cost_usd: number; created_at: string }[] = [];
+  const rows: { run_id: string | null; purpose: string | null; model: string; cost_usd: number }[] = [];
   for (let from = 0; ; from += 1000) {
-    const { data } = await db().from("llm_calls").select("run_id,model,cost_usd,created_at").eq("matter_id", matterId).order("id").range(from, from + 999);
+    const { data } = await db().from("llm_calls").select("run_id,purpose,model,cost_usd").eq("matter_id", matterId).order("id").range(from, from + 999);
     rows.push(...((data ?? []) as typeof rows));
     if (!data || data.length < 1000) break;
   }
   const { data: run } = await db().from("agent_runs").select("id").eq("matter_id", matterId).order("started_at", { ascending: false }).limit(1).maybeSingle();
-  const total = rows.reduce((s, r) => s + Number(r.cost_usd ?? 0), 0);
   const last = run ? rows.filter((r) => r.run_id === run.id).reduce((s, r) => s + Number(r.cost_usd ?? 0), 0) : 0;
-  return { cold_usd: Math.round(total * 10000) / 10000, last_run_usd: Math.round(last * 10000) / 10000, models: [...new Set(rows.map((r) => r.model))] };
+  // "To digest" is what one cold pass over the case costs, not the sum of every dev rerun: per pipeline unit
+  // (each extraction shard, and each other stage) take its most expensive single run, then add those up.
+  // Interactive calls (ask, share previews, search) are not part of digesting the case.
+  const unitOf = (purpose: string) => {
+    if (purpose.startsWith("extract:")) return purpose;
+    const head = purpose.split(/[.:]/)[0];
+    return ["ocr", "embed", "reconcile", "gate", "synth", "audit", "client_photo"].includes(head) ? head : null;
+  };
+  const perUnitRun = new Map<string, Map<string, number>>();
+  for (const r of rows) {
+    const unit = unitOf(r.purpose ?? "");
+    if (!unit) continue;
+    const runs = perUnitRun.get(unit) ?? new Map<string, number>();
+    const key = r.run_id ?? "no-run";
+    runs.set(key, (runs.get(key) ?? 0) + Number(r.cost_usd ?? 0));
+    perUnitRun.set(unit, runs);
+  }
+  let cold = 0;
+  for (const runs of perUnitRun.values()) cold += Math.max(...runs.values());
+  return { cold_usd: Math.round(cold * 10000) / 10000, last_run_usd: Math.round(last * 10000) / 10000, models: [...new Set(rows.map((r) => r.model))] };
 }
 
 async function photoUrl(matterId: number, path: string | null): Promise<string | null> {
