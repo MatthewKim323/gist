@@ -172,7 +172,10 @@ ${JSON.stringify(brief)}`;
 }
 
 /** Provider mode: only the gated provider view. Nothing else from the case is ever in scope. */
-export function providerContext(v: ProviderView): VoiceContext {
+export function providerContext(view: ProviderView): VoiceContext {
+  // Internal keys never reach the agent.
+  const v: ProviderView = { ...view, firm_needs: view.firm_needs?.map(({ requirement_key: _k, ...n }) => n) ?? null };
+  const who = v.client_initials.replace(/\.$/, "");
   const prompt = `You are gist, the read-only case line a law firm${v.firm_name ? ` (${v.firm_name})` : ""} shares with a treating provider's office. You are speaking with someone at ${v.provider_name} about a patient the firm represents, referred to only as ${v.client_initials}.
 ${SPEECH}
 SCOPE
@@ -187,7 +190,7 @@ ${JSON.stringify({ ...v, redacted_sections: undefined, hidden_by_firm: v.redacte
   return {
     mode: "provider",
     prompt,
-    greeting: `Hi, this is the case line for ${v.client_initials}. I can tell you where the case stands and what the firm needs from your office. What can I help with?`,
+    greeting: `Hi, this is the case line for ${who}. I can tell you where the case stands and what the firm needs from your office. What can I help with?`,
     functions: [
       { name: "get_case_status", description: "Whether the case is active, its stage, last activity, coverage tier if shared, and recent shared updates.", parameters: noArgs },
       { name: "get_firm_needs", description: "What the firm needs from this office, with due dates and days outstanding.", parameters: noArgs },

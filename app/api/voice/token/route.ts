@@ -16,7 +16,11 @@ export async function POST() {
       body: JSON.stringify({ ttl_seconds: 60 }),
       cache: "no-store",
     });
-    if (res.status === 401 || res.status === 403) return off();
+    // Deepgram answers a bad or revoked key with 400 "Invalid credentials" (or 401/403): treat as not configured.
+    if (res.status === 400 || res.status === 401 || res.status === 403) {
+      console.warn("[voice] Deepgram rejected DEEPGRAM_API_KEY", res.status);
+      return off();
+    }
     if (!res.ok) return NextResponse.json({ error: "voice unavailable" }, { status: 502 });
     const j = (await res.json()) as { access_token?: string; expires_in?: number };
     if (!j.access_token) return NextResponse.json({ error: "voice unavailable" }, { status: 502 });
