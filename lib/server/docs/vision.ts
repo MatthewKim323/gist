@@ -58,7 +58,7 @@ async function ocrStructured(img: Buffer, meta: CallMeta, hint?: string) {
 const ClassifySchema = OcrSchema.pick({ page_type: true, has_diagnosis: true });
 
 /** Transcribe in overlapping horizontal strips as plain text, keeping partial output, then classify separately. */
-async function ocrStrips(img: Buffer, meta: CallMeta, hint?: string, parts = 4) {
+export async function ocrStrips(img: Buffer, meta: CallMeta, hint?: string, parts = 4) {
   const model = env.swarmModel();
   const m = await sharp(img).metadata();
   const W = m.width!, H = m.height!, h = Math.ceil(H / parts), overlap = Math.round(H * 0.02);
