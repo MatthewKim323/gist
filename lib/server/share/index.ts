@@ -18,6 +18,34 @@ export interface GatedView {
   gate: { checked: number; blocked: number; engine: string; ms: number };
 }
 
+// Stale-while-revalidate cache: a re-open (or a toggle back to a config already previewed) is
+// instant, and a fresh build runs in the background. Keyed by the full config, so it never mixes scopes.
+const VIEW_TTL_MS = 15_000;
+const viewCache = new Map<string, { at: number; value: GatedView; refreshing?: boolean }>();
+
+export async function cachedGatedView(
+  matterId: number,
+  providerContactId: number,
+  config: ShareConfig,
+  opts: { memo?: GateMemo; timeoutMs?: number } = {},
+): Promise<GatedView> {
+  const key = `${matterId}:${providerContactId}:${JSON.stringify(config)}`;
+  const hit = viewCache.get(key);
+  if (hit) {
+    if (Date.now() - hit.at > VIEW_TTL_MS && !hit.refreshing) {
+      hit.refreshing = true;
+      buildGatedView(matterId, providerContactId, config, opts)
+        .then((value) => viewCache.set(key, { at: Date.now(), value }))
+        .catch(() => (hit.refreshing = false));
+    }
+    return hit.value;
+  }
+  const value = await buildGatedView(matterId, providerContactId, config, opts);
+  viewCache.set(key, { at: Date.now(), value });
+  if (viewCache.size > 300) viewCache.delete(viewCache.keys().next().value!);
+  return value;
+}
+
 /** Build the provider view, then run every outgoing snippet through the redaction gate. */
 export async function buildGatedView(
   matterId: number,
@@ -68,7 +96,7 @@ export async function createShare(opts: {
   const providers = await listProviders(opts.matterId);
   const provider = providers.find((p) => p.contact_id === opts.providerContactId);
   // Gate once at publish so the attorney sees exactly what was held back from this link.
-  const gated = await buildGatedView(opts.matterId, opts.providerContactId, config);
+  const gated = await cachedGatedView(opts.matterId, opts.providerContactId, config);
   const token = randomBytes(32).toString("base64url");
   const days = Math.min(Math.max(opts.expiresInDays ?? 30, 1), 365);
   const { data: matter } = await db().from("matters").select("stage").eq("id", opts.matterId).maybeSingle();

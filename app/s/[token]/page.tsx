@@ -3,7 +3,7 @@
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import ProviderViewCard from "@/components/gist/share/ProviderViewCard";
-import { buildGatedView, logView, lookupShare, stageNotice } from "@/lib/server/share";
+import { cachedGatedView, logView, lookupShare, stageNotice } from "@/lib/server/share";
 import { normalizeConfig } from "@/lib/server/share/plain";
 import "@/app/styles/gist-share.css";
 
@@ -53,7 +53,7 @@ export default async function SharePage({ params }: { params: Promise<{ token: s
   await logView(share, ip || null, h.get("user-agent")).catch(() => null);
   const loaded = await Promise.all([
     // Decisions saved at publish answer instantly; anything new since then gets a short timeout and fails closed.
-    buildGatedView(Number(share.matter_id), Number(share.provider_contact_id), normalizeConfig(share.config), {
+    cachedGatedView(Number(share.matter_id), Number(share.provider_contact_id), normalizeConfig(share.config), {
       memo: share.config._gate,
       timeoutMs: 2500,
     }),

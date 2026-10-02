@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { buildGatedView, normalizeConfig } from "@/lib/server/share";
+import { cachedGatedView, normalizeConfig } from "@/lib/server/share";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
   const providerContactId = Number(body?.providerContactId);
   if (!matterId || !providerContactId) return NextResponse.json({ error: "matterId and providerContactId required" }, { status: 400 });
   try {
-    return NextResponse.json(await buildGatedView(matterId, providerContactId, normalizeConfig(body?.config)));
+    return NextResponse.json(await cachedGatedView(matterId, providerContactId, normalizeConfig(body?.config)));
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 });
   }
