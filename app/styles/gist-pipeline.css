@@ -764,3 +764,108 @@
 .gp-node--skipped .gp-card {
   opacity: 0.6;
 }
+
+/* ---------------- pilot (components/gist/pilot) ---------------- */
+
+.gp-pilot {
+  height: 112px;
+  left: 0;
+  pointer-events: none;
+  position: fixed;
+  top: 0;
+  width: 112px;
+  will-change: transform;
+  z-index: 60; /* over the cards, under the site nav (z-80) */
+}
+.gp-pilot__body {
+  filter: drop-shadow(0 14px 18px rgba(0, 0, 0, 0.45));
+  height: 100%;
+  transform-origin: 50% 60%;
+  width: 100%;
+  will-change: transform;
+}
+.gp-pilot__body svg {
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+/* reading beam: a soft cone from the pilot onto the card it is scanning */
+.gp-pilot__beam {
+  background: linear-gradient(90deg, rgba(228, 231, 241, 0.5), rgba(141, 184, 255, 0.12) 60%, rgba(141, 184, 255, 0));
+  clip-path: polygon(0 47%, 100% 0, 100% 100%, 0 53%);
+  filter: blur(1.5px);
+  height: 120px;
+  left: 56px;
+  margin-top: -60px;
+  mix-blend-mode: screen;
+  opacity: 0;
+  position: absolute;
+  top: 60px;
+  transform-origin: 0 50%;
+  transition: opacity 0.5s var(--gp-ease);
+  width: 0;
+}
+.gp-pilot__beam::after {
+  animation: gp-beam-flicker 2.2s ease-in-out infinite;
+  background: inherit;
+  content: "";
+  inset: 0;
+  position: absolute;
+}
+@keyframes gp-beam-flicker {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.75;
+  }
+}
+
+/* the card being read: a bright scan line sweeps it top to bottom on the carry curve */
+.gp-tl .gp-card[data-scan] {
+  border-color: rgba(228, 231, 241, 0.42) !important;
+  box-shadow:
+    0 24px 60px -30px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(141, 184, 255, 0.18),
+    0 0 36px -8px rgba(141, 184, 255, 0.35);
+  overflow: hidden;
+}
+.gp-tl .gp-card[data-scan]::after {
+  animation: gp-scan 2.1s var(--gp-carry) infinite;
+  background: linear-gradient(
+    180deg,
+    rgba(141, 184, 255, 0) 0,
+    rgba(141, 184, 255, 0.1) 42%,
+    rgba(228, 231, 241, 0.6) 49.6%,
+    rgba(228, 231, 241, 0.6) 50.4%,
+    rgba(141, 184, 255, 0.06) 54%,
+    rgba(141, 184, 255, 0) 100%
+  );
+  border-radius: inherit;
+  content: "";
+  height: 220%;
+  left: 0;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  top: -120%;
+}
+@keyframes gp-scan {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+.gp-tl .gp-card[data-scan] .gp-tile--running {
+  box-shadow: 0 0 10px rgba(141, 184, 255, 0.55);
+}
+@media (prefers-reduced-motion: reduce) {
+  .gp-tl .gp-card[data-scan]::after,
+  .gp-pilot__beam::after {
+    animation: none;
+  }
+}

@@ -11,6 +11,7 @@ import "@/app/styles/gist-pipeline.css";
 import type { AgentRole, AgentTask } from "@/lib/types";
 import DecryptedText from "./DecryptedText";
 import Waves from "./Waves";
+import Pilot from "@/components/gist/pilot/Pilot";
 import type { PipelineSource } from "./source";
 import { usePipelineRun } from "./usePipelineRun";
 import {
@@ -120,6 +121,7 @@ export default function PipelineTimeline({
   }, [runOver]);
 
   // ---- line draw: the spine grows to the newest node ----
+  const rootRef = useRef<HTMLDivElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const lastUserScroll = useRef(0);
@@ -214,8 +216,9 @@ export default function PipelineTimeline({
         : "waiting";
 
   return (
-    <div className={`gp ${className}`} data-status={status} data-cached={allCached ? "" : undefined}>
+    <div className={`gp ${className}`} ref={rootRef} data-status={status} data-cached={allCached ? "" : undefined}>
       {waves && <Waves />}
+      <Pilot rootRef={rootRef} />
       <div className="gp-scroll" ref={scrollRef} tabIndex={-1}>
         <div className="gp-scroll__content" ref={contentRef}>
         <header className="gp-head">
