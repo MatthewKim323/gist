@@ -281,7 +281,7 @@ export async function reconcileMatter(ctx: RunCtx): Promise<{ groups: number; re
     const ids = new Set(fd.claims.map((c) => c.fact.id));
     const dup = findings.some((k) => {
       const shared = k.claims.filter((c) => ids.has(c.fact.id)).length;
-      return shared / Math.min(ids.size, k.claims.length) >= 0.5;
+      return k.type === fd.type && shared / Math.min(ids.size, k.claims.length) > 0.6;
     });
     if (!dup) findings.push(fd);
   }
