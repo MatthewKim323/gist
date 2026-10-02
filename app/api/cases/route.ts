@@ -79,6 +79,8 @@ async function matterSummary(m: Record<string, unknown>) {
   const gates = Array.isArray(d?.gates) ? d!.gates : [];
   return {
     id,
+    // synthetic demo case (scripts/seed-demo.ts): Supabase-only, never in Clio
+    is_demo: !!m.is_demo,
     display_number: m.display_number ?? null,
     description: m.description ?? null,
     client_name: m.client_name ?? null,
@@ -114,12 +116,14 @@ export async function GET(req: Request) {
   }
   const [clio, list] = await Promise.all([
     clioStatus(),
-    db().from("matters").select("id, display_number, description, status, stage, practice_area, client_name, open_date, synced_at").order("id"),
+    db().from("matters").select("id, display_number, description, status, stage, practice_area, client_name, open_date, synced_at, is_demo").order("id"),
   ]);
   if (list.error) return NextResponse.json({ error: list.error.message }, { status: 500 });
   const matters = await Promise.all((list.data ?? []).map(matterSummary));
   // Synced and open cases first, then by most recent activity.
+  // Real Clio cases before demo cases.
   matters.sort((a, b) => {
+    if (a.is_demo !== b.is_demo) return a.is_demo ? 1 : -1;
     const ao = a.status === "Open" ? 0 : 1;
     const bo = b.status === "Open" ? 0 : 1;
     if (ao !== bo) return ao - bo;

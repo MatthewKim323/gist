@@ -135,7 +135,10 @@ export interface Digest {
     stage: Phase | string;
     stage_since: string | null;
     responsible_attorney: string | null;
-    clio_url: string;
+    /** null for demo cases (Supabase-only, no Clio record) */
+    clio_url: string | null;
+    /** synthetic demo case, seeded by scripts/seed-demo.ts */
+    is_demo?: boolean;
     /** statute of limitations: matter field + SOL task; days_remaining negative once passed */
     sol?: { date: Cited<string>; days_remaining: number; satisfied: boolean | null } | null;
     open_date?: string | null;

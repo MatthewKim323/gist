@@ -187,7 +187,8 @@ async function watchedMatters(): Promise<{ matters: Watched[]; discoverError: st
   } catch (e) {
     discoverError = String((e as Error).message ?? e).slice(0, 200);
   }
-  const { data } = await db().from("matters").select("id,status,client_name,display_number");
+  // Demo cases are Supabase-only fixtures: autopilot never syncs or re-digests them.
+  const { data } = await db().from("matters").select("id,status,client_name,display_number").or("is_demo.is.null,is_demo.eq.false");
   const rows = (data ?? []) as { id: number; status: string | null; client_name: string | null; display_number: string | null }[];
   const digested = new Set<number>();
   if (rows.length) {
@@ -359,7 +360,7 @@ export async function recentEvents(limit = 30): Promise<AutopilotEvent[]> {
 }
 
 export async function watchedCount(): Promise<number> {
-  const { data } = await db().from("matters").select("id,status");
+  const { data } = await db().from("matters").select("id,status").or("is_demo.is.null,is_demo.eq.false");
   const open = ((data ?? []) as { id: number; status: string | null }[]).filter((r) => (r.status ?? "Open") !== "Closed").map((r) => r.id);
   if (!open.length) return 0;
   const d = await db().from("digests").select("matter_id").in("matter_id", open);

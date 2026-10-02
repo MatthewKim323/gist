@@ -2,6 +2,7 @@ import "server-only";
 import pLimit from "p-limit";
 import { db, must } from "../db";
 import { env } from "../env";
+import { isDemoMatter } from "../demo";
 import { list, get, downloadDocument, type Params } from "../clio/client";
 import type { RunCtx, TaskHandle } from "../pipeline/ctx";
 import type { SourceKind } from "@/lib/types";
@@ -350,6 +351,12 @@ export async function syncMatter(ctx: RunCtx, opts: { full?: boolean } = {}): Pr
   const matterId = ctx.matterId;
   const full = !!opts.full;
   const changed: Record<string, number> = {};
+
+  // Demo cases live only in Supabase. Never ask Clio about them.
+  if (await isDemoMatter(matterId)) {
+    await ctx.task("sync", "matter", async (t) => { t.cached(); await t.event("demo case: Supabase only, no Clio sync"); });
+    return { matterId, changed, downloaded: 0, failedDownloads: 0 };
+  }
 
   const matter = await ctx.task("sync", "matter", async (t) => {
     const [m, stages] = await Promise.all([syncMatterRow(matterId), syncStages()]);

@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { z } from "zod";
 import { db } from "../db";
 import { env } from "../env";
+import { inDemoRange } from "../demo";
 import { structured } from "../llm";
 import type { RunCtx } from "../pipeline/ctx";
 import { isFallbackNote, ownerContact } from "../gates";
@@ -118,6 +119,7 @@ export async function assemble(matterId: number, story: Digest["story"] = [], pr
   const sig = preSig ?? (await computeSignals(matterId));
   const m = sig.data.matter;
   const raw = (m.raw ?? {}) as Record<string, { name?: string } | undefined>;
+  const isDemo = !!(m as { is_demo?: boolean | null }).is_demo || inDemoRange(m.id);
   const [gates, red_flags, c, photo] = await Promise.all([loadGates(matterId, sig), loadRedFlags(matterId, sig), cost(matterId), photoUrl(m.id, m.photo_path)]);
   const top_facts = [...sig.data.facts]
     .sort((a, b) => b.importance - a.importance || (b.event_date ?? "").localeCompare(a.event_date ?? ""))
@@ -129,7 +131,9 @@ export async function assemble(matterId: number, story: Digest["story"] = [], pr
       photo_url: photo, incident_date: sig.incident_date, days_since_incident: sig.days_since_incident,
       stage: sig.stage, stage_since: sig.stage_since,
       responsible_attorney: raw.responsible_attorney?.name ?? null,
-      clio_url: `${env.clioBase()}/nc/#/matters/${m.id}`,
+      // demo cases are Supabase-only: there is no Clio record to open
+      clio_url: isDemo ? null : `${env.clioBase()}/nc/#/matters/${m.id}`,
+      ...(isDemo ? { is_demo: true } : {}),
       sol: sig.sol,
       open_date: m.open_date,
     },
@@ -299,6 +303,7 @@ export async function getDigest(matterId: number, viewer: string | null): Promis
     digest = (await assemble(matterId)).digest;
     live = true;
   }
+  if (inDemoRange(matterId)) digest.matter = { ...digest.matter, clio_url: null, is_demo: true };
   if (digest.phase.time_in_stage_days != null && digest.phase.time_in_stage_days < 1) digest.phase.time_in_stage_days = null;
   for (const g of digest.phase.gates) if (isFallbackNote(g.note)) g.note = null;
   if (since) digest.since_last_opened = since;

@@ -17,6 +17,8 @@ interface Clio {
 
 interface Matter {
   id: number;
+  /** synthetic demo case: lives only in gist's database, never in Clio */
+  is_demo?: boolean;
   display_number: string | null;
   description: string | null;
   client_name: string | null;
@@ -247,6 +249,11 @@ export default function CasesView({ session }: { session: { role: string; name: 
                 </div>
                 <h3 className="gc-client">{m.client_name ?? m.description ?? "Untitled matter"}</h3>
                 <div className="gc-meta">
+                  {m.is_demo && (
+                    <span className="gc-chip" title="Synthetic demo case: stored only in gist, never in Clio, digested by the same pipeline">
+                      Demo
+                    </span>
+                  )}
                   {m.stage && <span className="gc-chip">{m.stage}</span>}
                   {m.digest ? (
                     <span className="gc-digest">
@@ -267,7 +274,7 @@ export default function CasesView({ session }: { session: { role: string; name: 
                   )}
                 </div>
                 <div className="gc-faint gc-row__stats">
-                  {m.synced_at ? `Synced ${ago(m.synced_at)}` : "Never synced"}
+                  {m.is_demo ? `Demo case, not in Clio · seeded ${ago(m.synced_at ?? "")}` : m.synced_at ? `Synced ${ago(m.synced_at)}` : "Never synced"}
                   {m.synced_at ? ` · ${m.counts.items} entries · ${m.counts.docs} docs` : ""}
                   {m.last_run
                     ? ` · last run ${m.last_run.status === "running" ? "in progress" : m.last_run.status} ${ago(m.last_run.started_at)}, ${usd(m.last_run.cost)}`
@@ -282,12 +289,12 @@ export default function CasesView({ session }: { session: { role: string; name: 
                 )}
                 <Button
                   onClick={() => void syncAndDigest(m)}
-                  disabled={starting !== null || !clio?.connected}
+                  disabled={starting !== null || (!m.is_demo && !clio?.connected)}
                   variant={m.digest ? "border" : "fill"}
                   size="sm"
-                  title={clio?.connected ? undefined : "Connect Clio first"}
+                  title={m.is_demo ? "Re-run the pipeline on the demo data (no Clio sync)" : clio?.connected ? undefined : "Connect Clio first"}
                 >
-                  {starting === m.id ? "Starting" : m.last_run?.status === "running" ? "Watch run" : "Sync & digest"}
+                  {starting === m.id ? "Starting" : m.last_run?.status === "running" ? "Watch run" : m.is_demo ? "Re-digest" : "Sync & digest"}
                 </Button>
               </div>
             </article>

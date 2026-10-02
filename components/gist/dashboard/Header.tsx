@@ -36,6 +36,11 @@ export default function Header({ d, fixture }: { d: Digest; fixture: boolean }) 
         <div className="gd-header__name">
           <div className="gd-eyebrow">
             <span>{m.display_number}</span>
+            {m.is_demo ? (
+              <span className="gd-stagechip" title="Synthetic demo case: stored only in gist, never in Clio">
+                Demo case
+              </span>
+            ) : null}
             {m.responsible_attorney ? (
               <>
                 <span className="gd-sep" />
@@ -87,9 +92,11 @@ export default function Header({ d, fixture }: { d: Digest; fixture: boolean }) 
         <Button onClick={() => share()} arrow className="gd-sharecta">
           {providerAsks ? `Share with provider · ${providerAsks} asks` : "Share with provider"}
         </Button>
-        <Button href={m.clio_url} external arrow variant="border">
-          Open in Clio
-        </Button>
+        {m.clio_url ? (
+          <Button href={m.clio_url} external arrow variant="border">
+            Open in Clio
+          </Button>
+        ) : null}
         {fixture ? null : (
           <Button
             href="/cases"
