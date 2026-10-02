@@ -33,7 +33,8 @@ export default function FillButton({
         /* engine teardown is best-effort */
       }
     };
-  }, [label]);
+    // SvgButton clones the label into its own nodes once; callers key this component by label to rebuild.
+  }, []);
   return (
     <a
       ref={ref}

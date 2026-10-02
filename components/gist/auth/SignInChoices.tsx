@@ -83,6 +83,7 @@ export default function SignInChoices({ offices, current }: { offices: OfficeOpt
           </ul>
           <div className="ga-row">
             <FillButton
+              key={chosen ? "go" : "pick"}
               label={chosen ? "Continue" : "Pick your office"}
               disabled={busy || !chosen}
               onClick={() => chosen && go({ role: "provider", providerContactId: chosen.contact_id })}
