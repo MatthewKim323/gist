@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import Button from "@/components/gist/ui/Button";
 import { Panel } from "@/components/gist/dashboard/bits";
 import { CiteChip, useCites } from "@/components/gist/dashboard/cite";
+import type { Digest } from "@/lib/types";
 import type { AgentAction, ActionKind } from "@/lib/server/actions/types";
 import { patch, propose, useActions } from "./store";
 
@@ -93,7 +94,10 @@ function DraftCard({ a, matterId }: { a: AgentAction; matterId: number }) {
   );
 }
 
-export default function AgentDrafts({ matterId, fixture }: { matterId: number; fixture?: boolean }) {
+/** Self-contained: fetches its own drafts. `digest` is optional (fixture digests render nothing). Cite chips and the
+ *  share-link shortcut use the dashboard CiteProvider when mounted inside it. */
+export default function AgentDrafts({ matterId, digest, fixture }: { matterId: number; digest?: Digest | null; fixture?: boolean }) {
+  void digest;
   const { rows, busy, error } = useActions(fixture ? null : matterId);
   const [showDone, setShowDone] = useState(false);
   if (fixture) return null;

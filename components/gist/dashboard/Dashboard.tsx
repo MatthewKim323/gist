@@ -17,7 +17,6 @@ import { Completeness, Injuries, ProviderLanes, SinceRail } from "./Detail";
 import AskPalette from "./AskPalette";
 import ShareLog from "./ShareLog";
 import SubmissionsInbox from "@/components/gist/submissions/Inbox";
-import AgentDrafts from "@/components/gist/actions/AgentDrafts";
 
 type Load =
   | { state: "loading" }
@@ -58,7 +57,6 @@ function Loading() {
 
 const NAV = [
   ["phase", "Phase"],
-  ["drafts", "Drafts"],
   ["money", "Money"],
   ["story", "Story"],
   ["flags", "Red flags"],
@@ -171,7 +169,6 @@ export default function Dashboard({ matterId: givenId, fixture: givenFixture }: 
             <div className="gd-layout">
               <div className="gd-main">
                 <PhaseSpine d={digest} />
-                <AgentDrafts matterId={digest.matter.id} fixture={fixture} />
                 <div className="gd-duo">
                   <Money d={digest} />
                   <Story d={digest} />
