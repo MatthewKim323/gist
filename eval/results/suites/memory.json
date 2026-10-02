@@ -1,0 +1,138 @@
+{
+  "id": "memory",
+  "name": "Per-profile memory",
+  "origin": "LongMemEval (Wu et al., 2024, arXiv:2410.10813): information extraction, knowledge update, temporal reasoning, abstention",
+  "adaptation": "Scripted multi-session run against the real assistant with a throwaway profile (all rows deleted after): 3 sessions state preferences/focus, 1 later session updates a preference, then 6 probe sessions. Each message is a new thread, so only profile_memories carries information across. An LLM judge (gpt-5.4-mini) grades each probe against the expected behavior.",
+  "n": "6 probes over 10 sessions",
+  "metrics": {
+    "accuracy": 1,
+    "memories_stored": 9,
+    "turn_cost_usd": 0.0074
+  },
+  "tables": [
+    {
+      "title": "By category",
+      "columns": [
+        "category",
+        "passed",
+        "n"
+      ],
+      "rows": [
+        [
+          "single-session recall",
+          2,
+          2
+        ],
+        [
+          "knowledge update",
+          1,
+          1
+        ],
+        [
+          "temporal",
+          1,
+          1
+        ],
+        [
+          "abstention",
+          2,
+          2
+        ]
+      ]
+    },
+    {
+      "title": "Probes",
+      "columns": [
+        "category",
+        "question",
+        "pass",
+        "memories recalled",
+        "judge reason"
+      ],
+      "rows": [
+        [
+          "single-session recall",
+          "What is my main focus on this file? Answer from what you remember about me.",
+          "yes",
+          5,
+          "The answer matches the expected memory: it identifies the user's main focus as the scope-of-employment issue with Metro-North."
+        ],
+        [
+          "single-session recall",
+          "Which doctor did I ask you to flag for me?",
+          "yes",
+          5,
+          "The answer correctly identifies Dr. Capiola, matching the expected response."
+        ],
+        [
+          "knowledge update",
+          "How do I want my answers ordered? Answer from what you remember about me.",
+          "yes",
+          5,
+          "The answer matches the remembered preference: it says to lead with the next deadline first, not money first."
+        ],
+        [
+          "temporal",
+          "Before my latest change, what did I used to want you to lead with?",
+          "yes",
+          5,
+          "The answer correctly states the earlier preference: to lead with money first, which matches the expected \"Money numbers first.\""
+        ],
+        [
+          "abstention",
+          "What is my paralegal's favorite lunch spot? Answer from what you remember about me.",
+          "yes",
+          5,
+          "The answer correctly abstains from naming a lunch spot and does not invent one. It says it doesn’t remember being told that information, which matches the expected behavior."
+        ],
+        [
+          "abstention",
+          "What did I tell you my billing rate is?",
+          "yes",
+          5,
+          "The answer correctly abstains: it does not invent a billing rate and says it doesn’t have the billing rate saved in memory."
+        ]
+      ]
+    },
+    {
+      "title": "Memories stored after the setup sessions",
+      "columns": [
+        "memory"
+      ],
+      "rows": [
+        [
+          "(preference) User always wants the money numbers first, before anything else."
+        ],
+        [
+          "(preference) Prefers money numbers first before anything else."
+        ],
+        [
+          "(focus) User is the attorney on this file and their main focus is the scope-of-employment question with Metro-North."
+        ],
+        [
+          "(focus) Prioritizes the scope-of-employment issue with Metro-North on this file"
+        ],
+        [
+          "(relationship) Is the attorney handling this matter"
+        ],
+        [
+          "(relationship) User tracks Dr. Capiola personally; flag anything about him in future case updates."
+        ],
+        [
+          "(focus) Keeps tracking Dr. Capiola personally and wants anything about him flagged."
+        ],
+        [
+          "(preference) User now prefers updates to lead with the next deadline instead of money first."
+        ],
+        [
+          "(preference) Prefers updates to lead with the next deadline instead of money amounts"
+        ]
+      ]
+    }
+  ],
+  "cost_usd": 0.0623996,
+  "secs": 247.943,
+  "matter_id": 1811206208,
+  "matter_label": "Justin Sapini (00001-Sapini)",
+  "generated_at": "2026-10-02T21:32:59.934Z"
+}

@@ -2,7 +2,7 @@
   "id": "rag",
   "name": "RAG quality (Ask the case)",
   "origin": "RAGAS (Es et al., 2023, arXiv:2309.15217): faithfulness, answer relevancy, context precision, context recall",
-  "adaptation": "25 questions with gold answers and gold source refs written from the answer key. System = lib/server/retrieval/ask (query expansion + hybrid search k=15 + gpt-5.5 answer over verified facts and passages). One gpt-5.4-mini judge call per question produces the RAGAS intermediate judgments; answer relevancy = mean cosine (text-embedding-3-large) between the question and 3 judge-generated reverse questions, as in RAGAS. Contexts scored = top-10 retrieved passages.",
+  "adaptation": "25 questions with gold answers and gold source refs written from the answer key. System = lib/server/retrieval/ask (query expansion + hybrid search k=15 + gpt-5.5 answer over verified facts and passages). One gpt-5.4-mini judge call per question produces the RAGAS intermediate judgments; answer relevancy = mean cosine (text-embedding-3-large) between the question and 3 judge-generated reverse questions, as in RAGAS. Contexts scored = top-10 retrieved passages. Caveat: ask also gives the answer model every verified fact line (not only the passages), but faithfulness here is judged against the top-10 passages only, so it is a lower bound.",
   "n": 25,
   "metrics": {
     "faithfulness": 0.87,

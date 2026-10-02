@@ -1,0 +1,138 @@
+{
+  "id": "fact_recall",
+  "name": "Atomic finding recall (omission rate)",
+  "origin": "FActScore (Min et al., 2023, arXiv:2305.14251): atomic-fact decomposition, here used for recall instead of precision",
+  "adaptation": "48 atomic findings hand-written from the independent answer key; an LLM judge (gpt-5.4-mini) checks each against gist's verified facts (top-8 hybrid hits over fact chunks), the digest, contradictions and gate items.",
+  "n": 48,
+  "metrics": {
+    "recall": 0.771,
+    "omission_rate": 0.229,
+    "found": 37,
+    "total": 48
+  },
+  "tables": [
+    {
+      "title": "Recall by category",
+      "columns": [
+        "category",
+        "found",
+        "total",
+        "recall"
+      ],
+      "rows": [
+        [
+          "core_facts",
+          6,
+          6,
+          1
+        ],
+        [
+          "injuries",
+          6,
+          6,
+          1
+        ],
+        [
+          "money",
+          7,
+          9,
+          0.778
+        ],
+        [
+          "liability_risk",
+          6,
+          8,
+          0.75
+        ],
+        [
+          "defense_experts",
+          2,
+          4,
+          0.5
+        ],
+        [
+          "operations",
+          6,
+          8,
+          0.75
+        ],
+        [
+          "contradictions",
+          4,
+          7,
+          0.571
+        ]
+      ]
+    },
+    {
+      "title": "Misses (omissions)",
+      "columns": [
+        "id",
+        "finding",
+        "judge reason"
+      ],
+      "rows": [
+        [
+          "money-limits",
+          "Defendant bodily injury limits $100,000 / $300,000, confirmed in writing 2026-09-08",
+          "The digest states the defendant liability limits are $100,000 / $300,000 in `coverage_limit` and `coverage_lines`, but it does not state that these limits were confirmed in writing on 2026-09-08. The only 2026-09-08 item in `coverage_notes` says no excess or umbrella coverage was disclosed, which is a different point."
+        ],
+        [
+          "money-spend",
+          "Firm's own case expenses (records, court filing, IME observer) have not been reimbursed",
+          "The digest JSON only lists the firm spend items and total in `money.firm_spend` (expense refs for records reproduction, IME observer, and court filing), but it does not state the core finding that these firm expenses have not been reimbursed. The unreimbursed language appears only in the retrieved verified facts for the records expenses, not in the digest/story output itself."
+        ],
+        [
+          "liab-onduty",
+          "Metro-North incident report in defendants' discovery response marks Ferrara On-Duty, heading to the jobsite",
+          "The output matches only part of the expected finding. It confirms the incident report was in the discovery response and says Ferrara was heading to the jobsite, but it does not state the key “On-Duty” designation. Partial mention without the core point is insufficient."
+        ],
+        [
+          "liab-pullano",
+          "Kyle Pullano was Ferrara's passenger (a witness)",
+          "The output identifies Pullano as a passenger and a witness, but not as Ferrara’s passenger. The core relationship in the expected finding is missing, so this is not a match."
+        ],
+        [
+          "def-ime-resolved",
+          "Defense orthopedic IME (Hostin) finds injuries resolved and client able to return to work without restrictions",
+          "The retrieved facts include Hostin’s orthopaedic IME report and a separate Tsao opinion that the claimant can work without restrictions, but no surfaced field attributes that conclusion to Hostin. The digest’s IME gate item likewise only confirms the Hostin report was annexed/served, not its substantive conclusion."
+        ],
+        [
+          "def-katzman",
+          "Defense radiology review (Katzman) finds brain/DTI normal and no recent trauma in knees and right shoulder",
+          "The output only clearly states Katzman found no recent traumatic injury in the right shoulder and right knee. It does not expressly state the expected brain/DTI finding, so the full expected finding is not surfaced."
+        ],
+        [
+          "ops-client-records-overdue",
+          "Overdue task: client's updated employment and commission records (due 2026-09-26)",
+          "The output does mention updated employment and commission records in the wage-loss documentation item (e.g., source_ref email:5029636493 and note:2997038798), but it does not state the specific overdue task with due date 2026-09-26. No field in the provided digest excerpt matches that exact task/due date."
+        ],
+        [
+          "ops-compliance-conf",
+          "2026 compliance conference not yet set / not calendared",
+          "The output does not state that a 2026 compliance conference was not yet set or not calendared; it says the opposite, that a further compliance conference was scheduled."
+        ],
+        [
+          "con-ime-dates",
+          "IME dates in Clio (Sept 2026) conflict with the dates in the IME reports (March 2026)",
+          "The output does state the IME reports are dated March 31, 2026 and March 24, 2026 in the phase-gate item \"Defense IME reports received, with rebuttal\" (doc:21122792168#p1 and doc:21122791073#p47), but it does not say those dates conflict with September 2026 Clio dates. I did not find any field or digest text explicitly noting a Clio-vs-report date conflict."
+        ],
+        [
+          "con-work",
+          "Client claims total disability while defense IME says he can return to work",
+          "The output clearly supports the first half of the finding that the client claims total disability (e.g., verified facts say he was “totally disabled from his usual occupation” and “totally disabled and incapacitated from his employment”), but it does not state the defense IME says he can return to work. The IME-related entries only say the reports are in the record or that they may be unhelpful; no cited field or fact says he can return to work."
+        ],
+        [
+          "con-index",
+          "Plaintiff's discovery response cites a different index number (150940/2024) than the caption (160000/2024)",
+          "The output contains the two index numbers separately, but it does not expressly make the comparison that the discovery response cites 150940/2024 while the caption uses 160000/2024. A partial mention of both numbers is not enough."
+        ]
+      ]
+    }
+  ],
+  "cost_usd": 0.062348900000000006,
+  "secs": 246.103,
+  "matter_id": 1811206208,
+  "matter_label": "Justin Sapini (00001-Sapini)",
+  "generated_at": "2026-10-02T21:34:02.319Z"
+}

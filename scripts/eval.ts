@@ -362,7 +362,7 @@ async function suiteRag(m: number): Promise<Suite[]> {
   const rag: Suite = {
     id: "rag", name: "RAG quality (Ask the case)",
     origin: "RAGAS (Es et al., 2023, arXiv:2309.15217): faithfulness, answer relevancy, context precision, context recall",
-    adaptation: "25 questions with gold answers and gold source refs written from the answer key. System = lib/server/retrieval/ask (query expansion + hybrid search k=15 + gpt-5.5 answer over verified facts and passages). One gpt-5.4-mini judge call per question produces the RAGAS intermediate judgments; answer relevancy = mean cosine (text-embedding-3-large) between the question and 3 judge-generated reverse questions, as in RAGAS. Contexts scored = top-10 retrieved passages.",
+    adaptation: "25 questions with gold answers and gold source refs written from the answer key. System = lib/server/retrieval/ask (query expansion + hybrid search k=15 + gpt-5.5 answer over verified facts and passages). One gpt-5.4-mini judge call per question produces the RAGAS intermediate judgments; answer relevancy = mean cosine (text-embedding-3-large) between the question and 3 judge-generated reverse questions, as in RAGAS. Contexts scored = top-10 retrieved passages. Caveat: ask also gives the answer model every verified fact line (not only the passages), but faithfulness here is judged against the top-10 passages only, so it is a lower bound.",
     n: qa.length,
     metrics: {
       faithfulness: r3(mean(res.map((r) => r.faith))), answer_relevancy: r3(mean(res.map((r) => r.relevancy))),
@@ -485,12 +485,12 @@ async function suiteAgent(m: number): Promise<Suite> {
   const profile = `eval-agent-${Date.now()}`;
   const trials = 2;
   const runs: { task: AgentTask; trial: number; pass: boolean; checks: Record<string, boolean>; steps: number; latency: number; cost: number; invented: string[] }[] = [];
-  const lim = pLimit(4);
+  const lim = pLimit(2);
   try {
     await Promise.all(AGENT_TASKS.flatMap((task) => Array.from({ length: trials }, (_, trial) => lim(async () => {
       const ev: AssistantEvent[] = [];
       const s = Date.now();
-      await retry429(() => { ev.length = 0; return runTurn({ matterId: m, profileId: `${profile}-${task.id}-${trial}`, viewer: null, message: task.message, tab: null }, (e) => ev.push(e)); }, 6);
+      await retry429(() => { ev.length = 0; return runTurn({ matterId: m, profileId: `${profile}-${task.id}-${trial}`, viewer: null, message: task.message, tab: null }, (e) => ev.push(e)); }, 14);
       const latency = Date.now() - s;
       const done = ev.find((e) => e.type === "done") as Extract<AssistantEvent, { type: "done" }> | undefined;
       const tools = ev.filter((e) => e.type === "tool").map((e) => (e as { name: string }).name);
@@ -541,7 +541,7 @@ async function suiteMemory(m: number): Promise<Suite> {
   const profile = `eval-mem-${Date.now()}`;
   const say = async (message: string) => {
     const ev: AssistantEvent[] = [];
-    await retry429(() => { ev.length = 0; return runTurn({ matterId: m, profileId: profile, viewer: null, message, tab: null }, (e) => ev.push(e)); }, 6);
+    await retry429(() => { ev.length = 0; return runTurn({ matterId: m, profileId: profile, viewer: null, message, tab: null }, (e) => ev.push(e)); }, 14);
     const done = ev.find((e) => e.type === "done") as Extract<AssistantEvent, { type: "done" }> | undefined;
     return { text: done?.text ?? "", cost: done?.costUsd ?? 0, recalled: (ev.find((e) => e.type === "recalled") as { items?: string[] } | undefined)?.items ?? [] };
   };
