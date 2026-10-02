@@ -16,6 +16,7 @@ import Actions from "./Actions";
 import { Completeness, Injuries, ProviderLanes, SinceRail } from "./Detail";
 import AskPalette from "./AskPalette";
 import ShareLog from "./ShareLog";
+import SubmissionsInbox from "@/components/gist/submissions/Inbox";
 
 type Load =
   | { state: "loading" }
@@ -175,6 +176,7 @@ export default function Dashboard({ matterId: givenId, fixture: givenFixture }: 
                 <RedFlags d={digest} />
                 <Actions d={digest} />
                 <ProviderLanes d={digest} />
+                <SubmissionsInbox matterId={digest.matter.id} fixture={fixture} />
                 <ShareLog matterId={digest.matter.id} fixture={fixture} />
                 <Completeness d={digest} rejected={rejected} />
               </div>

@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import ProviderViewCard from "@/components/gist/share/ProviderViewCard";
 import { cachedGatedView, logView, lookupShare, stageNotice } from "@/lib/server/share";
 import { normalizeConfig } from "@/lib/server/share/plain";
+import { listForProvider } from "@/lib/server/submissions";
 import "@/app/styles/gist-share.css";
 
 export const dynamic = "force-dynamic";
@@ -58,13 +59,14 @@ export default async function SharePage({ params }: { params: Promise<{ token: s
       timeoutMs: 2500,
     }),
     stageNotice(share).catch(() => null),
+    listForProvider(Number(share.matter_id), Number(share.provider_contact_id)).catch(() => []),
   ]).catch(() => null);
   if (!loaded)
     return <Closed title="Status unavailable" body="The firm's status page could not load right now. Please try again in a minute." />;
-  const [gated, notice] = loaded;
+  const [gated, notice, mine] = loaded;
   return (
     <Shell>
-      <ProviderViewCard view={gated.view} mode="live" stageNotice={notice} />
+      <ProviderViewCard view={gated.view} mode="live" stageNotice={notice} respond={{ token, submissions: mine }} />
     </Shell>
   );
 }

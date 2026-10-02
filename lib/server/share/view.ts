@@ -314,6 +314,7 @@ export async function buildProviderDraft(
         label: g.status === "partial" ? `${label} (partially received)` : label,
         due_date: due,
         days_outstanding: overdue !== null && overdue > 0 ? overdue : null,
+        requirement_key: g.requirement_key ? String(g.requirement_key) : null,
       });
     }
     for (const t of src.filter((s) => s.kind === "task")) {
@@ -334,7 +335,7 @@ export async function buildProviderDraft(
       const since = asked ? Math.floor((now - new Date(asked).getTime()) / DAY) : null;
       const overdue = due ? Math.floor((now - new Date(`${due}T12:00:00Z`).getTime()) / DAY) : null;
       const days = overdue !== null && overdue > 0 ? overdue : since !== null && since > 0 ? since : null;
-      list.push({ label, due_date: due, days_outstanding: days });
+      list.push({ label, due_date: due, days_outstanding: days, requirement_key: r.id != null ? `task:${r.id}` : null });
     }
     list.sort((a, b) => (a.due_date ?? "9999").localeCompare(b.due_date ?? "9999"));
     firm_needs = list;

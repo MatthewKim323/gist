@@ -10,6 +10,7 @@ import { findOffice } from "@/lib/server/auth/offices";
 import { db } from "@/lib/server/db";
 import { cachedGatedView, type ShareRow } from "@/lib/server/share";
 import { defaultShareConfig, normalizeConfig } from "@/lib/server/share/plain";
+import { listForProvider } from "@/lib/server/submissions";
 import "@/app/styles/gist-share.css";
 
 export const dynamic = "force-dynamic";
@@ -63,6 +64,7 @@ export default async function ProviderPortal({ searchParams }: { searchParams: P
     memo: share?.config._gate,
     timeoutMs: 2500,
   }).catch(() => null);
+  const mine = await listForProvider(current.matter_id, contactId).catch(() => []);
 
   return (
     <Frame>
@@ -87,7 +89,7 @@ export default async function ProviderPortal({ searchParams }: { searchParams: P
         </nav>
       )}
       {gated ? (
-        <ProviderViewCard view={gated.view} mode="live" />
+        <ProviderViewCard view={gated.view} mode="live" respond={{ matterId: current.matter_id, submissions: mine }} />
       ) : (
         <div className="gs-closed">
           <h1 className="gs-title">Status unavailable</h1>

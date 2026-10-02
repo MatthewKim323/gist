@@ -198,7 +198,7 @@ export interface ProviderView {
   stage: string | null;
   case_alive: { alive: boolean; last_activity: string | null } | null;
   coverage: { tier: string; detail: string | null } | null;
-  firm_needs: { label: string; due_date: string | null; days_outstanding: number | null }[] | null;
+  firm_needs: { label: string; due_date: string | null; days_outstanding: number | null; requirement_key?: string | null }[] | null;
   records_bills: { label: string; status: GateStatus }[] | null;
   attendance: { attended: number; scheduled: number; window_days: number } | null;
   next_visits: { date: string; label: string }[] | null;

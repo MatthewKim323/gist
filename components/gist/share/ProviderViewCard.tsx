@@ -3,6 +3,8 @@
 // "Redacted by firm" placeholders; on the live page they simply do not exist.
 import "@/app/styles/gist-share.css";
 import type { GateStatus, ProviderView, ShareSection } from "@/lib/types";
+import RespondBox from "@/components/gist/submissions/RespondBox";
+import type { RespondAuth } from "@/components/gist/submissions/types";
 import { PLAIN_STAGES, SECTION_LABELS, daysAgo, fmtDate, plainStage } from "@/lib/server/share/plain";
 
 export interface ProviderViewCardProps {
@@ -10,6 +12,8 @@ export interface ProviderViewCardProps {
   mode?: "live" | "preview";
   stageNotice?: { message: string; created_at: string } | null;
   now?: number;
+  /** Live provider pages pass this to let the office answer each firm-needs item. */
+  respond?: RespondAuth | null;
 }
 
 const STATUS_COPY: Record<GateStatus, { label: string; cls: string }> = {
@@ -42,7 +46,7 @@ function Redacted({ section }: { section: ShareSection }) {
 
 const clock = () => Date.now();
 
-export default function ProviderViewCard({ view, mode = "live", stageNotice, now: nowProp }: ProviderViewCardProps) {
+export default function ProviderViewCard({ view, mode = "live", stageNotice, now: nowProp, respond }: ProviderViewCardProps) {
   const now = nowProp ?? clock();
   const preview = mode === "preview";
   const hidden = new Set(view.redacted_sections);
@@ -139,6 +143,9 @@ export default function ProviderViewCard({ view, mode = "live", stageNotice, now
                             <span className="gs-pill">Requested {n.days_outstanding} days ago</span>
                           ) : null}
                         </div>
+                        {respond && !preview ? (
+                          <RespondBox label={n.label} requirementKey={n.requirement_key ?? null} auth={respond} />
+                        ) : null}
                       </div>
                     </li>
                   );
