@@ -1,7 +1,7 @@
 import "server-only";
 import { db } from "../db";
 import { PHASES, type ActionItem, type Cited, type Citation, type Digest, type ProviderLane } from "@/lib/types";
-import { loadMatter, type MatterData } from "./load";
+import { loadMatter, type ItemRow, type MatterData } from "./load";
 import { moneySignals, type MoneySignals } from "./money";
 import { actionSignals, commStats, contactMap, lastClientContact, providerLanes, type CommStat, type ContactInfo } from "./people";
 import { cite, daysBetween, fieldValue, isoDay, makeLabeler, todayIso, type Labeler } from "./util";
@@ -94,7 +94,7 @@ export async function computeSignals(matterId: number, preloaded?: MatterData): 
     incident_date, incident_from_field: !!(dateV && dateF),
     days_since_incident: incident_date ? daysBetween(incident_date.value, today) : null,
     stage, stage_since,
-    time_in_stage_days: stage_since ? daysBetween(stage_since, today) : null,
+    time_in_stage_days: stage_since && daysBetween(stage_since, today) >= 1 ? daysBetween(stage_since, today) : null,
     next_stage: idx >= 0 && idx < order.length - 1 ? order[idx + 1] : null,
     sol, money, actions,
     last_client_contact: lcc.contact, last_client_contact_channel: lcc.channel, last_client_contact_days: lcc.days,
@@ -109,21 +109,26 @@ export async function computeSignals(matterId: number, preloaded?: MatterData): 
   };
 }
 
-/** Items new or changed since the viewer last opened the matter. */
-export async function sinceLastOpened(matterId: number, viewer: string | null, data: MatterData, label: Labeler): Promise<Digest["since_last_opened"]> {
+/** Items new or changed since the viewer last opened the matter. Two small queries; no full matter load. */
+export async function sinceLastOpened(matterId: number, viewer: string | null): Promise<Digest["since_last_opened"]> {
   if (!viewer) return { at: null, items: [] };
   const { data: v } = await db().from("matter_views").select("last_opened_at").eq("viewer", viewer).eq("matter_id", matterId).maybeSingle();
   const at = (v?.last_opened_at as string | null) ?? null;
   if (!at) return { at: null, items: [] };
-  const items = data.items
-    .filter((i) => (i.first_seen_at && i.first_seen_at > at) || (i.content_changed_at && i.content_changed_at > at))
-    .sort((a, b) => ((b.content_changed_at ?? "") > (a.content_changed_at ?? "") ? 1 : -1))
-    .slice(0, 50)
-    .map((i) => ({
+  const { data: rows } = await db().from("source_items")
+    .select("id,matter_id,kind,clio_id,title,occurred_at,first_seen_at,content_changed_at")
+    .eq("matter_id", matterId).is("deleted_at", null)
+    .or(`first_seen_at.gt."${at}",content_changed_at.gt."${at}"`)
+    .order("content_changed_at", { ascending: false }).limit(50);
+  const items = (rows ?? []) as ItemRow[];
+  const label = makeLabeler(items, []);
+  return {
+    at,
+    items: items.map((i) => ({
       label: `${i.first_seen_at && i.first_seen_at > at ? "New" : "Updated"}: ${i.title ?? i.kind}`,
       kind: i.kind, cite: cite(label, i.id),
-    }));
-  return { at, items };
+    })),
+  };
 }
 
 export async function markViewed(matterId: number, viewer: string, digestVersion: number | null) {

@@ -259,21 +259,24 @@ export async function rebuildDigest(matterId: number): Promise<{ digest: Digest;
  * If no digest has been built yet, returns a live deterministic one (no story) so the page is never empty.
  */
 export async function getDigest(matterId: number, viewer: string | null): Promise<{ digest: Digest; version: number | null; live: boolean }> {
-  const { data: row } = await db().from("digests").select("version,json").eq("matter_id", matterId).order("version", { ascending: false }).limit(1).maybeSingle();
+  // one select of the latest row, in parallel with the viewer's small since-last-opened query
+  const [rowRes, since] = await Promise.all([
+    db().from("digests").select("version,json").eq("matter_id", matterId).order("version", { ascending: false }).limit(1).maybeSingle(),
+    viewer ? sinceLastOpened(matterId, viewer) : Promise.resolve(null),
+  ]);
+  const row = rowRes.data;
   let digest: Digest;
   let version: number | null = null;
   let live = false;
-  let sig: Sig | undefined;
   if (row) {
     digest = row.json as Digest;
     version = row.version as number;
   } else {
-    const a = await assemble(matterId);
-    digest = a.digest; sig = a.sig; live = true;
+    digest = (await assemble(matterId)).digest;
+    live = true;
   }
-  if (viewer) {
-    const s = sig ?? (await computeSignals(matterId));
-    digest.since_last_opened = await sinceLastOpened(matterId, viewer, s.data, s.label);
-  }
+  if (digest.phase.time_in_stage_days != null && digest.phase.time_in_stage_days < 1) digest.phase.time_in_stage_days = null;
+  for (const g of digest.phase.gates) if (isFallbackNote(g.note)) g.note = null;
+  if (since) digest.since_last_opened = since;
   return { digest, version, live };
 }
