@@ -4,9 +4,11 @@ import { zodTextFormat } from "openai/helpers/zod";
 import type { z } from "zod";
 import { env } from "./env";
 import { db } from "./db";
+import { assertNotDemo } from "./demo-mode";
 
 let client: OpenAI | null = null;
 export function openai(): OpenAI {
+  assertNotDemo("the OpenAI client");
   if (!client) client = new OpenAI({ apiKey: env.openaiKey(), maxRetries: 4 });
   return client;
 }
@@ -55,6 +57,7 @@ export async function structured<T extends z.ZodTypeAny>(opts: {
   meta: CallMeta;
   reasoning?: "minimal" | "low" | "medium" | "high";
 }): Promise<{ data: z.infer<T>; usage: Usage }> {
+  assertNotDemo(`model calls (${opts.meta.purpose})`);
   const model = opts.model ?? env.swarmModel();
   const t0 = Date.now();
   const res = await openai().responses.parse({
@@ -75,6 +78,7 @@ export async function structured<T extends z.ZodTypeAny>(opts: {
 
 /** Embeddings as pgvector text literals ('[0.1,...]'), batched. */
 export async function embed(texts: string[], meta: CallMeta): Promise<string[]> {
+  assertNotDemo(`embeddings (${meta.purpose})`);
   const model = env.embeddingModel();
   const out: string[] = [];
   for (let i = 0; i < texts.length; i += 256) {

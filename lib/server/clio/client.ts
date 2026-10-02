@@ -2,6 +2,7 @@ import "server-only";
 import pLimit from "p-limit";
 import { db } from "../db";
 import { env } from "../env";
+import { assertNotDemo } from "../demo-mode";
 
 /**
  * Read-only Clio v4 client.
@@ -78,6 +79,7 @@ export async function saveTokens(t: { access_token: string; refresh_token?: stri
 }
 
 async function tokenRequest(body: Record<string, string>) {
+  assertNotDemo("Clio auth");
   const res = await fetch(`${env.clioBase()}/oauth/token`, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -105,6 +107,7 @@ export async function exchangeCode(code: string) {
 }
 
 export function authorizeUrl(state: string): string {
+  assertNotDemo("Clio connect");
   const u = new URL(`${env.clioBase()}/oauth/authorize`);
   u.searchParams.set("response_type", "code");
   u.searchParams.set("client_id", env.clioClientId());
@@ -119,6 +122,7 @@ export let requestCount = 0;
 
 /** Raw GET against the Clio API with auth, rate limiting, refresh and retry. */
 export async function clioFetch(path: string, params?: Params, init: { redirect?: RequestRedirect } = {}): Promise<Response> {
+  assertNotDemo("live Clio access");
   const url = apiUrl(path, params);
   assertReadOnly("GET", url);
   return concurrency(async () => {

@@ -1,5 +1,6 @@
 import "server-only";
 import { env } from "./env";
+import { assertNotDemo, isDemoMode } from "./demo-mode";
 import { costOf, logCall, type CallMeta } from "./llm";
 
 // Jev (TypeSafe AI): typed judgments with calibrated probabilities. It never generates text, so it is
@@ -16,6 +17,7 @@ export type JevAnswer =
   | { type: "score"; score: number; confidence?: number; probabilities?: Record<string, number> };
 
 export function jevAvailable(): boolean {
+  if (isDemoMode()) return false;
   return !!env.typesafeKey();
 }
 
@@ -25,6 +27,7 @@ export async function jev(
   questions: Record<string, JevQuestion>,
   meta: CallMeta,
 ): Promise<Record<string, JevAnswer>> {
+  assertNotDemo("Jev judgments");
   const key = env.typesafeKey();
   if (!key) throw new Error("TYPESAFE_API_KEY not set");
   const t0 = Date.now();
