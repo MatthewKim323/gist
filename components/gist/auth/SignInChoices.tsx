@@ -33,7 +33,17 @@ async function signIn(body: Record<string, unknown>): Promise<string> {
   });
   const j = (await r.json().catch(() => ({}))) as { next?: string; error?: string };
   if (!r.ok || !j.next) throw new Error(j.error ?? "Sign-in failed");
-  return j.next;
+  return backTo(j.next);
+}
+
+/** Honor /signin?next=<path> (set by the auth redirects) when it is local and fits the role's home. */
+function backTo(home: string): string {
+  const want = new URLSearchParams(window.location.search).get("next");
+  if (!want || !want.startsWith("/") || want.startsWith("//") || want.startsWith("/signin")) return home;
+  const providerPath = /^\/(provider|profile|s\/(?!compose))/.test(want);
+  const firmOnly = /^\/(cases|matter|s\/compose|pipeline-preview)(\/|\?|$)/.test(want);
+  if (home === "/provider") return providerPath ? want : home;
+  return want.startsWith("/provider") ? home : firmOnly || want.startsWith("/profile") ? want : home;
 }
 
 function ago(iso: string): string {
