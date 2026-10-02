@@ -57,6 +57,21 @@ Every call is logged with tokens and cost in `llm_calls`, and the total shows on
 - Time in stage depends on Clio's stage timestamp, which the seeded demo matter set today.
 - Per-token prices in `lib/server/llm.ts` are our best figures and may drift from OpenAI's current list price.
 
+## Demo cases
+
+The one real case (Sapini) comes live from Clio. So the cases list, radar, case switcher and assistant feel like a working firm, gist also carries three **synthetic** personal-injury matters, one per phase: Okafor (Treatment: rear-end soft tissue, a six week treatment gap, a client who stopped answering), Benbow (Demand: grocery slip-and-fall, wrist surgery, specials above the policy limit, a missing itemized bill) and Ferreyra (Negotiation: pedestrian vs rideshare, offer history, a Medicaid lien, a police report that contradicts the client's statement).
+
+- **Fictional.** Every person, company and event in `demo/*.json` is invented. Dates are stored as offsets from the seed day, so overdue and upcoming math stays live.
+- **Supabase only.** They are never in Clio and nothing is ever written to Clio. `matters.is_demo = true` (migration `0007_demo.sql`), ids sit in a reserved range (990000000001 and up), sync no-ops for them, autopilot skips them, and they carry no Clio links.
+- **Labeled.** Display numbers start with `DEMO-`, `/cases` shows a Demo chip and lists them after real cases, and the dashboard header shows "Demo case" with no "Open in Clio".
+- **Same pipeline, nothing faked.** `scripts/seed-demo.ts` writes the fixtures as Clio-shaped records through the same normalizers sync uses (`lib/server/sync/normalize.ts`), stores their text documents as `doc_pages`, then runs `runPipeline` minus sync and OCR: extraction, quote verification, the Jev audit, embeddings, reconcile, gates and the story. Every fact, gate, red flag and dollar figure on a demo dashboard came out of that run.
+
+```bash
+bun run job scripts/seed-demo.ts                 # seed (idempotent) and digest all three, about $0.25
+bun run job scripts/seed-demo.ts --reset         # remove every demo row (only is_demo matters)
+bun run job scripts/seed-demo.ts --reset --seed  # wipe and reseed
+```
+
 ## Run it
 
 ```bash

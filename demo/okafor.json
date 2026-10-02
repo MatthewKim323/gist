@@ -1,0 +1,98 @@
+{
+  "_comment": "SYNTHETIC DEMO CASE. Every person, company and event here is fictional. Dates are offsets from the seed day: '@-30' is 30 days ago, '@+7T10:00' is a time 7 days ahead, '{{-30}}' renders a long date in prose, '{{iso:-30}}' an ISO date in prose.",
+  "slot": 1,
+  "display_number": "DEMO-0101-Okafor",
+  "description": "DEMO: Okafor, Marisol - MVA rear-end (Northern Blvd, Queens)",
+  "stage": "Treatment",
+  "stage_since": "@-120",
+  "open_date": "@-146",
+  "status": "Open",
+  "practice_area": "Personal Injury",
+  "attorney": "Rowan Pell",
+  "client_id": 1,
+  "contacts": [
+    { "id": 1, "name": "Marisol Okafor", "type": "Person", "role": "Client", "dob": "1989-06-11", "email": "marisol.okafor@example.test", "phone": "(718) 555-0141", "address": "41-19 162nd Street, Flushing, NY, 11358" },
+    { "id": 2, "name": "Gerald Pruitt", "type": "Person", "role": "Adverse driver", "address": "88 Willet Lane, Great Neck, NY, 11021" },
+    { "id": 3, "name": "Tidewater Mutual Insurance Co.", "type": "Company", "role": "Adverse carrier, Gerald Pruitt's auto policy", "email": "bi-claims@tidewatermutual.test", "address": "PO Box 4410, Hauppauge, NY, 11788" },
+    { "id": 4, "name": "Harborline Casualty Company", "type": "Company", "role": "No-fault carrier, client's own policy", "email": "nofault@harborline.test", "address": "PO Box 771, Albany, NY, 12201" },
+    { "id": 5, "name": "Flushing Crest Medical Center", "type": "Company", "role": "Hospital, emergency care on the date of incident", "email": "him@flushingcrest.test", "address": "45-02 Kissena Boulevard, Flushing, NY, 11355" },
+    { "id": 6, "name": "Bayside Spine & Chiropractic, P.C.", "type": "Company", "role": "Treating provider, chiropractic (Lena Ostrova, D.C.)", "email": "records@baysidespine.test", "address": "212-10 Northern Boulevard, Bayside, NY, 11361" },
+    { "id": 7, "name": "Kestrel Physical Therapy", "type": "Company", "role": "Treating provider, physical therapy", "email": "frontdesk@kestrelpt.test", "address": "39-07 Bell Boulevard, Bayside, NY, 11361" },
+    { "id": 8, "name": "Queensboro Open MRI", "type": "Company", "role": "Medical provider: diagnostic imaging", "email": "reports@queensboromri.test", "address": "136-20 38th Avenue, Flushing, NY, 11354" }
+  ],
+  "fields": [
+    { "id": 1, "name": "Date of Incident", "type": "date", "value": "@-150" },
+    { "id": 2, "name": "Accident Location", "type": "text", "value": "Northern Boulevard at 164th Street, Flushing, Queens County, NY" },
+    { "id": 3, "name": "Insurance Carrier", "type": "text", "value": "Tidewater Mutual Insurance Co. (adverse, bodily injury). Client's own no-fault: Harborline Casualty Company." },
+    { "id": 4, "name": "Claim Number", "type": "text", "value": "TMI-22-881904 (Tidewater BI); HC-NF-55120 (Harborline no-fault)" },
+    { "id": 5, "name": "Case Summary", "type": "text", "value": "Rear-ended while stopped at a red light. Neck and low back soft tissue injuries, C5-C6 disc bulge on MRI. Chiropractic and physical therapy ongoing." },
+    { "id": 6, "name": "Policy Limits", "type": "text", "value": "Defendant liability: $25,000 / $50,000\nNo-fault: $50,000" },
+    { "id": 7, "name": "Policy Limits Confirmed", "type": "checkbox", "value": "false" },
+    { "id": 8, "name": "Estimated Case Value", "type": "currency", "value": 65000 },
+    { "id": 9, "name": "Medical Specials To Date", "type": "currency", "value": 14850 },
+    { "id": 10, "name": "Treatment Status", "type": "text", "value": "Active. Chiropractic and PT resumed after a gap of about six weeks." },
+    { "id": 11, "name": "HIPAA Authorization Received", "type": "checkbox", "value": "true" },
+    { "id": 12, "name": "Prior Related Injuries", "type": "text", "value": "None reported by client." }
+  ],
+  "notes": [
+    { "id": 1, "date": "@-146", "subject": "Intake: rear-end on Northern Blvd", "detail": "Marisol called after a referral from a friend. On {{-150}} at about 6:15 pm she was stopped at the red light on Northern Boulevard at 164th Street when a Honda driven by Gerald Pruitt hit her from behind. She says she was fully stopped for several seconds. Neck pain and low back pain started that night. Taken by ambulance to Flushing Crest Medical Center, released the same evening. Works as a dental hygienist, missed two weeks. Signed retainer and HIPAA authorizations at the office today." },
+    { "id": 2, "date": "@-140", "subject": "Letter of representation sent", "detail": "Letter of representation sent to Tidewater Mutual. Adjuster Corinne Abate acknowledged and gave claim number TMI-22-881904. She would not confirm the bodily injury limits by phone and asked for a written request." },
+    { "id": 3, "date": "@-138", "subject": "No-fault application", "detail": "NF-2 no-fault application completed with the client and sent to Harborline Casualty. Harborline assigned claim number HC-NF-55120." },
+    { "id": 4, "date": "@-125", "subject": "Police report requested", "detail": "Requested the MV-104 police accident report from the 109th Precinct. Told it takes four to six weeks. Client says the officer at the scene told her the other driver admitted he was looking at his phone." },
+    { "id": 5, "date": "@-97", "subject": "MRI result", "detail": "Queensboro Open MRI report received. C5-C6 broad based disc bulge abutting the thecal sac. Lumbar MRI unremarkable. Dr. Ostrova wants her to continue chiropractic three times a week and PT twice a week." },
+    { "id": 6, "date": "@-60", "subject": "Treatment gap", "detail": "Bayside Spine called: Marisol has not been in since {{-95}}. Kestrel PT says the same, last visit {{-96}}. That is a gap of more than six weeks in the middle of active care. The defense will use this to argue she recovered. Need to reach her and find out why she stopped." },
+    { "id": 7, "date": "@-50", "subject": "Client reached, treatment resumed", "detail": "Finally reached Marisol. She stopped going because her car was still in the shop and she could not get to Bayside on the bus with her schedule. She restarted chiropractic today. Told her any further breaks need to be documented and that she should tell us right away if transportation is a problem again." },
+    { "id": 8, "date": "@-12", "subject": "Client not responding", "detail": "Third attempt this month to reach Marisol about the wage loss letter from her employer and the photos of her car. No answer on the cell, voicemail full. Email sent. Her chiropractor says she is still coming in." }
+  ],
+  "emails": [
+    { "id": 1, "date": "@-134", "subject": "Request for policy limits", "from": "Rowan Pell", "to": "Tidewater Mutual Insurance Co.", "body": "Please confirm in writing the bodily injury limits and any excess or umbrella coverage available to your insured Gerald Pruitt for claim TMI-22-881904. A copy of the declarations page would be appreciated." },
+    { "id": 2, "date": "@-118", "subject": "RE: Request for policy limits", "from": "Tidewater Mutual Insurance Co.", "to": "Rowan Pell", "body": "We are in receipt of your letter. Our insured carries a personal auto policy. Disclosure of limits will be made upon receipt of medical records and a signed authorization from your client. Corinne Abate, Bodily Injury Adjuster." },
+    { "id": 3, "date": "@-90", "subject": "Records request: chiropractic", "from": "Ines Marlow", "to": "Bayside Spine & Chiropractic, P.C.", "body": "Please send complete treatment notes and an itemized ledger with CPT codes for Marisol Okafor for all dates of service from {{-148}} to the present. HIPAA authorization attached." },
+    { "id": 4, "date": "@-70", "subject": "RE: Records request: chiropractic", "from": "Bayside Spine & Chiropractic, P.C.", "to": "Ines Marlow", "body": "Attached are the treatment notes through {{-95}}. The ledger to date shows $6,240.00 in charges. An updated ledger will follow once she resumes care." },
+    { "id": 5, "date": "@-40", "subject": "Wage loss letter", "from": "Ines Marlow", "to": "Marisol Okafor", "body": "Hi Marisol, we still need a letter from Lakeview Dental Group confirming your hourly rate and the days you missed after the accident, plus any pay stubs from before {{-150}}. Can you ask your office manager this week? Thanks, Ines" },
+    { "id": 6, "date": "@-12", "subject": "Checking in: photos and employer letter", "from": "Ines Marlow", "to": "Marisol Okafor", "body": "Hi Marisol, we have tried to call a few times. We still need the photos of your car and the employer letter. Please call the office when you can. Thanks, Ines" }
+  ],
+  "calls": [
+    { "id": 1, "date": "@-100", "subject": "Client check-in", "from": "Ines Marlow", "to": "Marisol Okafor", "body": "Marisol says the neck pain is worse at the end of the workday. Going to chiro three times a week. Still has headaches a few times a week." },
+    { "id": 2, "date": "@-38", "subject": "Client call: employer letter", "from": "Marisol Okafor", "to": "Ines Marlow", "body": "Marisol called back. She will ask her office manager for the employer letter. Says she has the photos of the car on her old phone and will send them. Still going to chiro twice a week now." },
+    { "id": 3, "date": "@-25", "subject": "Voicemail to client", "from": "Ines Marlow", "to": "Marisol Okafor", "body": "Left a voicemail asking for the employer letter and the photos. No call back." },
+    { "id": 4, "date": "@-5", "subject": "Call to client, no answer", "from": "Rowan Pell", "to": "Marisol Okafor", "body": "Called the client. No answer, voicemail box full. Could not leave a message." }
+  ],
+  "tasks": [
+    { "id": 1, "name": "Obtain MV-104 police accident report from the 109th Precinct", "due": "@-10", "status": "pending", "description": "Requested {{-125}}. Follow up with the precinct records unit." },
+    { "id": 2, "name": "By client: Marisol Okafor - Employer wage loss letter and pay stubs", "due": "@-6", "status": "pending", "description": "Letter from Lakeview Dental Group with hourly rate and missed days, plus pay stubs from before the accident." },
+    { "id": 3, "name": "By client: Marisol Okafor - Photos of vehicle damage", "due": "@-20", "status": "pending", "description": "Client says the photos are on her old phone." },
+    { "id": 4, "name": "By medical provider: Bayside Spine & Chiropractic, P.C. - Updated ledger and notes", "due": "@+9", "status": "pending", "description": "Ledger and notes since treatment resumed on {{-50}}." },
+    { "id": 5, "name": "Written policy limits confirmation from Tidewater Mutual", "due": "@+14", "status": "pending", "description": "Adjuster wants records and an authorization first. Send the authorization and the ER record." },
+    { "id": 6, "name": "Signed retainer and HIPAA authorizations", "due": "@-146", "status": "complete", "completed": "@-146", "description": "Signed at intake." }
+  ],
+  "calendar": [
+    { "id": 1, "start": "@-148T10:00", "end": "@-148T10:45", "summary": "Chiropractic visit: Bayside Spine (initial evaluation)", "description": "Initial evaluation with Dr. Lena Ostrova." },
+    { "id": 2, "start": "@-99T09:00", "end": "@-99T09:45", "summary": "Chiropractic visit: Bayside Spine", "description": "" },
+    { "id": 3, "start": "@-96T17:30", "end": "@-96T18:30", "summary": "Physical therapy visit: Kestrel Physical Therapy", "description": "" },
+    { "id": 4, "start": "@-50T09:00", "end": "@-50T09:45", "summary": "Chiropractic visit: Bayside Spine (treatment resumed)", "description": "First visit after the gap." },
+    { "id": 5, "start": "@-8T17:30", "end": "@-8T18:30", "summary": "Physical therapy visit: Kestrel Physical Therapy", "description": "" },
+    { "id": 6, "start": "@+12T11:00", "end": "@+12T11:30", "summary": "Orthopedic consult: neck (referral from Dr. Ostrova)", "description": "Consult to discuss whether injections are indicated for the C5-C6 bulge." }
+  ],
+  "expenses": [
+    { "id": 1, "date": "@-125", "total": 10, "note": "Police report fee: MV-104 request, 109th Precinct", "category": "Records" },
+    { "id": 2, "date": "@-70", "total": 48.5, "note": "Records retrieval: Bayside Spine & Chiropractic, P.C. treatment notes", "category": "Records" },
+    { "id": 3, "date": "@-70", "total": 6240, "note": "Medical treatment charges: Bayside Spine & Chiropractic, P.C.; services {{iso:-148}} to {{iso:-95}}", "category": "Medical" },
+    { "id": 4, "date": "@-97", "total": 2850, "note": "Medical treatment charges: Queensboro Open MRI; services {{iso:-110}} to {{iso:-110}}", "category": "Medical" },
+    { "id": 5, "date": "@-140", "total": 4180, "note": "Medical treatment charges: Flushing Crest Medical Center; services {{iso:-150}} to {{iso:-150}}", "category": "Medical" }
+  ],
+  "documents": [
+    {
+      "id": 1, "name": "Flushing Crest ER record", "filename": "flushing-crest-er-record.pdf", "folder": "Medical Records", "received": "@-130",
+      "pages": [
+        { "page_type": "medical_record", "text": "FLUSHING CREST MEDICAL CENTER\nEMERGENCY DEPARTMENT RECORD\nPatient: OKAFOR, MARISOL   DOB: 06/11/1989\nDate of service: {{iso:-150}}   Arrival: 18:52 by EMS\n\nChief complaint: Neck pain and low back pain after motor vehicle collision. Patient was the restrained driver of a stopped vehicle struck from behind. No loss of consciousness. Airbags did not deploy.\n\nExam: Tenderness to palpation over the cervical paraspinal muscles bilaterally and the lumbar paraspinals. Range of motion of the neck limited by pain. Neuro intact, strength 5/5 in all extremities.\n\nImaging: Cervical spine X-ray negative for fracture.\n\nDiagnosis: 1. Cervical strain (S16.1XXA). 2. Lumbar strain (S39.012A).\nDisposition: Discharged home 22:10 with cyclobenzaprine and ibuprofen. Follow up with primary care or orthopedics within one week." }
+      ]
+    },
+    {
+      "id": 2, "name": "Queensboro Open MRI cervical report", "filename": "mri-cervical-report.pdf", "folder": "Medical Records", "received": "@-97",
+      "pages": [
+        { "page_type": "medical_record", "text": "QUEENSBORO OPEN MRI\nMRI CERVICAL SPINE WITHOUT CONTRAST\nPatient: Marisol Okafor   Exam date: {{iso:-110}}\nReferring: Lena Ostrova, D.C.\nHistory: Neck pain since motor vehicle accident.\n\nFindings: At C5-C6 there is a broad based posterior disc bulge abutting the ventral thecal sac without cord compression. Mild left foraminal narrowing at C5-C6. Remaining levels unremarkable. No fracture.\n\nImpression: C5-C6 broad based disc bulge with mild left foraminal narrowing.\nRadiologist: Abel Strand, M.D." }
+      ]
+    }
+  ]
+}

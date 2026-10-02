@@ -1,0 +1,96 @@
+{
+  "_comment": "SYNTHETIC DEMO CASE. Every person, company and event here is fictional. Date tokens are offsets from the seed day (see okafor.json).",
+  "slot": 3,
+  "display_number": "DEMO-0103-Ferreyra",
+  "description": "DEMO: Ferreyra, Lucia - pedestrian struck by rideshare vehicle (Grand Concourse, Bronx)",
+  "stage": "Negotiation",
+  "stage_since": "@-110",
+  "open_date": "@-630",
+  "status": "Open",
+  "practice_area": "Personal Injury",
+  "attorney": "Rowan Pell",
+  "client_id": 1,
+  "contacts": [
+    { "id": 1, "name": "Lucia Ferreyra", "type": "Person", "role": "Client", "dob": "1994-09-03", "email": "lferreyra@example.test", "phone": "(347) 555-0163", "address": "2160 Walton Avenue, Apt 4C, Bronx, NY, 10453" },
+    { "id": 2, "name": "Owen Tallis", "type": "Person", "role": "Adverse driver, rideshare driver for LiftLane", "address": "301 Ely Avenue, Bronx, NY, 10466" },
+    { "id": 3, "name": "Meridian Specialty Insurance", "type": "Company", "role": "Adverse carrier, LiftLane rideshare commercial policy", "email": "tnc-claims@meridianspecialty.test", "address": "PO Box 6120, Jersey City, NJ, 07302" },
+    { "id": 4, "name": "Harborline Casualty Company", "type": "Company", "role": "No-fault carrier, pedestrian claim through the striking vehicle", "email": "nofault@harborline.test", "address": "PO Box 771, Albany, NY, 12201" },
+    { "id": 5, "name": "Concourse General Hospital", "type": "Company", "role": "Hospital, trauma admission and surgery", "email": "him@concoursegeneral.test", "address": "1650 Grand Concourse, Bronx, NY, 10457" },
+    { "id": 6, "name": "Bronxdale Orthopedic Associates", "type": "Company", "role": "Treating provider, orthopedic surgery (Samuel Achterberg, M.D.)", "email": "records@bronxdaleortho.test", "address": "1180 Morris Park Avenue, Bronx, NY, 10461" },
+    { "id": 7, "name": "Fordham Neuro Care, P.C.", "type": "Company", "role": "Treating provider, neurology (post-concussion)", "email": "office@fordhamneuro.test", "address": "2510 Webster Avenue, Bronx, NY, 10458" },
+    { "id": 8, "name": "New York State Department of Health, Medicaid", "type": "Company", "role": "Lien holder, Medicaid", "email": "tpl-recovery@medicaid-ny.test", "address": "Corning Tower, Albany, NY, 12237" },
+    { "id": 9, "name": "Bettina Kroll", "type": "Person", "role": "Defense counsel for Owen Tallis and LiftLane (Kroll & Sayre LLP)", "email": "bkroll@krollsayre.test", "address": "60 Broad Street, New York, NY, 10004" }
+  ],
+  "fields": [
+    { "id": 1, "name": "Date of Incident", "type": "date", "value": "@-640" },
+    { "id": 2, "name": "Accident Location", "type": "text", "value": "Grand Concourse at East 183rd Street, Bronx, Bronx County, NY" },
+    { "id": 3, "name": "Insurance Carrier", "type": "text", "value": "Meridian Specialty Insurance (LiftLane rideshare policy, driver was en route to a pickup). No-fault through Harborline Casualty Company." },
+    { "id": 4, "name": "Claim Number", "type": "text", "value": "MSI-TNC-3308812" },
+    { "id": 5, "name": "Case Summary", "type": "text", "value": "Pedestrian struck in the crosswalk by a LiftLane driver turning left. Right tibial plateau fracture with ORIF, concussion with post-concussive headaches." },
+    { "id": 6, "name": "Policy Limits", "type": "text", "value": "Defendant liability: $1,000,000 per incident (rideshare period 2, en route to pickup)\nNo-fault: $50,000" },
+    { "id": 7, "name": "Policy Limits Confirmed", "type": "checkbox", "value": "true" },
+    { "id": 8, "name": "Estimated Case Value", "type": "currency", "value": 550000 },
+    { "id": 9, "name": "Medical Specials To Date", "type": "currency", "value": 141300 },
+    { "id": 10, "name": "Wage Loss Claimed", "type": "currency", "value": 38600 },
+    { "id": 11, "name": "Health Insurance or Lien Holder", "type": "text", "value": "New York State Medicaid lien, $18,640.00 asserted. Must be resolved before any disbursement." },
+    { "id": 12, "name": "Treatment Status", "type": "text", "value": "Orthopedic MMI reached. Neurology follow-up every three months for headaches." },
+    { "id": 13, "name": "Liability Assessment", "type": "text", "value": "Strong on the client's account, but the police report places her outside the crosswalk." },
+    { "id": 14, "name": "HIPAA Authorization Received", "type": "checkbox", "value": "true" }
+  ],
+  "notes": [
+    { "id": 1, "date": "@-630", "subject": "Intake: pedestrian knockdown", "detail": "Lucia Ferreyra, 31, pharmacy technician. On {{-640}} around 7:40 pm she was crossing the Grand Concourse at East 183rd Street in the crosswalk with the walk signal when a Toyota driven by Owen Tallis turned left and hit her. She says she was halfway across and the walk sign was still white. Tallis was driving for LiftLane and had the app on, heading to pick up a rider. Admitted to Concourse General with a right tibial plateau fracture and a concussion." },
+    { "id": 2, "date": "@-600", "subject": "Police report reviewed: problem", "detail": "MV-104 is in. The officer's narrative says the pedestrian was crossing approximately 20 feet north of the crosswalk against the signal, based on the driver's account. This contradicts what Lucia told us and what she wrote in her signed statement. No independent witness is listed. Need to look for video from the bodega on the corner and the bus camera." },
+    { "id": 3, "date": "@-590", "subject": "Video canvass", "detail": "Investigator canvassed the corner. The bodega camera faces the wrong way. The MTA bus that was stopped at 183rd Street may have a forward camera; preservation request sent to MTA." },
+    { "id": 4, "date": "@-140", "subject": "Settlement demand served", "detail": "Served the settlement demand on Meridian Specialty Insurance for $650,000 with records, bills, the surgical report and the neurology narrative." },
+    { "id": 5, "date": "@-80", "subject": "First offer", "detail": "Meridian adjuster offered $85,000, citing the police report placing Lucia outside the crosswalk and arguing comparative fault of at least 50 percent." },
+    { "id": 6, "date": "@-62", "subject": "Counteroffer", "detail": "Countered at $475,000. Pointed out that the driver's account is the only basis for the officer's narrative and that the tibial plateau fracture required surgery and hardware." },
+    { "id": 7, "date": "@-28", "subject": "Second offer", "detail": "Meridian raised the offer to $140,000. Adjuster says the MTA bus video does not exist. We have not confirmed that ourselves. Need Lucia's authority before the mediation." },
+    { "id": 8, "date": "@-14", "subject": "Medicaid lien", "detail": "Medicaid asserts $18,640.00. Must get a final lien letter and request a reduction for procurement costs before any settlement is disbursed. Harborline no-fault paid the basic economic loss." }
+  ],
+  "emails": [
+    { "id": 1, "date": "@-560", "subject": "Coverage confirmation", "from": "Meridian Specialty Insurance", "to": "Rowan Pell", "body": "Our records show the LiftLane driver app was active and the driver was en route to a passenger pickup at the time of the incident. The applicable limit is $1,000,000 per incident. Arturo Delmas, Claims Examiner." },
+    { "id": 2, "date": "@-80", "subject": "Offer: Ferreyra v. Tallis", "from": "Meridian Specialty Insurance", "to": "Rowan Pell", "body": "After review of the demand package, Meridian offers $85,000.00 to resolve all claims. The police report places your client outside the crosswalk and crossing against the signal. Arturo Delmas." },
+    { "id": 3, "date": "@-28", "subject": "Revised offer", "from": "Meridian Specialty Insurance", "to": "Rowan Pell", "body": "Meridian is prepared to increase its offer to $140,000.00. The MTA has advised that no forward camera footage was retained for that bus. Arturo Delmas." },
+    { "id": 4, "date": "@-20", "subject": "Mediation date", "from": "Bettina Kroll", "to": "Rowan Pell", "body": "Confirming mediation before the Hon. Clara Whitcomb (Ret.) at Midtown Resolution Center. Please send your mediation statement one week ahead." },
+    { "id": 5, "date": "@-14", "subject": "Medicaid lien notice", "from": "New York State Department of Health, Medicaid", "to": "Ines Marlow", "body": "This office asserts a lien of $18,640.00 for medical assistance provided to Lucia Ferreyra related to the incident of {{-640}}. Do not disburse settlement funds without written lien resolution." }
+  ],
+  "calls": [
+    { "id": 1, "date": "@-75", "subject": "Client call: first offer", "from": "Rowan Pell", "to": "Lucia Ferreyra", "body": "Told Lucia about the $85,000 offer. She was upset that they are calling her a jaywalker. She repeated that she was in the crosswalk with the walk sign." },
+    { "id": 2, "date": "@-26", "subject": "Client call: second offer", "from": "Rowan Pell", "to": "Lucia Ferreyra", "body": "Told Lucia the offer is now $140,000. She wants to think about it and talk with her husband before giving us a number. No authority yet." }
+  ],
+  "tasks": [
+    { "id": 1, "name": "By client: Lucia Ferreyra - Settlement authority before mediation", "due": "@+5", "status": "pending", "priority": "high", "description": "Get a written settlement range from the client before the mediation." },
+    { "id": 2, "name": "Mediation statement to Hon. Clara Whitcomb (Ret.)", "due": "@+9", "status": "pending", "priority": "high", "description": "Due one week before the mediation." },
+    { "id": 3, "name": "Confirm with the MTA directly whether bus camera footage exists", "due": "@-7", "status": "pending", "description": "Meridian says no footage was retained. Verify ourselves." },
+    { "id": 4, "name": "Final Medicaid lien letter and reduction request", "due": "@+20", "status": "pending", "description": "Asserted $18,640.00." },
+    { "id": 5, "name": "Serve settlement demand on Meridian", "due": "@-140", "status": "complete", "completed": "@-140", "description": "Demand of $650,000 served." }
+  ],
+  "calendar": [
+    { "id": 1, "start": "@-637T08:00", "end": "@-637T12:00", "summary": "Surgery: right tibial plateau ORIF, Concourse General Hospital", "description": "Dr. Samuel Achterberg." },
+    { "id": 2, "start": "@-200T09:30", "end": "@-200T10:00", "summary": "Orthopedic follow-up: Bronxdale Orthopedic Associates (MMI)", "description": "" },
+    { "id": 3, "start": "@-40T15:00", "end": "@-40T15:30", "summary": "Neurology visit: Fordham Neuro Care", "description": "Post-concussive headaches follow-up." },
+    { "id": 4, "start": "@+16T10:00", "end": "@+16T16:00", "summary": "Mediation: Ferreyra v. Tallis, Midtown Resolution Center", "location": "Midtown Resolution Center, 400 Madison Avenue, New York, NY", "description": "Before the Hon. Clara Whitcomb (Ret.)." }
+  ],
+  "expenses": [
+    { "id": 1, "date": "@-600", "total": 10, "note": "Police report fee: MV-104, 46th Precinct", "category": "Records" },
+    { "id": 2, "date": "@-590", "total": 875, "note": "Investigator: scene canvass and video search, Grand Concourse at East 183rd Street", "category": "Investigation" },
+    { "id": 3, "date": "@-500", "total": 96400, "note": "Medical treatment charges: Concourse General Hospital; services {{iso:-640}} to {{iso:-633}}", "category": "Medical" },
+    { "id": 4, "date": "@-210", "total": 33700, "note": "Medical treatment charges: Bronxdale Orthopedic Associates; services {{iso:-620}} to {{iso:-200}}", "category": "Medical" },
+    { "id": 5, "date": "@-45", "total": 11200, "note": "Medical treatment charges: Fordham Neuro Care, P.C.; services {{iso:-610}} to {{iso:-40}}", "category": "Medical" },
+    { "id": 6, "date": "@-15", "total": 2500, "note": "Mediation fee deposit: Midtown Resolution Center (plaintiff share)", "category": "Mediation" }
+  ],
+  "documents": [
+    {
+      "id": 1, "name": "MV-104 police accident report", "filename": "mv104-police-report.pdf", "folder": "Liability", "received": "@-600",
+      "pages": [
+        { "page_type": "police_report", "text": "POLICE ACCIDENT REPORT MV-104AN\nPrecinct: 046   Date of accident: {{iso:-640}}   Time: 19:42\nLocation: Grand Concourse at E 183 St, Bronx\nVehicle 1: Toyota Camry, operator Owen Tallis\nPedestrian: Lucia Ferreyra, age 31, injured, removed to Concourse General Hospital\n\nAccident description / officer's notes: Per operator of Vehicle 1, V1 was making a left turn from Grand Concourse onto E 183 St on a green signal when pedestrian entered roadway approx 20 ft north of crosswalk against the signal and was struck by front of V1. Pedestrian was not interviewed at scene due to injuries. No independent witnesses located.\n\nApparent contributing factors: Pedestrian error/confusion (V1 per operator)." }
+      ]
+    },
+    {
+      "id": 2, "name": "Client signed statement", "filename": "ferreyra-signed-statement.pdf", "folder": "Liability", "received": "@-625",
+      "pages": [
+        { "page_type": "correspondence", "text": "STATEMENT OF LUCIA FERREYRA\nGiven at the office of counsel on {{iso:-625}}.\n\nOn the evening of {{iso:-640}} I was walking home from work. I waited at the corner of the Grand Concourse and East 183rd Street until the walk sign came on. I started across inside the white lines of the crosswalk. When I was about halfway across, a gray Toyota turning left came toward me fast and hit my right leg. I did not see it slow down. The walk sign was still white when I was hit.\n\nI have read this statement and it is true.\nSigned: Lucia Ferreyra" }
+      ]
+    }
+  ]
+}
