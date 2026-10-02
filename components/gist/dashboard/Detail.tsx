@@ -5,7 +5,8 @@ import { AnimatePresence, motion } from "motion/react";
 import type { Digest } from "@/lib/types";
 import { CiteChip, Cites } from "./cite";
 import { Panel } from "./bits";
-import { ago, fmtDate, fmtShort, parseDate, plural } from "./format";
+import { ago, fmtDate, fmtShort, fmtUsd, parseDate, plural } from "./format";
+import { extras } from "./ext";
 
 const KIND_GLYPH: Record<string, string> = { note: "N", email: "E", call: "C", task: "T", calendar: "D", document: "P", doc: "P", expense: "$" };
 
@@ -82,12 +83,13 @@ export function ProviderLanes({ d }: { d: Digest }) {
             <span className="gd-lane__tick gd-lane__tick--now" style={{ left: "100%" }}>Today</span>
           </div>
         </div>
-        {lanes.map((l) => (
+        {lanes.map((l, li) => (
           <div key={l.contact_id} className="gd-lane">
             <div className="gd-lane__who">
               <div className="gd-lane__name">{l.name}</div>
               <div className="gd-lane__role">
                 {l.role ?? "Provider"} · {plural(l.visits.length, "visit")}
+                {extras(d).providers?.[li]?.billed ? <> · billed {fmtUsd(extras(d).providers![li]!.billed!.value)}</> : null}
                 {l.open_asks ? <span className="gd-warn"> · {l.open_asks} open ask{l.open_asks === 1 ? "" : "s"}</span> : null}
               </div>
             </div>

@@ -1736,3 +1736,65 @@ button.gd-cite:focus-visible {
     animation: none;
   }
 }
+
+/* ---------------- extras ---------------- */
+.gd-solchip {
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 1px 7px;
+  border-radius: 3px;
+  color: var(--ink-2);
+  border: 1px solid var(--line-2);
+}
+.gd-solchip--ok {
+  color: var(--have);
+  border-color: rgba(159, 208, 174, 0.4);
+}
+.gd-solchip--bad {
+  color: var(--missing);
+  border-color: rgba(238, 149, 133, 0.5);
+}
+.gd-covlines {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 18px;
+  font-size: 12.5px;
+}
+.gd-covlines th {
+  text-align: left;
+  font-weight: 400;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  padding: 0 0 6px;
+  border-bottom: 1px solid var(--line);
+}
+.gd-covlines td {
+  padding: 7px 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink-2);
+}
+.gd-covlines th:not(:first-child),
+.gd-covlines td:not(:first-child) {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.gd-covlines tr:first-child td {
+  color: var(--ink);
+}
+.gd-contact {
+  flex-wrap: wrap;
+}
+.gd-contact__ch {
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.gd-contact__sub {
+  width: 100%;
+  font-size: 11.5px;
+  color: var(--ink-3);
+}

@@ -5,6 +5,7 @@ import type { ActionItem, Digest } from "@/lib/types";
 import { CiteChip, CitedValue } from "./cite";
 import { OwnerChip, Panel } from "./bits";
 import { daysBetween, fmtDateAgo, fmtShort } from "./format";
+import { extras } from "./ext";
 
 const BUCKETS: { key: ActionItem["bucket"]; title: string }[] = [
   { key: "overdue", title: "Overdue" },
@@ -24,6 +25,8 @@ export default function Actions({ d }: { d: Digest }) {
   const lcDays = lc ? daysBetween(lc.value) : null;
   const stale = lcDays != null && lcDays > 30;
   const [all, setAll] = useState(false);
+  const detail = extras(d).last_client_contact_detail;
+  const written = detail?.last_written_from_client;
   const CAP = 5;
   return (
     <Panel
@@ -40,6 +43,15 @@ export default function Actions({ d }: { d: Digest }) {
           ) : (
             <span>none on file</span>
           )}
+          {detail?.channel ? <span className="gd-contact__ch">{detail.channel}</span> : null}
+          {written && written.value !== lc?.value ? (
+            <span className="gd-contact__sub">
+              last written from client{" "}
+              <CitedValue cites={written.cites} className={daysBetween(written.value) > 30 ? "gd-warn" : ""}>
+                {fmtDateAgo(written.value)}
+              </CitedValue>
+            </span>
+          ) : null}
         </span>
       }
     >

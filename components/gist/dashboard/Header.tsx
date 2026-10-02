@@ -5,10 +5,12 @@ import { motion } from "motion/react";
 import type { Digest } from "@/lib/types";
 import { CitedValue } from "./cite";
 import { fmtDate, fmtUsd, initials } from "./format";
+import { extras } from "./ext";
 
 export default function Header({ d, fixture }: { d: Digest; fixture: boolean }) {
   const m = d.matter;
   const [photoOk, setPhotoOk] = useState(true);
+  const sol = extras(d).matter?.sol;
   const photo = fixture ? null : m.photo_url;
   return (
     <motion.header
@@ -48,6 +50,19 @@ export default function Header({ d, fixture }: { d: Digest; fixture: boolean }) 
               <span className="gd-fact">
                 <span className="gd-fact__k">Since</span>
                 <span className="gd-num">{m.days_since_incident.toLocaleString()} days</span>
+              </span>
+            ) : null}
+            {sol?.date ? (
+              <span className="gd-fact">
+                <span className="gd-fact__k">SOL</span>
+                <CitedValue cites={sol.date.cites}>{fmtDate(sol.date.value)}</CitedValue>
+                {sol.satisfied ? (
+                  <span className="gd-solchip gd-solchip--ok">satisfied</span>
+                ) : sol.days_remaining != null ? (
+                  <span className={`gd-solchip ${sol.days_remaining < 90 ? "gd-solchip--bad" : ""}`}>
+                    {sol.days_remaining < 0 ? `${-sol.days_remaining}d past` : `${sol.days_remaining}d left`}
+                  </span>
+                ) : null}
               </span>
             ) : null}
             <span className="gd-fact">

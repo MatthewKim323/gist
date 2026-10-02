@@ -5,6 +5,7 @@ import type { Digest } from "@/lib/types";
 import { Cites, CitedValue } from "./cite";
 import { CountUp, Panel } from "./bits";
 import { fmtUsd } from "./format";
+import { extras } from "./ext";
 
 const usd0 = (n: number) => fmtUsd(Math.round(n));
 const usd2 = (n: number) => fmtUsd(n, { cents: true });
@@ -25,6 +26,8 @@ export default function Money({ d }: { d: Digest }) {
   const shortfall = value != null && limit != null ? value - limit : null;
   const st = STATE[m.coverage_state];
   const liensTotal = m.liens.reduce((s, l) => s + l.value, 0);
+  const x = extras(d).money;
+  const lines = x?.coverage_lines ?? [];
 
   return (
     <Panel id="money" title="Money" kicker="Computed in code, every figure cited" className="gd-money">
@@ -90,6 +93,27 @@ export default function Money({ d }: { d: Digest }) {
         </div>
       </div>
 
+      {lines.length ? (
+        <table className="gd-covlines">
+          <thead>
+            <tr>
+              <th>Policy</th>
+              <th>Per person</th>
+              <th>Per occurrence</th>
+            </tr>
+          </thead>
+          <tbody>
+            {lines.map((l, i) => (
+              <tr key={i}>
+                <td>{l.label}</td>
+                <td className="gd-num">{l.per_person != null ? usd0(l.per_person) : "n/a"}</td>
+                <td className="gd-num">{l.per_occurrence != null ? usd0(l.per_occurrence) : "n/a"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : null}
+
       <div className="gd-covstate">
         <span className={`gd-chip gd-chip--${st.cls}`}>{st.label}</span>
         {m.coverage_notes.map((n, i) => (
@@ -106,6 +130,14 @@ export default function Money({ d }: { d: Digest }) {
             <dt>Medical specials</dt>
             <dd>
               <CitedValue cites={m.specials.cites}>{usd0(m.specials.value)}</CitedValue>
+            </dd>
+          </div>
+        ) : null}
+        {x?.wage_loss ? (
+          <div className="gd-ledger__row">
+            <dt>Wage loss claimed</dt>
+            <dd>
+              <CitedValue cites={x.wage_loss.cites}>{usd0(x.wage_loss.value)}</CitedValue>
             </dd>
           </div>
         ) : null}
