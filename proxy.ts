@@ -25,6 +25,8 @@ const FIRM_APIS = [
   /^\/api\/cron(\/|$)/,
   // Agent drafts (propose, list, approve/dismiss) are firm-only.
   /^\/api\/actions(\/|$)/,
+  // Next moves (list, set status) are firm-only.
+  /^\/api\/moves(\/|$)/,
   // Ask gist reads the whole case file and the user's memory.
   /^\/api\/assistant(\/|$)/,
   // The MCP endpoint reads every case (it has its own bearer token).
