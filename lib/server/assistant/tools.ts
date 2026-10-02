@@ -9,6 +9,7 @@ import { search } from "../retrieval/search";
 import { bestSnippet } from "../retrieval/ask";
 import type { Citation, Digest } from "@/lib/types";
 import { recallMemories, saveMemory, type MemoryKind } from "./memory";
+import { nextMoves, type Move } from "../moves";
 
 export interface RefMeta { label?: string; quote?: string }
 
@@ -20,6 +21,8 @@ export interface ToolCtx {
   digest?: Digest;
   /** memories written this turn by the remember tool, surfaced to the UI */
   remembered: string[];
+  /** next moves fetched this turn (get_next_moves); the dock renders the top ones as action cards */
+  moves?: Move[];
 }
 
 const MAX_OUT = 7000;
@@ -108,6 +111,16 @@ async function nextActions(ctx: ToolCtx): Promise<string> {
   return L.join("\n");
 }
 
+async function moves(ctx: ToolCtx): Promise<string> {
+  const r = await nextMoves(ctx.matterId, await digestOf(ctx));
+  const live = r.moves.filter((m) => m.status === "todo" || m.status === "in_progress");
+  ctx.moves = live;
+  const L = [`Next moves to get ${r.client} to ${r.next_phase ?? "the next phase"} (${r.gates_have} of ${r.gates_total} gate items in hand, ${r.done} moves done). Ranked; the user sees these as action cards with a button that does each one:`];
+  for (const m of live) L.push(`${m.priority}. ${m.title}: ${m.why}${m.unblocks ? `; ${m.unblocks}` : ""}${m.status === "in_progress" ? " (in progress)" : ""}${reg(ctx, m.cites)}`);
+  if (!live.length) L.push("Nothing open.");
+  return L.join("\n");
+}
+
 async function redFlags(ctx: ToolCtx): Promise<string> {
   const d = await digestOf(ctx);
   if (!d.red_flags.length) return "No red flags (contradictions) found in the file.";
@@ -180,6 +193,7 @@ interface ToolDef {
 const none = { type: "object", properties: {}, additionalProperties: false };
 
 export const TOOLS: ToolDef[] = [
+  { name: "get_next_moves", description: "The ranked next moves for this case: what to do now to reach the next phase, each an executable action card (chase a provider's records with a ready draft, follow up with the client or defense, share status with a provider, review an upload, prep red flags, policy-limits demand). Use first for any \"what do I do / what next / where do I start\" question.", parameters: none, run: (c) => moves(c), activity: () => "ranked the next moves" },
   { name: "get_overview", description: "Case snapshot: client, stage, incident date, statute of limitations, the cited story, money summary, last client contact, and what changed since the user last opened the case.", parameters: none, run: (c) => overview(c), activity: () => "read the case overview" },
   { name: "get_money", description: "Money: case value, coverage limits and lines, specials, liens, wage loss, firm spend, the gap.", parameters: none, run: async (c) => money(c, await digestOf(c)), activity: () => "checked the money" },
   { name: "get_phase_checklist", description: "Current phase, next phase, and every gate requirement to get there with status (have/partial/missing/conflicting), who owes it, and days outstanding.", parameters: none, run: (c) => phase(c), activity: () => "checked the phase gates" },

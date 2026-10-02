@@ -10,6 +10,8 @@ import { Button } from "@/components/gist/ui/Button";
 import { useCites } from "@/components/gist/dashboard/cite";
 import { block } from "@/lib/captain/cycles";
 import type { Citation } from "@/lib/types";
+import type { Move } from "@/lib/server/moves/types";
+import InlineMoves from "@/components/gist/moves/InlineMoves";
 import "@/app/styles/gist-assistant.css";
 
 const TAB_LABEL: Record<string, string> = {
@@ -19,7 +21,7 @@ const TAB_LABEL: Record<string, string> = {
 };
 
 const SUGGESTED = [
-  "What do I need to tackle next?",
+  "What do I do next?",
   "What are we waiting on and from who?",
   "Summarize the red flags for a deposition prep",
   "What changed since I last looked?",
@@ -42,6 +44,7 @@ interface Msg {
   pending?: boolean;
   error?: boolean;
   tab?: string | null;
+  moves?: Move[];
 }
 
 type Face = "idle" | "thinking" | "notify" | "exclaim";
@@ -242,7 +245,8 @@ export function AssistantDock({ matterId, tab: tabProp, caseName: caseProp }: As
             setFace((e.cites as Citation[]).length ? "notify" : "exclaim");
             setBusy(false);
             if (!open) setUnread(true);
-          } else if (e.type === "memory") patchLast((m) => ({ ...m, memory: e.items as string[] }));
+          } else if (e.type === "moves") patchLast((m) => ({ ...m, moves: e.moves as Move[] }));
+          else if (e.type === "memory") patchLast((m) => ({ ...m, memory: e.items as string[] }));
           else if (e.type === "error") throw new Error(String(e.message));
         }
       }
@@ -320,6 +324,7 @@ export function AssistantDock({ matterId, tab: tabProp, caseName: caseProp }: As
                         {m.recalled.length ? <div className="ga-meta ga-meta--recall" title={m.recalled.join("\n")}>remembering: {m.recalled[0]}{m.recalled.length > 1 ? ` +${m.recalled.length - 1}` : ""}</div> : null}
                         {m.tools.map((t, j) => <div key={j} className="ga-meta ga-meta--tool">{t}</div>)}
                         {m.text ? <Markdown text={m.text} cites={m.pending ? [] : m.cites} onCite={openCite} /> : null}
+                        {m.moves?.length ? <InlineMoves matterId={matterId} moves={m.moves} /> : null}
                         {m.pending && !m.text ? <div className="ga-dots" aria-label="thinking"><i /><i /><i /></div> : null}
                         {!m.pending && m.cites.length ? (
                           <details className="ga-sources">
