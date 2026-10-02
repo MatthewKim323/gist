@@ -79,3 +79,5 @@
 .gp-menu__item:hover, .gp-menu__item:focus-visible { background: rgba(233, 235, 243, 0.07); outline: none; }
 .gp-menu__sep { height: 1px; margin: 0.3rem 0.4rem; background: rgba(233, 235, 243, 0.1); }
 .gp-menu__head { padding: 0.5rem 0.75rem 0.4rem; font-size: 0.75rem; color: rgba(233, 235, 243, 0.5); }
+
+.gp-menu.gp-menu--portal { position: fixed; z-index: 2147483000; font-family: var(--font-inter, "Neue Montreal", system-ui, sans-serif); }

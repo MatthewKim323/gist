@@ -2,6 +2,7 @@
 // Profile chip: avatar initials + name + role, with a menu (Profile, Switch account, Sign out).
 // Mount anywhere; renders nothing when signed out. `initial` paints first, then the live profile loads.
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Avatar from "./Avatar";
 import { signOut, switchAccount } from "./signout";
 import "@/app/styles/gist-profile.css";
@@ -23,6 +24,9 @@ export default function ProfileChip({ initial, className }: { initial?: ChipInfo
   const [s, setS] = useState<ChipInfo | null>(initial ?? null);
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement | null>(null);
+  const menu = useRef<HTMLDivElement | null>(null);
+  // The menu renders in document.body at fixed coordinates so cramped top bars (overflow, stacking) can't clip it.
+  const [pos, setPos] = useState<{ top: number; right: number } | null>(null);
 
   useEffect(() => {
     if (initial === null) return; // server says signed out
@@ -48,13 +52,23 @@ export default function ProfileChip({ initial, className }: { initial?: ChipInfo
 
   useEffect(() => {
     if (!open) return;
-    const away = (e: MouseEvent) => !root.current?.contains(e.target as Node) && setOpen(false);
+    const place = () => {
+      const r = root.current?.getBoundingClientRect();
+      if (r) setPos({ top: r.bottom + 6, right: Math.max(8, window.innerWidth - r.right) });
+    };
+    place();
+    window.addEventListener("resize", place);
+    window.addEventListener("scroll", place, true);
+    const away = (e: MouseEvent) =>
+      !root.current?.contains(e.target as Node) && !menu.current?.contains(e.target as Node) && setOpen(false);
     const esc = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
     document.addEventListener("mousedown", away);
     document.addEventListener("keydown", esc);
     return () => {
       document.removeEventListener("mousedown", away);
       document.removeEventListener("keydown", esc);
+      window.removeEventListener("resize", place);
+      window.removeEventListener("scroll", place, true);
     };
   }, [open]);
 
@@ -70,8 +84,8 @@ export default function ProfileChip({ initial, className }: { initial?: ChipInfo
           <span className="gp-chip__role">{roleLabel}</span>
         </span>
       </button>
-      {open && (
-        <div className="gp-menu" role="menu">
+      {open && pos && typeof document !== "undefined" && createPortal(
+        <div ref={menu} className="gp-menu gp-menu--portal" role="menu" style={{ top: pos.top, right: pos.right }}>
           <div className="gp-menu__head">
             Signed in as {s.role === "firm" ? "firm staff" : "a treating provider"}
             {s.org ? `, ${s.org}` : ""}
@@ -89,7 +103,8 @@ export default function ProfileChip({ initial, className }: { initial?: ChipInfo
           <button type="button" className="gp-menu__item" role="menuitem" onClick={() => signOut("/")}>
             Sign out
           </button>
-        </div>
+        </div>,
+        document.body,
       )}
     </div>
   );
