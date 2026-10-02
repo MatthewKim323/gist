@@ -1,7 +1,7 @@
-// Build (or preview) the digest for every matter. bun run job scripts/digest.ts [--build] [--gates] [out.json]
+// Build (or preview) the digest for every matter. bun run job scripts/digest.ts [--build] [--gates] [--preview] [out.json]
 import { writeFileSync } from "node:fs";
 import { db } from "@/lib/server/db";
-import { getDigest, rebuildDigest } from "@/lib/server/digest";
+import { assemble, getDigest, rebuildDigest } from "@/lib/server/digest";
 import { checkGates } from "@/lib/server/gates";
 import { startRun, finishRun } from "@/lib/server/pipeline/ctx";
 
@@ -16,7 +16,9 @@ async function main() {
       try { const g = await checkGates(ctx); console.error(`gates: ${g.length}`); await finishRun(ctx, "done", { gates: g.length }); }
       catch (e) { await finishRun(ctx, "failed"); throw e; }
     }
-    const r = args.includes("--build") ? await rebuildDigest(id) : await getDigest(id, null);
+    const r = args.includes("--build") ? await rebuildDigest(id)
+      : args.includes("--gates") || args.includes("--preview") ? { version: null, digest: (await assemble(id)).digest }
+      : await getDigest(id, null);
     const json = JSON.stringify(r, null, 2);
     if (out) writeFileSync(out, json); else console.log(json);
     console.error(`matter ${id}: version ${r.version}, story ${r.digest.story.length}, gates ${r.digest.phase.gates.length}, flags ${r.digest.red_flags.length}`);
