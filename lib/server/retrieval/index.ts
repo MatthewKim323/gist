@@ -148,10 +148,17 @@ export async function indexMatter(ctx: RunCtx): Promise<{ total: number; embedde
     "chunks noemb",
   )).map((r) => r.id));
   const have = haveRows.map((h) => ({ ...h, has_emb: !noEmb.has(h.id) }));
-  const haveByKey = new Map(have.map((h) => [keyOf(h), h]));
+  // Keep the lowest id per key; extra rows (from concurrent runs, page is nullable so the unique key
+  // does not catch them) are deleted below.
+  const haveByKey = new Map<string, (typeof have)[number]>();
+  const dupIds: number[] = [];
+  for (const h of have) {
+    if (haveByKey.has(keyOf(h))) dupIds.push(h.id);
+    else haveByKey.set(keyOf(h), h);
+  }
   const wantKeys = new Set(want.map(keyOf));
 
-  const stale = have.filter((h) => !wantKeys.has(keyOf(h))).map((h) => h.id);
+  const stale = [...have.filter((h) => !wantKeys.has(keyOf(h))).map((h) => h.id), ...dupIds];
   const todo = want.filter((w) => {
     const h = haveByKey.get(keyOf(w));
     return !h || h.content_hash !== w.content_hash || !h.has_emb;
@@ -175,12 +182,28 @@ export async function indexMatter(ctx: RunCtx): Promise<{ total: number; embedde
       const rows = batch.map((c, j) => ({ ...c, embedding: vecs[j] }));
       const fresh = rows.filter((r) => !haveByKey.has(keyOf(r)));
       const changed = rows.filter((r) => haveByKey.has(keyOf(r)));
-      if (fresh.length) must(await db().from("chunks").insert(fresh), "chunks insert");
+      // Small inserts: 1536-d vectors as text make big statements hit the statement timeout.
+      for (let j = 0; j < fresh.length; j += 25) {
+        const part = fresh.slice(j, j + 25);
+        const r = await db().from("chunks").insert(part);
+        if (!r.error) continue;
+        if (!/duplicate key/i.test(r.error.message)) throw new Error(`chunks insert: ${r.error.message}`);
+        // A concurrent run inserted some of these: fall back to row-by-row insert-or-update.
+        for (const row of part) {
+          const one = await db().from("chunks").insert(row);
+          if (!one.error) continue;
+          if (!/duplicate key/i.test(one.error.message)) throw new Error(`chunks insert: ${one.error.message}`);
+          must(await db().from("chunks").update(row).eq("matter_id", row.matter_id).eq("source_kind", row.source_kind)
+            .eq("source_id", row.source_id).eq("part", row.part).filter("page", row.page == null ? "is" : "eq", row.page == null ? null : row.page), "chunks update");
+        }
+      }
       // Unique key has nullable page, so update by id instead of upsert.
-      await Promise.all(changed.map(async (r) => {
-        const id = haveByKey.get(keyOf(r))!.id;
-        must(await db().from("chunks").update(r).eq("id", id), "chunks update");
-      }));
+      for (let j = 0; j < changed.length; j += 8) {
+        await Promise.all(changed.slice(j, j + 8).map(async (r) => {
+          const id = haveByKey.get(keyOf(r))!.id;
+          must(await db().from("chunks").update(r).eq("id", id), "chunks update");
+        }));
+      }
       await t.event(`${Math.min(i + BATCH, todo.length)}/${todo.length} embedded`);
     }
   });
