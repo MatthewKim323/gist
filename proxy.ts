@@ -18,6 +18,9 @@ const FIRM_APIS = [
   /^\/api\/cases(\/|$)/,
   // The share composer (create, preview any config, revoke) is firm-only.
   /^\/api\/share(\/|$)/,
+  // Autopilot (state, feed, manual check) and the cron entry are firm-only.
+  /^\/api\/autopilot(\/|$)/,
+  /^\/api\/cron(\/|$)/,
 ];
 
 export async function proxy(req: NextRequest) {
