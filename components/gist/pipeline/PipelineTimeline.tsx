@@ -252,7 +252,7 @@ function Counters({ c, cached }: { c: RunCounters; cached: boolean }) {
     { k: "entries read", v: fmtInt(c.entries.n), sub: c.entries.of ? `of ${fmtInt(c.entries.of)}` : undefined },
     { k: "pages read", v: fmtInt(c.pages.n), sub: c.pages.of ? `of ${fmtInt(c.pages.of)}` : undefined },
     { k: "facts emitted", v: fmtInt(c.factsEmitted) },
-    { k: "rejected by verifier", v: fmtInt(c.rejected) },
+    { k: "verifier rejects", v: fmtInt(c.rejected) },
     { k: "jev checks", v: fmtInt(c.jevChecks) },
     { k: cached ? "spent, all cached" : "spent", v: fmtUsd(c.cost) },
   ];
