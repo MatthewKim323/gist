@@ -206,7 +206,13 @@ async function writeStory(ctx: RunCtx | null, matterId: number, sig: Sig, flags:
     t?.usage({ input: usage.input, output: usage.output, cost: usage.cost });
     return data;
   };
-  const out = ctx ? await ctx.task("synth", "story", (t) => run(t)) : await run();
+  let out: z.infer<typeof StoryOut>;
+  try {
+    out = ctx ? await ctx.task("synth", "story", (t) => run(t)) : await run();
+  } catch {
+    // keep the last good story rather than blanking the dashboard; new hash so the next build retries
+    return { story: prevStory ?? [], hash: `${hash}:failed`, model: null };
+  }
   const story = out.bullets
     .map((b) => {
       const cites = [...new Set(b.cites.map((c) => c.replace(/^\[|\]$/g, "").trim()))].filter((c) => refs.has(c));

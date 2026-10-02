@@ -115,19 +115,27 @@ export async function checkOne(ctx: RunCtx, data: MatterData, sig: Signals, r: E
     let note: string | null = null;
     let confidence: number | null = null;
 
+    let modelOk = false;
     if (snips.length) {
-      const { data: out, usage } = await structured({
-        model: env.swarmModel(), system: SYSTEM, schema: GateOut, schemaName: "gate_status",
-        input: `Requirement (${r.phase} exit): ${r.label}\nWhat "have" means: ${r.have}\nTypical owner: ${r.owner}\nToday: ${sig.today}\n\nEVIDENCE\n${ev}`,
-        meta: { purpose: "gate", matterId: ctx.matterId, runId: ctx.runId },
-      });
-      t.usage({ input: usage.input, output: usage.output, cost: usage.cost });
-      status = out.status;
-      owed = status === "have" ? null : out.owed_by ?? r.owner;
-      evidence = out.evidence.filter((e) => allowed.has(e.source_ref))
-        .map((e) => ({ source_ref: e.source_ref, quote: e.quote, label: sig.label(e.source_ref) }));
-      note = out.note.replace(/[—–]/g, ", ");
-      if (status === "have" && evidence.length === 0) { status = "partial"; note = `${note} (no citable evidence returned)`; }
+      try {
+        const { data: out, usage } = await structured({
+          model: env.swarmModel(), system: SYSTEM, schema: GateOut, schemaName: "gate_status",
+          input: `Requirement (${r.phase} exit): ${r.label}\nWhat "have" means: ${r.have}\nTypical owner: ${r.owner}\nToday: ${sig.today}\n\nEVIDENCE\n${ev}`,
+          meta: { purpose: "gate", matterId: ctx.matterId, runId: ctx.runId },
+        });
+        t.usage({ input: usage.input, output: usage.output, cost: usage.cost });
+        modelOk = true;
+        status = out.status;
+        owed = status === "have" ? null : out.owed_by ?? r.owner;
+        evidence = out.evidence.filter((e) => allowed.has(e.source_ref))
+          .map((e) => ({ source_ref: e.source_ref, quote: e.quote, label: sig.label(e.source_ref) }));
+        note = out.note.replace(/[\u2014\u2013]/g, ", ");
+        if (status === "have" && evidence.length === 0) { status = "partial"; note = `${note} (no citable evidence returned)`; }
+      } catch (e) {
+        await t.event(`model unavailable: ${String((e as Error).message).slice(0, 60)}`);
+        // fall through: Jev alone decides; evidence = top retrieved snippets
+        evidence = snips.slice(0, 3).map((s) => ({ source_ref: s.ref, label: sig.label(s.ref) }));
+      }
     } else {
       note = "Nothing in the file mentions this.";
     }
@@ -148,19 +156,29 @@ export async function checkOne(ctx: RunCtx, data: MatterData, sig: Signals, r: E
         const a = ans.status;
         if (a && a.type === "choice") {
           const probs = a.probabilities ?? {};
-          const mine = status === "conflicting" ? null : probs[status];
-          confidence = mine ?? (a.choice === status ? a.confidence ?? null : a.confidence != null ? 1 - a.confidence : null);
-          if (status !== "conflicting" && a.choice !== status && (a.confidence ?? 0) >= 0.75 && (mine ?? 0) < 0.2) {
-            note = `${note ?? ""} Auditor read it as ${a.choice}.`.trim();
+          if (!modelOk) {
             status = a.choice as GateStatus;
-            confidence = a.confidence ?? null;
-            if (status === "have") owed = null;
+            confidence = a.confidence ?? probs[a.choice] ?? null;
+            owed = status === "have" ? null : r.owner;
+            note = `Status from the auditor over ${snips.length} retrieved sources; not yet reviewed by the gate checker.`;
+          } else {
+            const mine = status === "conflicting" ? null : probs[status];
+            confidence = mine ?? (a.choice === status ? a.confidence ?? null : a.confidence != null ? 1 - a.confidence : null);
+            if (status !== "conflicting" && a.choice !== status && (a.confidence ?? 0) >= 0.75 && (mine ?? 0) < 0.2) {
+              note = `${note ?? ""} Auditor read it as ${a.choice}.`.trim();
+              status = a.choice as GateStatus;
+              confidence = a.confidence ?? null;
+              if (status === "have") owed = null;
+            }
           }
         }
       } catch (e) {
         await t.event(`jev skipped: ${String((e as Error).message).slice(0, 60)}`);
       }
     } else if (!snips.length) confidence = 0.9;
+    if (!modelOk && snips.length && confidence == null) {
+      throw new Error("gate: no model or auditor available");
+    }
 
     const providerTasks = r.provider_contact_id != null
       ? sig.actions.filter((a) => a.id.startsWith("task:") && a.owner === "provider" && r.provider_name && a.owner_name && a.owner_name.toLowerCase().includes(r.provider_name.toLowerCase().split(/\W+/).find((w) => w.length >= 5) ?? "\u0000"))
