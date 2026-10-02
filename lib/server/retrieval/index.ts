@@ -104,7 +104,8 @@ export async function buildChunks(matterId: number): Promise<ChunkRow[]> {
     if (it.kind === "document") continue; // the pages carry the content
     const body = (it.body_text ?? "").trim() || (it.title ?? "").trim();
     push({
-      source_kind: it.kind, source_id: String(it.clio_id ?? it.id.split(":")[1]), page: null,
+      // cite (kind:id) must equal the source item id so refs round-trip.
+      source_kind: it.id.split(":")[0], source_id: it.id.split(":").slice(1).join(":"), page: null,
       event_date: day(it.occurred_at), audience: "firm", header: itemHeader(it), body: clip(body, 20000),
     });
   }
