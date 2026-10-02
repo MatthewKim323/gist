@@ -18,6 +18,7 @@ import AskPalette from "./AskPalette";
 import ShareLog from "./ShareLog";
 import SubmissionsInbox from "@/components/gist/submissions/Inbox";
 import AgentDrafts from "@/components/gist/actions/AgentDrafts";
+import { FactsFunnel, MoneyBars } from "./Charts";
 import { AnimatePresence, motion } from "motion/react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
@@ -276,7 +277,12 @@ function Panel({ tab, d, fixture, rejected }: { tab: TabId; d: Digest; fixture: 
     case "phase":
       return <PhaseSpine d={d} />;
     case "money":
-      return <Money d={d} />;
+      return (
+        <>
+          <Money d={d} />
+          <MoneyBars d={d} />
+        </>
+      );
     case "flags":
       return <RedFlags d={d} />;
     case "actions":
@@ -292,7 +298,12 @@ function Panel({ tab, d, fixture, rejected }: { tab: TabId; d: Digest; fixture: 
     case "shares":
       return <ShareLog matterId={d.matter.id} fixture={fixture} />;
     case "receipt":
-      return <Completeness d={d} rejected={rejected} />;
+      return (
+        <>
+          <FactsFunnel d={d} />
+          <Completeness d={d} rejected={rejected} />
+        </>
+      );
   }
 }
 

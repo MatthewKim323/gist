@@ -2297,3 +2297,115 @@ button.gd-gate__hint:focus-visible .gd-gate__hint-go {
     grid-template-columns: 1fr;
   }
 }
+
+/* ---------------- charts (bklit) ---------------- */
+.gd-app,
+.gd-portal {
+  --foreground: var(--ink);
+  --muted-foreground: var(--ink-3);
+  --background: #0c1120;
+  --border: var(--line);
+  --color-muted: rgba(232, 235, 244, 0.08);
+  --color-zinc-500: rgba(232, 235, 244, 0.45);
+  --chart-background: transparent;
+  --chart-foreground: var(--ink);
+  --chart-foreground-muted: var(--ink-3);
+  --chart-label: var(--ink-3);
+  --chart-grid: rgba(232, 235, 244, 0.07);
+  --chart-crosshair: rgba(232, 235, 244, 0.28);
+  --chart-line-primary: #8db8ff;
+  --chart-line-secondary: #d6c29a;
+  --chart-1: #8db8ff;
+  --chart-2: #d6c29a;
+  --chart-3: #9fd0ae;
+  --chart-4: #ee9585;
+  --chart-5: #c8adeb;
+  --chart-tooltip-background: rgba(13, 18, 32, 0.96);
+  --chart-indicator-color: #8db8ff;
+  --chart-indicator-secondary-color: #d6c29a;
+  --chart-segment-background: rgba(232, 235, 244, 0.04);
+  --chart-segment-line: rgba(232, 235, 244, 0.12);
+  --chart-marker-background: #0c1120;
+  --chart-marker-border: var(--line-2);
+  --chart-marker-foreground: var(--ink);
+  --chart-marker-badge-background: var(--ink);
+  --chart-marker-badge-foreground: #0c1120;
+  --chart-brush-border: var(--line-2);
+}
+.gd-chart {
+  padding: 22px 24px 18px;
+}
+.gd-chart__head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin-bottom: 14px;
+}
+.gd-chart__title {
+  font-size: 17px;
+}
+.gd-chart__sub {
+  color: var(--ink-3);
+  font-size: 12.5px;
+}
+.gd-chart__funnel {
+  height: 240px;
+  overflow: hidden;
+}
+.gd-chart svg text {
+  fill: var(--ink-2);
+  font-family: var(--mono);
+  font-size: 11px;
+}
+
+/* the few Tailwind utilities the bklit sources use, scoped to chart cards (no Tailwind in this app) */
+.gd-chart .relative { position: relative; }
+.gd-chart .absolute { position: absolute; }
+.gd-chart .inset-0 { inset: 0; }
+.gd-chart .top-0 { top: 0; }
+.gd-chart .bottom-0 { bottom: 0; }
+.gd-chart .right-0 { right: 0; }
+.gd-chart .flex { display: flex; }
+.gd-chart .flex-col { flex-direction: column; }
+.gd-chart .items-center { align-items: center; }
+.gd-chart .justify-end { justify-content: flex-end; }
+.gd-chart .justify-center { justify-content: center; }
+.gd-chart .justify-between { justify-content: space-between; }
+.gd-chart .shrink-0 { flex-shrink: 0; }
+.gd-chart .gap-1 { gap: 4px; }
+.gd-chart .gap-2 { gap: 8px; }
+.gd-chart .gap-4 { gap: 16px; }
+.gd-chart .pr-2 { padding-right: 8px; }
+.gd-chart .px-3 { padding-left: 12px; padding-right: 12px; }
+.gd-chart .px-4 { padding-left: 16px; padding-right: 16px; }
+.gd-chart .py-1 { padding-top: 4px; padding-bottom: 4px; }
+.gd-chart .py-2\.5 { padding-top: 10px; padding-bottom: 10px; }
+.gd-chart .mb-2 { margin-bottom: 8px; }
+.gd-chart .mt-2 { margin-top: 8px; }
+.gd-chart .space-y-1\.5 > * + * { margin-top: 6px; }
+.gd-chart .h-6 { height: 24px; }
+.gd-chart .h-2\.5 { height: 10px; }
+.gd-chart .w-2\.5 { width: 10px; }
+.gd-chart .z-50 { z-index: 50; }
+.gd-chart .pointer-events-none { pointer-events: none; }
+.gd-chart .overflow-hidden { overflow: hidden; }
+.gd-chart .rounded-full { border-radius: 999px; }
+.gd-chart .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gd-chart .whitespace-nowrap { white-space: nowrap; }
+.gd-chart .text-right { text-align: right; }
+.gd-chart .text-left { text-align: left; }
+.gd-chart .text-xs { font-size: 12px; color: var(--ink-2); }
+.gd-chart .text-sm { font-size: 13px; }
+.gd-chart .font-medium { font-weight: 500; }
+.gd-chart .tabular-nums { font-variant-numeric: tabular-nums; }
+.gd-chart .text-chart-tooltip-foreground { color: var(--ink); }
+.gd-chart .text-chart-tooltip-muted { color: var(--ink-3); }
+.gd-chart .bg-zinc-900 { background: rgba(13, 18, 32, 0.96); }
+.gd-chart .text-white { color: var(--ink); }
+.gd-chart .shadow-lg { box-shadow: 0 12px 30px -12px rgba(0, 0, 0, 0.7); }
+.gd-chart .rounded-lg { border-radius: 10px; }
+.gd-chart .min-w-\[140px\] { min-width: 140px; }
+.gd-chart .w-full { width: 100%; }
+.gd-chart .select-none { user-select: none; }
+.gd-chart .overflow-visible { overflow: visible; }
