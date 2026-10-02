@@ -27,9 +27,7 @@ const STAGES: Stage[] = [
   { name: "reconcile", role: "reconcile", load: async () => (await import("../reconcile/index")).reconcileMatter },
   // @ts-ignore stage module may not exist yet
   { name: "gates", role: "gate", load: async () => (await import("../gates/index")).checkGates },
-  // Digest has not landed yet: a literal import would fail the Next build. Swap to a literal import
-  // ("../digest/index") once lib/server/digest/index.ts exists so it gets bundled on Vercel.
-  { name: "synth", role: "synth", load: async () => (await import(/* turbopackIgnore: true */ /* webpackIgnore: true */ `${process.cwd()}/lib/server/digest/index.ts`)).buildDigest },
+  { name: "synth", role: "synth", load: async () => (await import("../digest/index")).buildDigest },
 ];
 /* eslint-enable @typescript-eslint/ban-ts-comment */
 
