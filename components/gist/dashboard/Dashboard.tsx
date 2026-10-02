@@ -33,10 +33,13 @@ import {
   Share08Icon,
   Stethoscope02Icon,
   Task01Icon,
+  Link04Icon,
+  Layers01Icon,
   Tick02Icon,
   UnfoldMoreIcon,
 } from "@hugeicons/core-free-icons";
 import { fmtUsd, initials } from "./format";
+import SessionChip from "@/components/gist/auth/SessionChip";
 
 type Load =
   | { state: "loading" }
@@ -333,7 +336,7 @@ function Sidebar({ d, fixture, tab, go }: { d: Digest; fixture: boolean; tab: Ta
           window.location.assign("/");
         }}
       >
-        gist
+        gist.
       </a>
       <CaseSwitcher d={d} photo={photo && photoOk ? photo : null} onPhotoError={() => setPhotoOk(false)} />
       <nav className="gd-side__nav" aria-label="Case sections">
@@ -363,15 +366,31 @@ function Sidebar({ d, fixture, tab, go }: { d: Digest; fixture: boolean; tab: Ta
             Share with provider
           </button>
         )}
-        {m.clio_url ? (
-          <a className="gd-side__link" href={m.clio_url} target="_blank" rel="noreferrer">
-            Open in Clio ↗
+        <div className="gd-side__icons">
+          {m.clio_url ? (
+            <a className="gd-side__icon" href={m.clio_url} target="_blank" rel="noreferrer" title="Open in Clio">
+              <HugeiconsIcon icon={Link04Icon} size={17} strokeWidth={1.85} />
+            </a>
+          ) : null}
+          <a
+            className="gd-side__icon"
+            href="/cases"
+            title="All cases"
+            onClick={(e) => {
+              e.preventDefault();
+              window.location.assign("/cases");
+            }}
+          >
+            <HugeiconsIcon icon={Layers01Icon} size={17} strokeWidth={1.85} />
           </a>
-        ) : null}
-        <div className="gd-side__cost" title={d.cost.models.join(" · ")}>
-          {fmtUsd(d.cost.cold_usd, { cents: true })} to digest · {fmtUsd(d.cost.last_run_usd, { cents: true })} to reopen
+          <span className="gd-side__icon gd-side__icon--cost" title={d.cost.models.join(" · ")}>
+            {fmtUsd(d.cost.last_run_usd, { cents: true })}
+          </span>
+          <SessionChip className="gd-side__profile" />
         </div>
-        <div className="gd-side__ro">Reads Clio, writes nothing</div>
+        <div className="gd-side__ro">
+          {fmtUsd(d.cost.cold_usd, { cents: true })} to digest · reads Clio, writes nothing
+        </div>
       </div>
     </aside>
   );

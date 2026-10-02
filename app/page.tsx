@@ -4,7 +4,7 @@
 export default function HomePage() {
   return (
     <main {...{ asscroll: "" }} data-router-view="homeContact" role="main" itemScope itemProp="mainContentOfPage">
-      <h1 className="sr">gist</h1>
+      <h1 className="sr">gist.</h1>
     </main>
   );
 }

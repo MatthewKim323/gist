@@ -72,7 +72,7 @@ export default function ProfileView({
     <div className="gp-page">
       <div className="ga-top" style={{ marginBottom: 0 }}>
         <a className="gs-eyebrow" href={p.role === "firm" ? "/cases" : "/provider"} onClick={nav(p.role === "firm" ? "/cases" : "/provider")} style={{ color: "inherit", textDecoration: "none" }}>
-          gist
+          gist.
         </a>
       </div>
 

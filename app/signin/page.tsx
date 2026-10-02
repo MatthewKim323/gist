@@ -34,7 +34,7 @@ export default async function SignInPage() {
     <main data-router-view="notFound" data-body-class="dark gist-share-body" role="main" className="gs-root">
       <div className="gs-wrap" style={{ maxWidth: 980 }}>
         <header className="gs-head" style={{ marginBottom: "2rem" }}>
-          <div className="gs-eyebrow">gist</div>
+          <div className="gs-eyebrow">gist.</div>
           <h1 className="gs-title">Who&apos;s opening the case?</h1>
           <p className="gs-sub">One case, two sides. Each sees only what is theirs.</p>
         </header>

@@ -139,7 +139,7 @@ export default function CasesView({ session }: { session: { role: string; name: 
     <div className="gc-wrap">
       <header className="gc-top">
         <a className="gc-mark" href="/" onClick={go("/")}>
-          gist
+          gist.
         </a>
         <SessionChip initial={session ? { role: session.role as "firm", name: session.name } : null} />
       </header>

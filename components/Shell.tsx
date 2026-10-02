@@ -11,14 +11,14 @@ const CUBE = ["G", "I", "S", "T", "I", "G"];
 
 // mykm loader (ported from dev/newportfolio): PageLoader animates the letters in and collapses the
 // panel into the site once everything has loaded.
-const MARK = ["g", "i", "s", "t"];
+const MARK = ["g", "i", "s", "t", "."];
 
 function Loader() {
   return (
     <div className="loader mykm-loader js-loader" aria-label="Loading">
       <div className="mykm-loader__panel js-loader-panel">
         <div className="mykm-loader__content">
-          <div className="mykm-loader__mark js-loader-mark" aria-label="gist">
+          <div className="mykm-loader__mark js-loader-mark" aria-label="gist.">
             {MARK.map((l, i) => (
               <span key={i} className="js-loader-letter">
                 {l}
@@ -59,7 +59,7 @@ function NakedLoader() {
 // Placeholder wordmark at the reference logo viewBox (1263.3 x 159.6); CSS sizes it 13.2rem x 1.7rem.
 function Logo() {
   return (
-    <svg viewBox="0 0 1263.3 159.6" xmlns="http://www.w3.org/2000/svg" aria-label="gist">
+    <svg viewBox="0 0 1263.3 159.6" xmlns="http://www.w3.org/2000/svg" aria-label="gist.">
       <text
         x="0"
         y="157"
@@ -68,7 +68,7 @@ function Logo() {
         textLength="1263.3"
         lengthAdjust="spacingAndGlyphs"
       >
-        GIST
+        GIST.
       </text>
     </svg>
   );

@@ -11,7 +11,7 @@ const hanken = Hanken_Grotesk({ variable: "--font-hanken", subsets: ["latin"], d
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"], display: "swap" });
 
 export const metadata: Metadata = {
-  title: "gist",
+  title: "gist.",
   description:
     "gist: every personal-injury case digested in ninety seconds, for the firm and the providers treating on a lien.",
 };

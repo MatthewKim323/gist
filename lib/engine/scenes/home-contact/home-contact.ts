@@ -501,7 +501,7 @@ export class HomeContact {
 
     this.line1 = new Text();
     Object.assign(this.line1, {
-      text: 'gist',
+      text: 'gist.',
       font: o.Gl.webglFonts['Neue Montreal'].url,
       fontSize: nameSize,
       letterSpacing: -0.02,
