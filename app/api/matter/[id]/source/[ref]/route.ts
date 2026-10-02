@@ -20,7 +20,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   if (doc) {
     const docId = Number(doc[1]);
     const page = doc[2] ? Number(doc[2]) : 1;
-    const d = await db().from("documents").select("clio_id,name,filename,folder,received_at,page_count,version_id,ocr_status")
+    const d = await db().from("documents").select("clio_id,name,filename,folder,received_at,page_count,version_id,ocr_status,storage_path")
       .eq("clio_id", docId).eq("matter_id", matterId).maybeSingle();
     if (!d.data) return Response.json({ error: "not found" }, { status: 404 });
     const p = await db().from("doc_pages").select("text,source,page_type,confidence")
@@ -31,7 +31,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       ref, kind: "document", label, title: d.data.name ?? d.data.filename, date: d.data.received_at,
       folder: d.data.folder, page, page_count: d.data.page_count,
       body: p.data?.text ?? null, page_source: p.data?.source ?? null, page_type: p.data?.page_type ?? null,
-      file_url: `/api/docs/${docId}#page=${page}`, page_url: `/api/docs/${docId}/page/${page}`,
+      // no stored file (demo text documents): the drawer shows the transcript only
+      file_url: d.data.storage_path ? `/api/docs/${docId}#page=${page}` : null, page_url: `/api/docs/${docId}/page/${page}`,
       clio_url: it.data?.clio_url ?? null, from: null, to: null,
     });
   }

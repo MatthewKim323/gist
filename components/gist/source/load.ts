@@ -68,7 +68,8 @@ export async function loadSource(ref: string, matterId: number | null, fixture: 
       page,
       pages_total: pageCount,
       page_text: pageText,
-      pdf_url: str(given.pdf_url) ?? (str(base.file_url)?.split("#")[0] || `/api/docs/${doc.id}`),
+      // file_url: null means the document has no stored file (text-only demo documents)
+      pdf_url: str(given.pdf_url) ?? (base.file_url === null ? null : str(base.file_url)?.split("#")[0] || `/api/docs/${doc.id}`),
     };
   }
   return out;

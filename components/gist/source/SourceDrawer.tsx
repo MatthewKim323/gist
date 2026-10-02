@@ -171,7 +171,7 @@ export default function SourceDrawer({
                       <div className="gs-fakepage">
                         <div className="gs-fakepage__name">{data.doc.name}</div>
                         <div className="gs-fakepage__p">Page {page}</div>
-                        <div className="gs-dim">Fixture mode: no PDF</div>
+                        <div className="gs-dim">Text record, no PDF on file</div>
                       </div>
                     )}
                   </div>
