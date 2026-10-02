@@ -1,0 +1,7 @@
+/* the custom ring is the only cursor on pointer devices, from the intro gate on (see lib/engine/dom/cursor.ts) */
+@media (hover: hover) and (pointer: fine) {
+  html,
+  html * {
+    cursor: none !important;
+  }
+}
