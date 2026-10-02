@@ -142,12 +142,7 @@ async function callWithBackoff<T>(fn: () => Promise<T>): Promise<T> {
     } catch (e) {
       const status = (e as { status?: number }).status;
       const code = (e as { code?: string }).code;
-      // Quota errors have been intermittent (balance near zero, auto top-up): a few slow retries, then give up.
-      if (code === "insufficient_quota" || code === "credit_balance_exhausted") {
-        if (attempt >= 3) throw e;
-        await new Promise((r) => setTimeout(r, 5000 * 2 ** attempt));
-        continue;
-      }
+      if (code === "insufficient_quota" || code === "credit_balance_exhausted") throw e;
       if ((status === 429 || (status ?? 0) >= 500) && attempt < 5) {
         await new Promise((r) => setTimeout(r, 1000 * 2 ** attempt + Math.random() * 500));
         continue;
