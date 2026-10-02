@@ -238,11 +238,8 @@ export class VoiceSession {
     this.dc = dc;
     dc.onopen = () => {
       this.set("listening");
-      // Open with the greeting so the call feels answered.
-      this.rt({
-        type: "response.create",
-        response: { instructions: `Greet the caller by saying exactly this, then stop and wait: "${context.greeting}"` },
-      });
+      // The agent speaks first: the brief (firm) or a greeting (provider).
+      this.rt({ type: "response.create", response: { instructions: context.opener } });
     };
     dc.onmessage = (ev) => {
       let m: Record<string, unknown>;
