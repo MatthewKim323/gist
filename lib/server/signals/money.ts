@@ -111,14 +111,11 @@ export function moneySignals(fields: ItemRow[], expenses: ItemRow[], facts: Fact
     }
   }
 
-  // firm spend
+  // firm spend: case costs only. Provider treatment charges entered as expense entries are not firm spend.
   let spend = 0;
-  for (const e of expenses) {
-    const r = (e.raw ?? {}) as Record<string, unknown>;
-    const total = r.total != null ? Number(r.total) : Number(r.quantity ?? 1) * Number(r.price ?? 0);
-    if (isFinite(total)) spend += total;
-  }
-  const firm_spend: Cited<number> = { value: Math.round(spend * 100) / 100, cites: expenses.map((e) => cite(label, e.id)) };
+  const firmExpenses = expenses.filter((e) => !isTreatmentCharge(e));
+  for (const e of firmExpenses) spend += expenseTotal(e);
+  const firm_spend: Cited<number> = { value: Math.round(spend * 100) / 100, cites: firmExpenses.map((e) => cite(label, e.id)) };
 
   const v = case_value?.value ?? null;
   const lim = coverage_limit?.value ?? null;
@@ -127,6 +124,20 @@ export function moneySignals(fields: ItemRow[], expenses: ItemRow[], facts: Fact
     underwater: v != null && lim != null && v > lim,
     gap_usd: v != null && lim != null ? v - lim : null,
     limit_pct_of_value: v && lim != null ? Math.round((lim / v) * 1000) / 10 : null,
-    specials, wage_loss, liens, firm_spend, expense_count: expenses.length,
+    specials, wage_loss, liens, firm_spend, expense_count: firmExpenses.length,
   };
+}
+
+export function expenseTotal(e: ItemRow): number {
+  const r = (e.raw ?? {}) as Record<string, unknown>;
+  const total = r.total != null ? Number(r.total) : Number(r.quantity ?? 1) * Number(r.price ?? 0);
+  return isFinite(total) ? total : 0;
+}
+
+/** Expense entries that record a provider's treatment charges rather than a cost the firm paid. */
+export function isTreatmentCharge(e: ItemRow): boolean {
+  const r = (e.raw ?? {}) as Record<string, unknown>;
+  const text = `${r.note ?? e.title ?? ""} ${(r.expense_category as { name?: string } | undefined)?.name ?? ""}`;
+  if (/\bnot (a )?(patient )?(treatment|medical) charges?\b/i.test(text)) return false;
+  return /\b(medical|treatment|provider) (treatment )?charges?\b|\bmedical bills?\b/i.test(text);
 }

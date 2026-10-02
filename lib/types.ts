@@ -118,6 +118,10 @@ export interface ProviderLane {
   gaps: { from: string; to: string; days: number }[];
   last_heard_from: string | null;
   open_asks: number;
+  /** provider charges recorded on the matter (expense entries for treatment), with their service window */
+  billed?: Cited<number> | null;
+  services_from?: string | null;
+  services_to?: string | null;
 }
 
 export interface Digest {

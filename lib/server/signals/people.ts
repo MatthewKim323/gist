@@ -1,5 +1,6 @@
 import type { ActionItem, Cited, Citation, Owner, ProviderLane } from "@/lib/types";
 import type { ItemRow, MatterData } from "./load";
+import { expenseTotal, isTreatmentCharge } from "./money";
 import { addDays, cite, commParties, daysBetween, isUser, isoDay, type Labeler } from "./util";
 
 // People-side signals: contacts and their roles, overdue / upcoming / waiting-on, last client contact,
@@ -9,7 +10,7 @@ export interface ContactInfo { id: number; name: string; role: string | null; ow
 
 const PROVIDER_RE = /treating|provider|hospital|physician|doctor|surgeon|chiropract|therap|orthop|radiolog|imaging|clinic|medical center|neurolog|physiatr/i;
 const ADVERSE_RE = /adverse|defendant|defen[cs]e|opposing|tortfeasor/i;
-const CARRIER_RE = /carrier|insur|claims|adjust|administrator|tpa\b/i;
+const CARRIER_RE = /carrier|insurer|insurance (company|carrier)|claims|adjust|administrator|tpa\b|no[- ]fault|underwriter/i;
 
 export function roleOwner(desc: string | null): Owner | null {
   if (!desc) return null;
@@ -205,8 +206,10 @@ const GENERIC = new Set(["services", "service", "offices", "office", "surgical",
   "p.c.", "pc", "d.c.", "dc", "chiropractic", "radiology", "imaging", "care", "practice", "partners", "treating", "provider"]);
 
 export function nameTokens(c: ContactInfo): string[] {
-  const src = `${c.name} ${(c.role ?? "").match(/\(([^)]+)\)/)?.[1] ?? ""}`;
-  return [...new Set(src.split(/[^A-Za-z'-]+/).map((w) => w.toLowerCase()).filter((w) => w.length >= 4 && !GENERIC.has(w)))];
+  const toks = (s: string) => [...new Set(s.split(/[^A-Za-z'-]+/).map((w) => w.toLowerCase()).filter((w) => w.length >= 4 && !GENERIC.has(w)))];
+  const own = toks(c.name);
+  // fall back to a name in the role's parentheses only when the contact name has nothing distinctive
+  return own.length ? own : toks((c.role ?? "").match(/\(([^)]+)\)/)?.[1] ?? "");
 }
 
 export function providerLanes(data: MatterData, contacts: Map<number, ContactInfo>, stats: Map<number, CommStat>, actions: ActionItem[], label: Labeler, today: string): ProviderLane[] {
@@ -238,11 +241,26 @@ export function providerLanes(data: MatterData, contacts: Map<number, ContactInf
       const d = daysBetween(dates[i - 1], dates[i]);
       if (d > 30) gaps.push({ from: dates[i - 1], to: dates[i], days: d });
     }
+    // provider charges recorded as expense entries ("services <from> to <to>")
+    let billed = 0;
+    const billCites: Citation[] = [];
+    let svcFrom: string | null = null, svcTo: string | null = null;
+    for (const e of (data.byKind.expense ?? []).filter(isTreatmentCharge)) {
+      const note = String(((e.raw ?? {}) as Record<string, unknown>).note ?? e.title ?? "");
+      if (!toks.some((t) => note.toLowerCase().includes(t))) continue;
+      billed += expenseTotal(e);
+      billCites.push(cite(label, e.id));
+      const m = note.match(/services?\s+(\d{4}-\d{2}-\d{2})\s+(?:to|through|-)\s+(\d{4}-\d{2}-\d{2})/i);
+      if (m) { if (!svcFrom || m[1] < svcFrom) svcFrom = m[1]; if (!svcTo || m[2] > svcTo) svcTo = m[2]; }
+    }
     const s = stats.get(c.id);
     const openTasks = actions.filter((a) => a.owner === "provider" && a.owner_name && (a.owner_name === c.name || toks.some((t) => a.owner_name!.toLowerCase().includes(t))) && a.id.startsWith("task:")).length;
     lanes.push({
       contact_id: c.id, name: c.name, role: c.role,
-      first_visit: dates[0] ?? null, last_visit: dates[dates.length - 1] ?? null,
+      first_visit: [dates[0], svcFrom].filter(Boolean).sort()[0] ?? null,
+      last_visit: [dates[dates.length - 1], svcTo].filter(Boolean).sort().reverse()[0] ?? null,
+      billed: billCites.length ? { value: Math.round(billed * 100) / 100, cites: billCites } : null,
+      services_from: svcFrom, services_to: svcTo,
       visits: dates.map((d) => ({ date: d, cite: visits.get(d)! })), gaps,
       last_heard_from: s?.last_inbound ?? null,
       open_asks: (s?.unanswered.length ?? 0) + openTasks,
