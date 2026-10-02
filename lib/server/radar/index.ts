@@ -112,7 +112,7 @@ export function signalsFor(d: Digest, now: number = Date.now()): RadarSignal[] {
         kind: "client_silent", severity: silent > RADAR.client_silent_high_days ? "high" : "medium", days: silent,
         headline: `Client silent ${plural(silent, "day")}`,
         detail: `Last real contact ${fmtDate(lcc)}${d.last_client_contact_detail?.channel ? ` by ${d.last_client_contact_detail.channel}` : ""}. Check in before the file goes cold.`,
-        cite: firstCite(d.last_client_contact, "Last client contact"), href: `${base}#story`,
+        cite: firstCite(d.last_client_contact, "Last client contact"), href: `${base}#overview`,
       });
     }
   } else {
@@ -195,7 +195,7 @@ export function signalsFor(d: Digest, now: number = Date.now()): RadarSignal[] {
           ? `Last visit ${fmtDate(gap.from)}. Defense reads a gap as recovery; confirm the plan or document why.`
           : `No visit to any provider from ${fmtDate(gap.from)} to ${fmtDate(gap.to)}. Get the reason on record before defense finds it.`,
         cite: gap.cite ? { source_ref: gap.cite.source_ref, label: gap.cite.label ?? "Visit" } : null,
-        href: `${base}#providers`,
+        href: `${base}#treatment`,
       });
     }
   }
