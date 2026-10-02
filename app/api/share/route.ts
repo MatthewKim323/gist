@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createShare, listShares, revokeShare } from "@/lib/server/share";
+import { getSession } from "@/lib/server/auth/session";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -31,7 +32,8 @@ export async function POST(req: NextRequest) {
       providerContactId,
       config: body?.config,
       expiresInDays: typeof body?.expiresInDays === "number" ? body.expiresInDays : undefined,
-      createdBy: typeof body?.createdBy === "string" ? body.createdBy : null,
+      // The sharing profile, so the provider sees this attorney's firm name.
+      createdBy: (await getSession())?.profileId ?? (typeof body?.createdBy === "string" ? body.createdBy : null),
     });
     const origin = req.headers.get("x-forwarded-host")
       ? `${req.headers.get("x-forwarded-proto") ?? "https"}://${req.headers.get("x-forwarded-host")}`

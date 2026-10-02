@@ -10,6 +10,8 @@ export type Role = "firm" | "provider";
 export interface Session {
   role: Role;
   providerContactId?: number;
+  /** profiles.id (migration 0005). Absent on sessions signed before profiles existed. */
+  profileId?: string;
   name: string;
   iat: number;
 }

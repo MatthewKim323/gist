@@ -12,6 +12,7 @@ import { db } from "@/lib/server/db";
 import { cachedGatedView, type ShareRow } from "@/lib/server/share";
 import { defaultShareConfig, normalizeConfig } from "@/lib/server/share/plain";
 import { listForProvider } from "@/lib/server/submissions";
+import { withFirmName } from "@/lib/server/share/firm";
 import { caseUpdates } from "@/lib/server/autopilot/updates";
 import "@/app/styles/gist-share.css";
 
@@ -97,7 +98,7 @@ export default async function ProviderPortal({ searchParams }: { searchParams: P
         </div>
       ) : null}
       {gated ? (
-        <ProviderViewCard view={gated.view} mode="live" caseMoves={moves} respond={{ matterId: current.matter_id, submissions: mine }} />
+        <ProviderViewCard view={await withFirmName(gated.view, share?.created_by)} mode="live" caseMoves={moves} respond={{ matterId: current.matter_id, submissions: mine }} />
       ) : (
         <div className="gs-closed">
           <h1 className="gs-title">Status unavailable</h1>

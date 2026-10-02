@@ -1,5 +1,6 @@
 // Provider-facing share page. Server component: the token is checked by hash, the view is built and
 // gated on the server, and only the filtered payload is rendered. Nothing hidden reaches the phone.
+import { withFirmName } from "@/lib/server/share/firm";
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import ProviderViewCard from "@/components/gist/share/ProviderViewCard";
@@ -67,12 +68,13 @@ export default async function SharePage({ params }: { params: Promise<{ token: s
   if (!loaded)
     return <Closed title="Status unavailable" body="The firm's status page could not load right now. Please try again in a minute." />;
   const [gated, notice, mine, moves] = loaded;
+  const view = await withFirmName(gated.view, share.created_by);
   return (
     <Shell>
       <div className="gv-provider-cta">
         <VoiceButton mode="provider" token={token} />
       </div>
-      <ProviderViewCard view={gated.view} mode="live" stageNotice={notice} caseMoves={moves} respond={{ token, submissions: mine }} />
+      <ProviderViewCard view={view} mode="live" stageNotice={notice} caseMoves={moves} respond={{ token, submissions: mine }} />
     </Shell>
   );
 }
