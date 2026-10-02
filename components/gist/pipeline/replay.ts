@@ -57,17 +57,33 @@ export function createReplaySource(targetMs = 75_000): ReplaySource {
   function play(h: PipelineHandlers) {
       const { run, tasks } = recorded!;
       h.live?.("live");
-      const starts = tasks.map((t) => ms(t.started_at));
-      const ends = tasks.map((t, i) => (Number.isFinite(ms(t.finished_at)) ? ms(t.finished_at) : starts[i]));
-      const t0 = Math.min(...starts.filter(Number.isFinite));
-      const t1 = Math.max(...ends.filter(Number.isFinite));
-      const span = t1 - t0;
-      // a fully cached run has near-zero recorded durations; then keep the recorded ORDER and spread it evenly
-      const byOrder = !Number.isFinite(span) || span < 3000;
+      // Each stage gets its own on-screen slot (the swarm the longest), so every stage visibly works instead of
+      // inheriting the recording's proportions where one slow stage hides the rest. Within a slot the stage's
+      // real rows start in recorded order, staggered like parallel agents, and land with their real status.
+      const SLOT: Record<string, number> = { sync: 7000, ocr: 8000, extract: 20000, verify: 6000, jev: 9000, embed: 6000, reconcile: 10000, gate: 10000, synth: 7000 };
+      const ORDER = ["sync", "ocr", "extract", "verify", "jev", "embed", "reconcile", "gate", "synth"];
+      const scale = targetMs / 75_000;
+      const roles = [...new Set(tasks.map((t) => t.role as string))].sort(
+        (a, b) => (ORDER.indexOf(a) + 1 || 99) - (ORDER.indexOf(b) + 1 || 99),
+      );
+      const plan = new Map<number, { start: number; end: number }>();
+      let cursor = 0;
+      for (const role of roles) {
+        const group = tasks
+          .map((t, i) => ({ t, i }))
+          .filter((x) => x.t.role === role)
+          .sort((a, b) => (ms(a.t.started_at) || 0) - (ms(b.t.started_at) || 0) || a.t.id - b.t.id);
+        const slot = (SLOT[role] ?? 6000) * scale;
+        const runFor = Math.max(900, slot * 0.35);
+        group.forEach((x, k) => {
+          const s = cursor + (group.length > 1 ? (k / (group.length - 1)) * (slot - runFor) : 0);
+          plan.set(x.i, { start: s, end: s + runFor * (0.6 + 0.4 * ((k * 7) % 5) / 4) });
+        });
+        cursor += slot;
+      }
       const at = (i: number, end: boolean) => {
-        if (byOrder) return ((i + (end ? 0.7 : 0)) / Math.max(1, tasks.length)) * targetMs;
-        const v = end ? ends[i] : starts[i];
-        return Number.isFinite(v) ? ((v - t0) / span) * targetMs : (i / tasks.length) * targetMs;
+        const p = plan.get(i);
+        return p ? (end ? p.end : p.start) : (i / Math.max(1, tasks.length)) * targetMs;
       };
       const timers: ReturnType<typeof setTimeout>[] = [];
       tasks.forEach((t, i) => {
