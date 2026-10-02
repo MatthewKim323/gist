@@ -33,7 +33,7 @@ export const SECTION_ORDER: ShareSection[] = [
 export const SECTION_LABELS: Record<ShareSection, { title: string; hint: string }> = {
   status: { title: "Case status", hint: "Heartbeat plus coarse stage in plain English" },
   firm_needs: { title: "What the firm needs", hint: "Missing items owed by this office, with due dates" },
-  coverage_tier: { title: "Coverage", hint: "Whether coverage is confirmed. No dollars unless you choose exact" },
+  coverage_tier: { title: "Coverage", hint: "Confirmed or not. Dollars only if you pick Exact below" },
   records_bills: { title: "Records and bills", hint: "This office's own records and bills checklist" },
   attendance: { title: "Patient attendance", hint: "Visits kept vs scheduled, last 90 days" },
   next_visits: { title: "Upcoming visits", hint: "Next scheduled appointments at this office" },
