@@ -11,10 +11,17 @@ export async function POST(req: Request) {
   const matterId = Number(body.matterId);
   if (!Number.isFinite(matterId) || matterId <= 0) return NextResponse.json({ error: "matterId required" }, { status: 400 });
   // One live run per matter: a reload or a second tab joins the run in flight instead of paying for another.
-  const since = new Date(Date.now() - 20 * 60_000).toISOString();
+  // Only join a run that is still making progress; an orphaned "running" row must not trap the UI.
   const live = await db().from("agent_runs").select("id").eq("matter_id", matterId).eq("status", "running")
-    .gte("started_at", since).order("started_at", { ascending: false }).limit(1).maybeSingle();
-  if (live.data?.id) return NextResponse.json({ runId: live.data.id, joined: true });
+    .gte("started_at", new Date(Date.now() - 20 * 60_000).toISOString())
+    .order("started_at", { ascending: false }).limit(1).maybeSingle();
+  if (live.data?.id) {
+    const last = await db().from("agent_tasks").select("started_at, finished_at").eq("run_id", live.data.id)
+      .order("id", { ascending: false }).limit(1).maybeSingle();
+    const ts = last.data ? Date.parse((last.data.finished_at ?? last.data.started_at) as string) : 0;
+    if (Date.now() - ts < 3 * 60_000) return NextResponse.json({ runId: live.data.id, joined: true });
+    await db().from("agent_runs").update({ status: "failed", finished_at: new Date().toISOString() }).eq("id", live.data.id);
+  }
   const ctx = await createRun(matterId);
   after(async () => {
     try {
