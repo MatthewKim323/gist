@@ -2,14 +2,15 @@
   "id": "baseline",
   "name": "Single-shot long-context baseline",
   "origin": "Long-context baseline in the style of RAG-vs-long-context comparisons (Li et al., 2024, arXiv:2407.16833)",
-  "adaptation": "One gpt-5.5 call (reasoning low) given the whole case text (all source items, then doc pages, cut at 900,000 chars) asked for a full digest plus answers to the 25 QA questions. Scored with the same recall judge and checklist as gist, and the same correctness judge as the RAG suite. One run only.",
+  "adaptation": "One gpt-5.5 call (reasoning low) given the whole case text (all source items, then doc pages, cut at 900,000 chars) asked for a full digest plus answers to the 25 QA questions. Scored with the same recall judge and checklist as gist, and the same correctness judge as the RAG suite. One scored run (an earlier attempt died in judging after the model call; its prompt prefix was still in OpenAI's prompt cache, so the logged cost is mostly cached input; cost_usd_if_uncached is the list-price cost of the same tokens).",
   "n": "48 checklist items, 25 questions; 591/591 source blocks fit",
   "metrics": {
-    "checklist_recall": 0.771,
-    "qa_answer_correctness": 0.88,
+    "checklist_recall": 0.813,
+    "qa_answer_correctness": 0.92,
     "input_tokens": 222221,
     "output_tokens": 5570,
     "cost_usd": 0.08378000000000001,
+    "cost_usd_if_uncached": 0.333476,
     "latency_s": 59.842,
     "blocks_included": 591,
     "blocks_total": 591
@@ -50,12 +51,12 @@
         ],
         [
           "operations",
-          6,
+          7,
           8
         ],
         [
           "contradictions",
-          3,
+          4,
           7
         ]
       ]
@@ -88,10 +89,6 @@
           "Defendants' verified answer pleads affirmative defenses including statute of limitations / PAL 1276 / another action pending"
         ],
         [
-          "ops-sportscare-silent",
-          "SportsCare PT has not answered repeated records/ledger requests"
-        ],
-        [
           "ops-compliance-conf",
           "2026 compliance conference not yet set / not calendared"
         ],
@@ -104,19 +101,15 @@
           "Coverage conflict: Metro-North self-insured vs $100k/$300k confirmed vs a Travelers policy on the incident report"
         ],
         [
-          "con-work",
-          "Client claims total disability while defense IME says he can return to work"
-        ],
-        [
           "con-index",
           "Plaintiff's discovery response cites a different index number (150940/2024) than the caption (160000/2024)"
         ]
       ]
     }
   ],
-  "cost_usd": 0.1642158,
-  "secs": 108.761,
+  "cost_usd": 0.12701980000000002,
+  "secs": 83.273,
   "matter_id": 1811206208,
   "matter_label": "Justin Sapini (00001-Sapini)",
-  "generated_at": "2026-10-02T21:25:03.575Z"
+  "generated_at": "2026-10-02T21:36:34.901Z"
 }

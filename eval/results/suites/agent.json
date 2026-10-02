@@ -1,0 +1,17 @@
+{
+  "id": "agent",
+  "name": "Agent harness (Ask gist OS)",
+  "origin": "tau-bench (Yao et al., 2024, arXiv:2406.12045): programmatic task checks and the pass^k reliability metric",
+  "adaptation": "10 tasks x 2 trials against lib/server/assistant/agent.ts with four programmatic checks (required tool, valid cites, gold key facts, no invented numbers). Implemented in scripts/eval.ts (suiteAgent).",
+  "n": "0 completed (10 tasks x 2 trials planned)",
+  "metrics": {
+    "status": "not run"
+  },
+  "notes": [
+    "NOT RUN in this build. Three attempts failed: two on the shared gpt-5.4-mini rate limit (200k TPM, shared with the live app and the other eval suites) and the third when the OpenAI organization ran out of API credits at 14:37 PT. No partial numbers are reported. Rerun: bun run job scripts/eval.ts --suites agent && bun run job scripts/eval.ts --merge"
+  ],
+  "cost_usd": 0,
+  "matter_id": 1811206208,
+  "matter_label": "Justin Sapini (00001-Sapini)",
+  "generated_at": "2026-10-02T21:37:26.833107Z"
+}

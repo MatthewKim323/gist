@@ -1,0 +1,2118 @@
+{
+  "generated_at": "2026-10-02T21:37:27.514Z",
+  "matter_id": 1811206208,
+  "matter_label": "Justin Sapini (00001-Sapini)",
+  "judge_model": "gpt-5.4-mini",
+  "total_eval_cost_usd": 2.965727,
+  "eval_spend": {
+    "since": "2026-10-02T21:19:00Z",
+    "judges_usd": 0.6215890000000001,
+    "ask_usd": 1.787122,
+    "search_usd": 0.021856,
+    "assistant_usd": 0.117904,
+    "baseline_scored_run_usd": 0.08378000000000001,
+    "baseline_unrecorded_attempt_usd_estimate": 0.333476,
+    "total_usd": 2.965727
+  },
+  "note": "Adaptations of published benchmarks on one real matter. Not official leaderboard numbers. Reproduce: bun run job scripts/eval.ts --suites <ids>; bun run job scripts/eval.ts --merge",
+  "suites": [
+    {
+      "id": "fact_recall",
+      "name": "Atomic finding recall (omission rate)",
+      "origin": "FActScore (Min et al., 2023, arXiv:2305.14251): atomic-fact decomposition, here used for recall instead of precision",
+      "adaptation": "48 atomic findings hand-written from the independent answer key; an LLM judge (gpt-5.4-mini) checks each against gist's verified facts (top-8 hybrid hits over fact chunks), the digest, contradictions and gate items.",
+      "n": 48,
+      "metrics": {
+        "recall": 0.771,
+        "omission_rate": 0.229,
+        "found": 37,
+        "total": 48
+      },
+      "tables": [
+        {
+          "title": "Recall by category",
+          "columns": [
+            "category",
+            "found",
+            "total",
+            "recall"
+          ],
+          "rows": [
+            [
+              "core_facts",
+              6,
+              6,
+              1
+            ],
+            [
+              "injuries",
+              6,
+              6,
+              1
+            ],
+            [
+              "money",
+              7,
+              9,
+              0.778
+            ],
+            [
+              "liability_risk",
+              6,
+              8,
+              0.75
+            ],
+            [
+              "defense_experts",
+              2,
+              4,
+              0.5
+            ],
+            [
+              "operations",
+              6,
+              8,
+              0.75
+            ],
+            [
+              "contradictions",
+              4,
+              7,
+              0.571
+            ]
+          ]
+        },
+        {
+          "title": "Misses (omissions)",
+          "columns": [
+            "id",
+            "finding",
+            "judge reason"
+          ],
+          "rows": [
+            [
+              "money-limits",
+              "Defendant bodily injury limits $100,000 / $300,000, confirmed in writing 2026-09-08",
+              "The digest states the defendant liability limits are $100,000 / $300,000 in `coverage_limit` and `coverage_lines`, but it does not state that these limits were confirmed in writing on 2026-09-08. The only 2026-09-08 item in `coverage_notes` says no excess or umbrella coverage was disclosed, which is a different point."
+            ],
+            [
+              "money-spend",
+              "Firm's own case expenses (records, court filing, IME observer) have not been reimbursed",
+              "The digest JSON only lists the firm spend items and total in `money.firm_spend` (expense refs for records reproduction, IME observer, and court filing), but it does not state the core finding that these firm expenses have not been reimbursed. The unreimbursed language appears only in the retrieved verified facts for the records expenses, not in the digest/story output itself."
+            ],
+            [
+              "liab-onduty",
+              "Metro-North incident report in defendants' discovery response marks Ferrara On-Duty, heading to the jobsite",
+              "The output matches only part of the expected finding. It confirms the incident report was in the discovery response and says Ferrara was heading to the jobsite, but it does not state the key “On-Duty” designation. Partial mention without the core point is insufficient."
+            ],
+            [
+              "liab-pullano",
+              "Kyle Pullano was Ferrara's passenger (a witness)",
+              "The output identifies Pullano as a passenger and a witness, but not as Ferrara’s passenger. The core relationship in the expected finding is missing, so this is not a match."
+            ],
+            [
+              "def-ime-resolved",
+              "Defense orthopedic IME (Hostin) finds injuries resolved and client able to return to work without restrictions",
+              "The retrieved facts include Hostin’s orthopaedic IME report and a separate Tsao opinion that the claimant can work without restrictions, but no surfaced field attributes that conclusion to Hostin. The digest’s IME gate item likewise only confirms the Hostin report was annexed/served, not its substantive conclusion."
+            ],
+            [
+              "def-katzman",
+              "Defense radiology review (Katzman) finds brain/DTI normal and no recent trauma in knees and right shoulder",
+              "The output only clearly states Katzman found no recent traumatic injury in the right shoulder and right knee. It does not expressly state the expected brain/DTI finding, so the full expected finding is not surfaced."
+            ],
+            [
+              "ops-client-records-overdue",
+              "Overdue task: client's updated employment and commission records (due 2026-09-26)",
+              "The output does mention updated employment and commission records in the wage-loss documentation item (e.g., source_ref email:5029636493 and note:2997038798), but it does not state the specific overdue task with due date 2026-09-26. No field in the provided digest excerpt matches that exact task/due date."
+            ],
+            [
+              "ops-compliance-conf",
+              "2026 compliance conference not yet set / not calendared",
+              "The output does not state that a 2026 compliance conference was not yet set or not calendared; it says the opposite, that a further compliance conference was scheduled."
+            ],
+            [
+              "con-ime-dates",
+              "IME dates in Clio (Sept 2026) conflict with the dates in the IME reports (March 2026)",
+              "The output does state the IME reports are dated March 31, 2026 and March 24, 2026 in the phase-gate item \"Defense IME reports received, with rebuttal\" (doc:21122792168#p1 and doc:21122791073#p47), but it does not say those dates conflict with September 2026 Clio dates. I did not find any field or digest text explicitly noting a Clio-vs-report date conflict."
+            ],
+            [
+              "con-work",
+              "Client claims total disability while defense IME says he can return to work",
+              "The output clearly supports the first half of the finding that the client claims total disability (e.g., verified facts say he was “totally disabled from his usual occupation” and “totally disabled and incapacitated from his employment”), but it does not state the defense IME says he can return to work. The IME-related entries only say the reports are in the record or that they may be unhelpful; no cited field or fact says he can return to work."
+            ],
+            [
+              "con-index",
+              "Plaintiff's discovery response cites a different index number (150940/2024) than the caption (160000/2024)",
+              "The output contains the two index numbers separately, but it does not expressly make the comparison that the discovery response cites 150940/2024 while the caption uses 160000/2024. A partial mention of both numbers is not enough."
+            ]
+          ]
+        }
+      ],
+      "cost_usd": 0.062348900000000006,
+      "secs": 246.103,
+      "matter_id": 1811206208,
+      "matter_label": "Justin Sapini (00001-Sapini)",
+      "generated_at": "2026-10-02T21:34:02.319Z"
+    },
+    {
+      "id": "citation_precision",
+      "name": "Citation precision",
+      "origin": "ALCE (Gao et al., 2023, arXiv:2305.14627): citation precision, i.e. does the cited passage support the statement",
+      "adaptation": "All verified facts re-checked deterministically against the stored source text (fresh normalization, independent of the stored verifier score); plus an LLM judge (gpt-5.4-mini) on a 50-fact systematic sample asking whether the source supports the summary, date and amount.",
+      "n": "1141 verified facts (deterministic), 50 judged",
+      "metrics": {
+        "quote_exact_precision": 0.99,
+        "quote_overlap_precision": 1,
+        "source_missing": 0,
+        "date_present_rate": 0.993,
+        "facts_with_date": 912,
+        "date_matched_via_item_date": 21,
+        "amount_present_rate": 1,
+        "facts_with_amount": 91,
+        "judged_support_precision": 0.98
+      },
+      "tables": [
+        {
+          "title": "Judged unsupported (sample)",
+          "columns": [
+            "source_ref",
+            "summary",
+            "judge reason"
+          ],
+          "rows": [
+            [
+              "doc:21122791073#p4",
+              "Dr. Tsao's available records included the independent orthopedic examination report from Dr. Richard Semble dated September 13, 2023.",
+              "The source lists an \"Independent orthopedic examination report, from Dr. Richard Semble, dated 9/13/23\" among the available records, but it does not mention Dr. Tsao. The summary adds a detail not stated in the source."
+            ]
+          ]
+        }
+      ],
+      "cost_usd": 0.0159465,
+      "secs": 37.588,
+      "matter_id": 1811206208,
+      "matter_label": "Justin Sapini (00001-Sapini)",
+      "generated_at": "2026-10-02T21:22:36.311Z"
+    },
+    {
+      "id": "verifier_jev",
+      "name": "Verifier and Jev audit behavior",
+      "origin": "Internal (no published benchmark); rejection precision framed like a selective-prediction audit",
+      "adaptation": "Status and reason counts over all current facts from the DB. Precision of rejection = share of a systematic sample of rejected facts that an LLM judge (gpt-5.4-mini) also finds unsupported by the cited source. Same for needs_review.",
+      "n": "1303 facts; judged 14 rejected + 15 needs_review",
+      "metrics": {
+        "total": 1303,
+        "verified": 1141,
+        "needs_review": 148,
+        "rejected": 14,
+        "pending": 0,
+        "rejection_precision": 0.643,
+        "needs_review_unsupported_rate": 0.467
+      },
+      "tables": [
+        {
+          "title": "Status x reason",
+          "columns": [
+            "status | reason",
+            "count"
+          ],
+          "rows": [
+            [
+              "verified | (none)",
+              1141
+            ],
+            [
+              "needs_review | event_date not found in source",
+              58
+            ],
+            [
+              "needs_review | jev: supports",
+              55
+            ],
+            [
+              "needs_review | jev: unsupported",
+              28
+            ],
+            [
+              "rejected | quote not found in source",
+              14
+            ],
+            [
+              "needs_review | jev: contradicts",
+              5
+            ],
+            [
+              "needs_review | amount not found in source",
+              2
+            ]
+          ]
+        },
+        {
+          "title": "Jev verdicts",
+          "columns": [
+            "jev_support",
+            "count"
+          ],
+          "rows": [
+            [
+              "supports",
+              1254
+            ],
+            [
+              "unsupported",
+              30
+            ],
+            [
+              "(not audited)",
+              14
+            ],
+            [
+              "contradicts",
+              5
+            ]
+          ]
+        },
+        {
+          "title": "Rejected but judged supported (possible false rejections)",
+          "columns": [
+            "source_ref",
+            "summary",
+            "reason stored"
+          ],
+          "rows": [
+            [
+              "doc:21122771228#p1",
+              "Defendants allege the plaintiff failed to use brakes, signals, and the horn properly.",
+              "quote not found in source (overlap 0.83)"
+            ],
+            [
+              "doc:21122792168#p5",
+              "A May 24, 2023 right shoulder MRI showed an infraspinatus tendon tear and posterior inferior labral tear.",
+              "quote not found in source (overlap 0.61)"
+            ],
+            [
+              "doc:21122773658#p4",
+              "The accident report cover sheet also lists the accident date as 4/23/2023.",
+              "quote not found in source (overlap 0.50)"
+            ],
+            [
+              "doc:21122791073#p22",
+              "The CV lists a 2013 presentation on using mirror therapy to treat phantom limb pain at the Design of Medical Devices Conference.",
+              "quote not found in source (overlap 0.42)"
+            ],
+            [
+              "doc:21122779133#p1",
+              "The EMG report found left sensory radial peripheral neuropathy in the upper extremities study.",
+              "quote not found in source (overlap 0.83)"
+            ]
+          ]
+        }
+      ],
+      "cost_usd": 0.016801,
+      "secs": 15.953,
+      "matter_id": 1811206208,
+      "matter_label": "Justin Sapini (00001-Sapini)",
+      "generated_at": "2026-10-02T21:21:58.723Z"
+    },
+    {
+      "id": "contradictions",
+      "name": "Contradiction detection",
+      "origin": "Internal; hit rate against the 21 contradictions in the answer key (section 1.8), LLM-matched",
+      "adaptation": "Surfaced = contradictions table + gate items with status 'conflicting'. Hit rate: share of key contradictions an LLM judge matches to a surfaced item. Validity: LLM judge on each surfaced contradiction's quoted claims.",
+      "n": "21 key contradictions; 12 surfaced contradictions (+2 conflicting gates); 12 judged for validity",
+      "metrics": {
+        "hit_rate": 0.381,
+        "hits": 8,
+        "key_total": 21,
+        "surfaced": 14,
+        "surfaced_valid_rate": 0.667
+      },
+      "tables": [
+        {
+          "title": "Key contradictions",
+          "columns": [
+            "id",
+            "contradiction",
+            "matched",
+            "surfaced match"
+          ],
+          "rows": [
+            [
+              "k01",
+              "Accident accounts: client has given several inconsistent accounts of the crash mechanism (Metro-North merged into him vs his car struck theirs vs sideswiped by a truck and hit the sidewalk), plus Ferrara's own account on a different road",
+              "yes",
+              "Different vehicles described: The file gives incompatible accounts of whether the striking vehicle was a Metro-North utility vehicle or a tr"
+            ],
+            [
+              "k02",
+              "Prior injuries: client said none at intake and 'not applicable' under oath, but his own records show a 2011 left ankle fracture",
+              "yes",
+              "Prior ankle fracture versus denial: This creates impeachment risk and supports a defense argument that the client minimized or concealed pri"
+            ],
+            [
+              "k03",
+              "Scope of employment said to be never investigated, while the incident report marks Ferrara On-Duty heading to the jobsite",
+              "no",
+              ""
+            ],
+            [
+              "k04",
+              "Notes say Kyle Pullano was never contacted, but the firm subpoenaed him for an EBT",
+              "no",
+              ""
+            ],
+            [
+              "k05",
+              "Incident report described as missing / not produced, but it is annexed to defendants' response",
+              "yes",
+              "Incident report was already in file: This creates wasted effort and a credibility problem if counsel keeps claiming the incident report is m"
+            ],
+            [
+              "k06",
+              "Notes say no police report obtained, but the sworn discovery response says a police accident report is annexed",
+              "yes",
+              "Police report said missing despite annexed copy: This creates a wasted-effort and credibility issue: if the police accident report was alrea"
+            ],
+            [
+              "k07",
+              "Notes say no scene photos, but the sworn response says plaintiff has 22 photographs",
+              "yes",
+              "Scene photos already in file: This creates a wasted-effort and credibility problem: the file already contains sources saying the client has "
+            ],
+            [
+              "k08",
+              "Coverage: Metro-North self-insured / no limit vs $100k/$300k confirmed vs Travelers policy on the incident report cover sheet",
+              "no",
+              ""
+            ],
+            [
+              "k09",
+              "Index number mismatch (150940/2024 vs 160000/2024) and statute of limitations / another action pending exposure",
+              "no",
+              ""
+            ],
+            [
+              "k10",
+              "IME dates in Clio (Sept 2026) conflict with the dates inside the IME reports (March 2026)",
+              "no",
+              ""
+            ],
+            [
+              "k11",
+              "IME watchdog: conflicting accounts of which exam the watchdog attended and how long each exam lasted",
+              "no",
+              ""
+            ],
+            [
+              "k12",
+              "Note says expert reports were served before the service emails were sent",
+              "no",
+              ""
+            ],
+            [
+              "k13",
+              "Who is holding up the second surgery: client deferring vs surgeon vs scheduling vs re-evaluation",
+              "no",
+              ""
+            ],
+            [
+              "k14",
+              "Document dates in Clio do not match the filing dates printed in the documents",
+              "no",
+              ""
+            ],
+            [
+              "k15",
+              "Calendar shows a compliance conference held 2025-04-15, but the letter to the judge says no preliminary conference was set",
+              "no",
+              ""
+            ],
+            [
+              "k16",
+              "Client lives in Texas but claims weekly PT and chiropractic in New York",
+              "no",
+              ""
+            ],
+            [
+              "k17",
+              "Client claims total disability vs IME says he can return to work without restrictions",
+              "yes",
+              "Work capacity changed by 2026: This creates an impeachment issue if the case is presented as ongoing total disability; the defense can use t"
+            ],
+            [
+              "k18",
+              "PT frequency stated as weekly in some items and twice a week in others; PT discharged in 2023 but notes continue",
+              "yes",
+              "Hospital discharge conflicts: This creates an impeachment issue on whether the client was ever discharged from care, which can affect treatm"
+            ],
+            [
+              "k19",
+              "Request counts in task/calendar text (third, fourth request) do not match the actual number of approaches",
+              "no",
+              ""
+            ],
+            [
+              "k20",
+              "Medical causation: clean CT the day after vs TBI on DTI months later; glenoid hypoplasia; defense experts say no trauma / resolved",
+              "yes",
+              "MRI interpreted opposite ways: This creates a direct impeachment issue over whether the MRI supports a traumatic brain injury claim, and it "
+            ],
+            [
+              "k21",
+              "Duplicate items: identical email bodies, repeated no-fault exhaustion notices, Medicaid lien dates out of order",
+              "no",
+              ""
+            ]
+          ]
+        },
+        {
+          "title": "Surfaced contradictions judged",
+          "columns": [
+            "title",
+            "severity",
+            "valid",
+            "reason"
+          ],
+          "rows": [
+            [
+              "MRI interpretation disagrees on knee tears",
+              "high",
+              "yes",
+              "The claims are genuinely inconsistent: one source reports objective MRI findings of horizontal tears in both knees, while another source interpreting the same MRIs says there was no recent traumatic injury or internal derangement. A meniscal tear is a form of internal derangement, so these are not merely different phrasings or compatible observations; they present a real dispute about what the MRIs showed."
+            ],
+            [
+              "Different vehicles described",
+              "high",
+              "no",
+              "The quoted statements are not a clear factual conflict. A \"truck\" can be a lay description of a Metro-North utility vehicle, so the doctor’s note is compatible with the intake/field-note descriptions rather than truly contradictory."
+            ],
+            [
+              "MRI interpreted opposite ways",
+              "high",
+              "yes",
+              "The claims present a real conflict: one source describes the 2023-08-08 MRI/DTI as abnormal and supportive of traumatic brain injury, while another says the same study shows no traumatic injury and is within normal limits. Those are directly incompatible interpretations of the same imaging, so this is a genuine contradiction worth flagging."
+            ],
+            [
+              "Mechanism described two ways",
+              "high",
+              "yes",
+              "The cited descriptions are materially inconsistent about the crash mechanism: one version says the Metro-North vehicle merged into the client’s lane and struck him, while another says the client’s own vehicle struck the other vehicle as both merged. Those are not compatible ways of describing the same impact direction, so this is a real contradiction worth flagging."
+            ],
+            [
+              "Prior ankle fracture versus denial",
+              "high",
+              "yes",
+              "The claims are genuinely inconsistent: the intake paperwork says the plaintiff denied prior work-related injuries and prior injury history, while the file also contains a 2011 left ankle/foot X-ray showing an avulsion fracture of the anterior talus. Those are not compatible facts, and the X-ray is direct evidence of a prior ankle injury that could contradict the denial."
+            ],
+            [
+              "Work capacity changed by 2026",
+              "high",
+              "yes",
+              "The quoted statements are directly inconsistent on work capacity: the 2024 record says he was \"totally disabled from his usual occupation,\" while the 2026 opinion says he is \"able to work and perform activities of daily living without restrictions.\" A lawyer would likely treat this as a real impeachment issue because it reflects a materially different assessment of disability and employability."
+            ],
+            [
+              "Hospital discharge conflicts",
+              "high",
+              "yes",
+              "These claims directly conflict: one source says the client \"has not been discharged by anyone,\" while the emergency department record says the client was \"Discharged home the same day\" on 04/24/2023. A lawyer would likely view this as a real impeachment issue about discharge status and timing."
+            ],
+            [
+              "Scene photos already in file",
+              "medium",
+              "no",
+              "The cited items are not a clean contradiction. One note says the 22 scene photos had not yet been obtained; a later email says the sender had 22 photos on his phone and could send them, which is a compatible later update rather than a direct conflict. The separate document about plaintiff possessing 22 color-copied photos is also not necessarily the same thing as the scene photos referenced in the note."
+            ],
+            [
+              "Incident report was already in file",
+              "medium",
+              "yes",
+              "The claims directly conflict: one source says the Metro-North Railroad Incident Report was annexed to the discovery response, while a later email says the incident report had still not been produced and did not appear in the response. These are not compatible facts or a mere paraphrase, so this is a real contradiction."
+            ],
+            [
+              "Coverage already in file",
+              "medium",
+              "no",
+              "The statements are not a real conflict. The first says coverage information would be provided separately, and the later email actually provides the bodily injury limits. That is a later update/fulfillment, not an inconsistent statement."
+            ],
+            [
+              "Police report said missing despite annexed copy",
+              "medium",
+              "yes",
+              "The claims are in real tension: one source says a copy of the Police Accident Report was annexed, while the later note says there is no police accident report in the file. A lawyer could view that as a genuine inconsistency about whether the report was present in the file/discovery materials, not merely a paraphrase or compatible detail."
+            ],
+            [
+              "Earlier note says no report obtained",
+              "medium",
+              "no",
+              "The statements are not necessarily contradictory: the 2023-05-23 note says no police accident report had been obtained at that time, while the discovery response says a copy of the report was annexed, which could have happened later. Without proof the report was already available when the note was written, this is a chronological update rather than a real conflict."
+            ]
+          ]
+        }
+      ],
+      "cost_usd": 0.08643200000000001,
+      "secs": 60.624,
+      "matter_id": 1811206208,
+      "matter_label": "Justin Sapini (00001-Sapini)",
+      "generated_at": "2026-10-02T21:21:38.319Z"
+    },
+    {
+      "id": "rag",
+      "name": "RAG quality (Ask the case)",
+      "origin": "RAGAS (Es et al., 2023, arXiv:2309.15217): faithfulness, answer relevancy, context precision, context recall",
+      "adaptation": "25 questions with gold answers and gold source refs written from the answer key. System = lib/server/retrieval/ask (query expansion + hybrid search k=15 + gpt-5.5 answer over verified facts and passages). One gpt-5.4-mini judge call per question produces the RAGAS intermediate judgments; answer relevancy = mean cosine (text-embedding-3-large) between the question and 3 judge-generated reverse questions, as in RAGAS. Contexts scored = top-10 retrieved passages. Caveat: ask also gives the answer model every verified fact line (not only the passages), but faithfulness here is judged against the top-10 passages only, so it is a lower bound.",
+      "n": 25,
+      "metrics": {
+        "faithfulness": 0.87,
+        "answer_relevancy": 0.677,
+        "context_precision": 0.717,
+        "context_recall": 0.893,
+        "answer_correctness": 0.84,
+        "retrieval_hit_at_5": 0.88,
+        "retrieval_hit_at_10": 0.92,
+        "gold_ref_recall_at_10": 0.787,
+        "median_latency_s": 11.854
+      },
+      "tables": [
+        {
+          "title": "Per question",
+          "columns": [
+            "id",
+            "question",
+            "correct",
+            "faithful",
+            "ctx precision",
+            "ctx recall",
+            "hit@10"
+          ],
+          "rows": [
+            [
+              "q01",
+              "What is the date of the accident and where did it happen?",
+              0.5,
+              0.5,
+              1,
+              0.333,
+              0
+            ],
+            [
+              "q02",
+              "What is the estimated case value?",
+              1,
+              1,
+              0.667,
+              1,
+              1
+            ],
+            [
+              "q03",
+              "What are the defendant's policy limits and has coverage been confirmed?",
+              1,
+              1,
+              0.876,
+              1,
+              1
+            ],
+            [
+              "q04",
+              "What are the medical specials to date?",
+              1,
+              1,
+              0.276,
+              1,
+              1
+            ],
+            [
+              "q05",
+              "How much wage loss is claimed and what supports it?",
+              1,
+              0.667,
+              0.346,
+              1,
+              1
+            ],
+            [
+              "q06",
+              "When was the left shoulder surgery and who performed it?",
+              1,
+              1,
+              1,
+              1,
+              1
+            ],
+            [
+              "q07",
+              "What is the status of the right shoulder surgery?",
+              0.5,
+              0.8,
+              0.744,
+              0.667,
+              1
+            ],
+            [
+              "q08",
+              "Was the no-fault coverage exhausted, and how much was it?",
+              1,
+              1,
+              0.933,
+              1,
+              1
+            ],
+            [
+              "q09",
+              "Is there a Medicaid lien and how much?",
+              1,
+              1,
+              0.957,
+              1,
+              1
+            ],
+            [
+              "q10",
+              "How many different accounts of the accident has the client given?",
+              1,
+              1,
+              0.768,
+              1,
+              1
+            ],
+            [
+              "q11",
+              "Was the Metro-North driver on duty at the time of the crash?",
+              1,
+              1,
+              0.813,
+              1,
+              1
+            ],
+            [
+              "q12",
+              "Who is Kyle Pullano and has he been contacted?",
+              0.5,
+              0.8,
+              1,
+              0.667,
+              1
+            ],
+            [
+              "q13",
+              "What prior injury did the client fail to disclose?",
+              1,
+              1,
+              1,
+              1,
+              1
+            ],
+            [
+              "q14",
+              "What did the defense orthopedic IME conclude?",
+              1,
+              1,
+              1,
+              1,
+              1
+            ],
+            [
+              "q15",
+              "What did the defense neurology expert conclude about the brain injury?",
+              1,
+              0.833,
+              0.583,
+              1,
+              1
+            ],
+            [
+              "q16",
+              "What did the defense radiology review find?",
+              1,
+              1,
+              0.789,
+              1,
+              1
+            ],
+            [
+              "q17",
+              "When was the last contact with the client and what was it about?",
+              1,
+              1,
+              0.267,
+              1,
+              1
+            ],
+            [
+              "q18",
+              "Which tasks are overdue?",
+              1,
+              1,
+              0.268,
+              1,
+              1
+            ],
+            [
+              "q19",
+              "Why is discovery stuck?",
+              0.5,
+              0.375,
+              0.63,
+              1,
+              1
+            ],
+            [
+              "q20",
+              "What affirmative defenses did the defendants plead?",
+              0.5,
+              0.833,
+              0.692,
+              0.667,
+              1
+            ],
+            [
+              "q21",
+              "What is the index number and who is the judge?",
+              1,
+              1,
+              0.771,
+              1,
+              1
+            ],
+            [
+              "q22",
+              "Why can't the medical specials be closed?",
+              1,
+              0.571,
+              0.369,
+              1,
+              1
+            ],
+            [
+              "q23",
+              "What was the adjuster's response to the demand?",
+              1,
+              1,
+              0.778,
+              1,
+              1
+            ],
+            [
+              "q24",
+              "Has SportsCare physical therapy responded to records requests?",
+              0,
+              0.875,
+              0.932,
+              1,
+              1
+            ],
+            [
+              "q25",
+              "What is the client's current address situation relative to his treatment?",
+              0.5,
+              0.5,
+              0.467,
+              0,
+              0
+            ]
+          ]
+        }
+      ],
+      "secs": 131.273,
+      "cost_usd": 0.021769999999999998,
+      "matter_id": 1811206208,
+      "matter_label": "Justin Sapini (00001-Sapini)",
+      "generated_at": "2026-10-02T21:25:38.572Z"
+    },
+    {
+      "id": "retrieval_ablation",
+      "name": "Retrieval ablation (hybrid vs vector vs keyword)",
+      "origin": "Standard IR recall@k (as in BEIR, Thakur et al., 2021, arXiv:2104.08663); RRF from Cormack et al., 2009",
+      "adaptation": "Same 25 questions, gold source refs from qa.json. Raw hybrid_search RPC (RRF k=60) with no query expansion and no dedup; vector-only passes an empty keyword query, keyword-only passes no embeddings. A doc page hit counts for its document. hit@k = any gold source in top k; recall@k = share of gold sources in top k.",
+      "n": 25,
+      "metrics": {
+        "hybrid_recall_at_10": 0.767,
+        "vector_only_recall_at_10": 0.867,
+        "keyword_only_recall_at_10": 0.593
+      },
+      "tables": [
+        {
+          "title": "Recall by retriever",
+          "columns": [
+            "retriever",
+            "hit@5",
+            "hit@10",
+            "recall@5",
+            "recall@10"
+          ],
+          "rows": [
+            [
+              "hybrid",
+              0.88,
+              0.92,
+              0.673,
+              0.767
+            ],
+            [
+              "vector_only",
+              0.96,
+              0.96,
+              0.76,
+              0.867
+            ],
+            [
+              "keyword_only",
+              0.64,
+              0.72,
+              0.44,
+              0.593
+            ]
+          ]
+        }
+      ],
+      "cost_usd": 0.021769999999999998,
+      "secs": 142.071,
+      "matter_id": 1811206208,
+      "matter_label": "Justin Sapini (00001-Sapini)",
+      "generated_at": "2026-10-02T21:25:38.573Z"
+    },
+    {
+      "id": "needle",
+      "name": "Long-document needle retrieval",
+      "origin": "Needle-in-a-Haystack (Kamradt, 2023) and RULER (Hsieh et al., 2024, arXiv:2404.06654); here on real pages, nothing planted",
+      "adaptation": "Longest document in the matter (04-medical-records__created__advanced-rockland-chiropractic-records-2023-04-26.pdf, 131 pages). Up to 4 pages per depth bucket chosen systematically; gpt-5.4-mini writes one question per page from a page-specific detail (questions committed in eval/results/suites/needle.questions.json). Retrieval = gist hybrid search (k=10, no expansion, with dedup). Page hit = the exact page in top 10; also reported straight from the hybrid_search RPC before the 2-per-document dedup cap. Caveat: daily treatment notes are repetitive, so near-duplicate pages make page-level hits harder and doc-level hits easier.",
+      "n": 20,
+      "metrics": {
+        "page_recall_at_10": 0.3,
+        "raw_rpc_page_recall_at_10": 0.3,
+        "doc_recall_at_10": 0.85,
+        "doc_pages": 131
+      },
+      "tables": [
+        {
+          "title": "Recall by page depth",
+          "columns": [
+            "pages",
+            "n",
+            "page hit@10",
+            "page hit@10 before dedup",
+            "doc hit@10"
+          ],
+          "rows": [
+            [
+              "1-25",
+              4,
+              0.75,
+              0.75,
+              1
+            ],
+            [
+              "26-50",
+              4,
+              0,
+              0,
+              0.5
+            ],
+            [
+              "51-75",
+              4,
+              0,
+              0,
+              0.75
+            ],
+            [
+              "76-100",
+              4,
+              0.5,
+              0.25,
+              1
+            ],
+            [
+              "101-131",
+              4,
+              0.25,
+              0.5,
+              1
+            ]
+          ]
+        }
+      ],
+      "cost_usd": 0.006331799999999999,
+      "secs": 26.959,
+      "matter_id": 1811206208,
+      "matter_label": "Justin Sapini (00001-Sapini)",
+      "generated_at": "2026-10-02T21:25:14.315Z"
+    },
+    {
+      "id": "agent",
+      "name": "Agent harness (Ask gist OS)",
+      "origin": "tau-bench (Yao et al., 2024, arXiv:2406.12045): programmatic task checks and the pass^k reliability metric",
+      "adaptation": "10 tasks x 2 trials against lib/server/assistant/agent.ts with four programmatic checks (required tool, valid cites, gold key facts, no invented numbers). Implemented in scripts/eval.ts (suiteAgent).",
+      "n": "0 completed (10 tasks x 2 trials planned)",
+      "metrics": {
+        "status": "not run"
+      },
+      "notes": [
+        "NOT RUN in this build. Three attempts failed: two on the shared gpt-5.4-mini rate limit (200k TPM, shared with the live app and the other eval suites) and the third when the OpenAI organization ran out of API credits at 14:37 PT. No partial numbers are reported. Rerun: bun run job scripts/eval.ts --suites agent && bun run job scripts/eval.ts --merge"
+      ],
+      "cost_usd": 0,
+      "matter_id": 1811206208,
+      "matter_label": "Justin Sapini (00001-Sapini)",
+      "generated_at": "2026-10-02T21:37:26.833107Z"
+    },
+    {
+      "id": "memory",
+      "name": "Per-profile memory",
+      "origin": "LongMemEval (Wu et al., 2024, arXiv:2410.10813): information extraction, knowledge update, temporal reasoning, abstention",
+      "adaptation": "Scripted multi-session run against the real assistant with a throwaway profile (all rows deleted after): 3 sessions state preferences/focus, 1 later session updates a preference, then 6 probe sessions. Each message is a new thread, so only profile_memories carries information across. An LLM judge (gpt-5.4-mini) grades each probe against the expected behavior.",
+      "n": "6 probes over 10 sessions",
+      "metrics": {
+        "accuracy": 1,
+        "memories_stored": 9,
+        "turn_cost_usd": 0.0074
+      },
+      "tables": [
+        {
+          "title": "By category",
+          "columns": [
+            "category",
+            "passed",
+            "n"
+          ],
+          "rows": [
+            [
+              "single-session recall",
+              2,
+              2
+            ],
+            [
+              "knowledge update",
+              1,
+              1
+            ],
+            [
+              "temporal",
+              1,
+              1
+            ],
+            [
+              "abstention",
+              2,
+              2
+            ]
+          ]
+        },
+        {
+          "title": "Probes",
+          "columns": [
+            "category",
+            "question",
+            "pass",
+            "memories recalled",
+            "judge reason"
+          ],
+          "rows": [
+            [
+              "single-session recall",
+              "What is my main focus on this file? Answer from what you remember about me.",
+              "yes",
+              5,
+              "The answer matches the expected memory: it identifies the user's main focus as the scope-of-employment issue with Metro-North."
+            ],
+            [
+              "single-session recall",
+              "Which doctor did I ask you to flag for me?",
+              "yes",
+              5,
+              "The answer correctly identifies Dr. Capiola, matching the expected response."
+            ],
+            [
+              "knowledge update",
+              "How do I want my answers ordered? Answer from what you remember about me.",
+              "yes",
+              5,
+              "The answer matches the remembered preference: it says to lead with the next deadline first, not money first."
+            ],
+            [
+              "temporal",
+              "Before my latest change, what did I used to want you to lead with?",
+              "yes",
+              5,
+              "The answer correctly states the earlier preference: to lead with money first, which matches the expected \"Money numbers first.\""
+            ],
+            [
+              "abstention",
+              "What is my paralegal's favorite lunch spot? Answer from what you remember about me.",
+              "yes",
+              5,
+              "The answer correctly abstains from naming a lunch spot and does not invent one. It says it doesn’t remember being told that information, which matches the expected behavior."
+            ],
+            [
+              "abstention",
+              "What did I tell you my billing rate is?",
+              "yes",
+              5,
+              "The answer correctly abstains: it does not invent a billing rate and says it doesn’t have the billing rate saved in memory."
+            ]
+          ]
+        },
+        {
+          "title": "Memories stored after the setup sessions",
+          "columns": [
+            "memory"
+          ],
+          "rows": [
+            [
+              "(preference) User always wants the money numbers first, before anything else."
+            ],
+            [
+              "(preference) Prefers money numbers first before anything else."
+            ],
+            [
+              "(focus) User is the attorney on this file and their main focus is the scope-of-employment question with Metro-North."
+            ],
+            [
+              "(focus) Prioritizes the scope-of-employment issue with Metro-North on this file"
+            ],
+            [
+              "(relationship) Is the attorney handling this matter"
+            ],
+            [
+              "(relationship) User tracks Dr. Capiola personally; flag anything about him in future case updates."
+            ],
+            [
+              "(focus) Keeps tracking Dr. Capiola personally and wants anything about him flagged."
+            ],
+            [
+              "(preference) User now prefers updates to lead with the next deadline instead of money first."
+            ],
+            [
+              "(preference) Prefers updates to lead with the next deadline instead of money amounts"
+            ]
+          ]
+        }
+      ],
+      "cost_usd": 0.0623996,
+      "secs": 247.943,
+      "matter_id": 1811206208,
+      "matter_label": "Justin Sapini (00001-Sapini)",
+      "generated_at": "2026-10-02T21:32:59.934Z"
+    },
+    {
+      "id": "cost_latency",
+      "name": "Cost and latency per case",
+      "origin": "Internal (from agent_runs, agent_tasks and llm_calls)",
+      "adaptation": "The first true cold extraction was spread over several parallel development runs, so no single run is a clean cold run. We report: first_pass_extract_cost = earliest logged call per extraction shard (what a new case pays to extract); cold_run = the completed full pipeline run (extract + synth present) with the highest logged cost (its extraction was already cached; it paid for reconcile, gates, Jev and embeddings); warm run = latest completed full run whose extraction tasks were all cache hits. Costs are tokens x the hardcoded price table in lib/server/llm.ts (Jev cost is estimated from characters / 4). No fresh rerun was done for this eval to avoid mutating the live matter; timings are from logged runs.",
+      "n": "44 logged runs; 13 complete full runs; 4917 logged LLM calls",
+      "metrics": {
+        "cold_run_cost_usd": 0.155734,
+        "cold_run_secs": 250.586,
+        "cold_run_id": "5175ab63-9663-430f-a251-67409a99fc76",
+        "warm_run_cost_usd": 0.022753,
+        "warm_run_secs": 296.161,
+        "warm_run_id": "44a3fe08-ffe0-46e9-92ab-2b97beaf1116",
+        "first_pass_extract_cost_usd": 0.41489600000000004,
+        "extract_shards_logged": 69,
+        "all_logged_llm_cost_usd": 3.882292,
+        "all_runs_cost_usd": 1.700873
+      },
+      "tables": [
+        {
+          "title": "All logged LLM cost by stage family (includes development reruns and interactive use)",
+          "columns": [
+            "family",
+            "calls",
+            "cost $"
+          ],
+          "rows": [
+            [
+              "ask",
+              33,
+              1.478931
+            ],
+            [
+              "gate",
+              1517,
+              0.7583540000000001
+            ],
+            [
+              "reconcile",
+              1274,
+              0.5301
+            ],
+            [
+              "extract",
+              75,
+              0.472067
+            ],
+            [
+              "synth",
+              12,
+              0.331788
+            ],
+            [
+              "embed",
+              85,
+              0.111622
+            ],
+            [
+              "audit",
+              213,
+              0.08569700000000001
+            ],
+            [
+              "voice",
+              1,
+              0.030768
+            ],
+            [
+              "ocr",
+              17,
+              0.023592
+            ],
+            [
+              "assistant",
+              51,
+              0.02045
+            ],
+            [
+              "agent_action",
+              24,
+              0.016272
+            ],
+            [
+              "search",
+              1287,
+              0.012704
+            ],
+            [
+              "share",
+              271,
+              0.008092
+            ],
+            [
+              "agent_action_leak",
+              56,
+              0.0010409999999999998
+            ],
+            [
+              "client_photo",
+              1,
+              0.000815
+            ]
+          ]
+        },
+        {
+          "title": "Most expensive full run by stage (labelled cold_run in metrics)",
+          "columns": [
+            "stage",
+            "tasks",
+            "cached",
+            "cost $",
+            "tokens in",
+            "wall s"
+          ],
+          "rows": [
+            [
+              "extract",
+              69,
+              69,
+              0,
+              0,
+              9.512
+            ],
+            [
+              "ocr",
+              30,
+              30,
+              0,
+              0,
+              0.83
+            ],
+            [
+              "sync",
+              10,
+              1,
+              0,
+              0,
+              22.782
+            ],
+            [
+              "jev",
+              53,
+              0,
+              0.015867,
+              377778,
+              6.254
+            ],
+            [
+              "embed",
+              1,
+              0,
+              0.011264,
+              86645,
+              50.605
+            ],
+            [
+              "reconcile",
+              112,
+              0,
+              0.079558,
+              134592,
+              65.009
+            ],
+            [
+              "gate",
+              48,
+              6,
+              0.049046,
+              179726,
+              51.27
+            ],
+            [
+              "synth",
+              1,
+              1,
+              0,
+              0,
+              0.285
+            ]
+          ]
+        },
+        {
+          "title": "Warm (cached) run by stage",
+          "columns": [
+            "stage",
+            "tasks",
+            "cached",
+            "cost $",
+            "tokens in",
+            "wall s"
+          ],
+          "rows": [
+            [
+              "reconcile",
+              112,
+              107,
+              0.0032229999999999997,
+              8583,
+              26.013
+            ],
+            [
+              "ocr",
+              30,
+              30,
+              0,
+              0,
+              2.069
+            ],
+            [
+              "extract",
+              69,
+              69,
+              0,
+              0,
+              5.736
+            ],
+            [
+              "sync",
+              10,
+              1,
+              0,
+              0,
+              24.464
+            ],
+            [
+              "synth",
+              1,
+              0,
+              0.017414000000000002,
+              8016,
+              17.596
+            ],
+            [
+              "embed",
+              1,
+              1,
+              0,
+              0,
+              0.706
+            ],
+            [
+              "gate",
+              48,
+              45,
+              0.002117,
+              11696,
+              39.131
+            ]
+          ]
+        },
+        {
+          "title": "All logged LLM calls for this matter by purpose",
+          "columns": [
+            "purpose | model",
+            "calls",
+            "cost $",
+            "tokens in",
+            "tokens out"
+          ],
+          "rows": [
+            [
+              "ask | gpt-5.5",
+              33,
+              1.478931,
+              1578234,
+              8329
+            ],
+            [
+              "gate | gpt-5.4-mini",
+              687,
+              0.611246,
+              2392888,
+              124909
+            ],
+            [
+              "reconcile | gpt-5.4-mini",
+              771,
+              0.513347,
+              897923,
+              153073
+            ],
+            [
+              "synth.story | gpt-5.5",
+              12,
+              0.331788,
+              92931,
+              25220
+            ],
+            [
+              "gate.jev | jev-1.13.0",
+              830,
+              0.14710800000000002,
+              3502565,
+              36062
+            ],
+            [
+              "embed | text-embedding-3-large",
+              85,
+              0.111622,
+              858628,
+              0
+            ],
+            [
+              "audit | jev-1.13.0",
+              213,
+              0.08569700000000001,
+              2040399,
+              264817
+            ],
+            [
+              "extract:08-experts__doc-55__expert-exchange-neur p1-10 | gpt-5.4-mini",
+              3,
+              0.044558999999999994,
+              25320,
+              21044
+            ],
+            [
+              "extract:08-experts__doc-56__ime-orthopedic-hosti p1-10 | gpt-5.4-mini",
+              3,
+              0.037447,
+              31110,
+              17081
+            ],
+            [
+              "voice | gpt-realtime-mini",
+              1,
+              0.030768,
+              1647,
+              808
+            ],
+            [
+              "ocr | gpt-5.4-mini",
+              17,
+              0.023592,
+              43254,
+              6591
+            ],
+            [
+              "assistant.turn | gpt-5.4-mini",
+              20,
+              0.018431999999999997,
+              62155,
+              3520
+            ],
+            [
+              "agent_action | gpt-5.4-mini",
+              24,
+              0.016272,
+              13400,
+              6461
+            ],
+            [
+              "extract:04-medical-records__created__advanced-ro p1-10 | gpt-5.4-mini",
+              1,
+              0.015962999999999998,
+              5757,
+              7262
+            ],
+            [
+              "extract:04-medical-records__created__advanced-ro p91-100 | gpt-5.4-mini",
+              1,
+              0.013758,
+              5686,
+              6168
+            ],
+            [
+              "extract:04-medical-records__created__mcculloch-o p1-8 | gpt-5.4-mini",
+              1,
+              0.012361,
+              5580,
+              5483
+            ],
+            [
+              "extract:05-medical-bills__created__advanced-rock p11-15 | gpt-5.4-mini",
+              1,
+              0.011904,
+              3816,
+              5475
+            ],
+            [
+              "extract:05-medical-bills__created__sportscare-ph p1-3 | gpt-5.4-mini",
+              2,
+              0.011885,
+              5740,
+              5225
+            ],
+            [
+              "search.expand | gpt-5.4-mini",
+              47,
+              0.011323999999999999,
+              7455,
+              4730
+            ],
+            [
+              "extract:02-pleadings__doc-05__verified-answer-de p11-20 | gpt-5.4-mini",
+              1,
+              0.011173,
+              8902,
+              4618
+            ],
+            [
+              "extract:notes 4/5 | gpt-5.4-mini",
+              1,
+              0.011079,
+              3445,
+              5253
+            ],
+            [
+              "extract:notes 2/5 | gpt-5.4-mini",
+              1,
+              0.010751,
+              3252,
+              5113
+            ],
+            [
+              "extract:02-pleadings__doc-07__bill-of-particular p1-10 | gpt-5.4-mini",
+              1,
+              0.010322,
+              6174,
+              4533
+            ],
+            [
+              "reconcile.jev | jev-1.13.0",
+              498,
+              0.010247,
+              243973,
+              14181
+            ],
+            [
+              "extract:04-medical-records__created__sportscare- p21-26 | gpt-5.4-mini",
+              1,
+              0.009092000000000001,
+              3865,
+              4063
+            ],
+            [
+              "extract:02-pleadings__doc-05__verified-answer-de p1-10 | gpt-5.4-mini",
+              1,
+              0.008452,
+              7712,
+              3262
+            ],
+            [
+              "extract:05-medical-bills__created__advanced-rock p1-10 | gpt-5.4-mini",
+              1,
+              0.008426,
+              6319,
+              3423
+            ],
+            [
+              "extract:tasks+calendar+fields 1/3 | gpt-5.4-mini",
+              1,
+              0.008196,
+              3470,
+              3664
+            ],
+            [
+              "extract:08-experts__doc-56__ime-orthopedic-hosti p11-15 | gpt-5.4-mini",
+              2,
+              0.007665,
+              9666,
+              3114
+            ],
+            [
+              "extract:notes 1/5 | gpt-5.4-mini",
+              1,
+              0.007547,
+              3419,
+              3346
+            ],
+            [
+              "extract:08-experts__doc-47__radiology-review-kat p1-10 | gpt-5.4-mini",
+              1,
+              0.007364,
+              9104,
+              2544
+            ],
+            [
+              "extract:notes 3/5 | gpt-5.4-mini",
+              1,
+              0.007329,
+              2669,
+              3475
+            ],
+            [
+              "extract:08-experts__doc-55__expert-exchange-neur p21-30 | gpt-5.4-mini",
+              1,
+              0.007206000000000001,
+              11617,
+              2151
+            ],
+            [
+              "extract:tasks+calendar+fields 2/3 | gpt-5.4-mini",
+              1,
+              0.007135,
+              4940,
+              2950
+            ],
+            [
+              "extract:04-medical-records__created__peter-kwan- p1-4 | gpt-5.4-mini",
+              1,
+              0.007111,
+              3237,
+              3151
+            ],
+            [
+              "extract:04-medical-records__created__advanced-ro p51-60 | gpt-5.4-mini",
+              1,
+              0.00666,
+              5623,
+              2627
+            ],
+            [
+              "extract:04-medical-records__created__advanced-ro p111-120 | gpt-5.4-mini",
+              1,
+              0.006647999999999999,
+              5617,
+              2622
+            ],
+            [
+              "extract:04-medical-records__created__advanced-ro p41-50 | gpt-5.4-mini",
+              1,
+              0.006626,
+              5623,
+              2610
+            ],
+            [
+              "reconcile.embed | text-embedding-3-large",
+              5,
+              0.0065060000000000005,
+              50046,
+              0
+            ],
+            [
+              "extract:emails+calls 1/5 | gpt-5.4-mini",
+              1,
+              0.006485,
+              3131,
+              2851
+            ],
+            [
+              "extract:08-experts__doc-55__expert-exchange-neur p11-20 | gpt-5.4-mini",
+              1,
+              0.006482,
+              9007,
+              2115
+            ],
+            [
+              "extract:04-medical-records__created__advanced-ro p21-30 | gpt-5.4-mini",
+              1,
+              0.006314,
+              5623,
+              2454
+            ],
+            [
+              "extract:emails+calls 3/5 | gpt-5.4-mini",
+              1,
+              0.006143,
+              3053,
+              2690
+            ],
+            [
+              "extract:emails+calls 4/5 | gpt-5.4-mini",
+              1,
+              0.006036,
+              3007,
+              2786
+            ],
+            [
+              "extract:emails+calls 2/5 | gpt-5.4-mini",
+              1,
+              0.006008,
+              3008,
+              2628
+            ],
+            [
+              "extract:02-pleadings__doc-01__summons-complaint. p1-8 | gpt-5.4-mini",
+              1,
+              0.005932000000000001,
+              5998,
+              2216
+            ],
+            [
+              "extract:04-medical-records__created__advanced-ro p11-20 | gpt-5.4-mini",
+              1,
+              0.0058920000000000005,
+              5623,
+              2243
+            ],
+            [
+              "extract:04-medical-records__created__advanced-ro p61-70 | gpt-5.4-mini",
+              1,
+              0.005812,
+              5623,
+              2203
+            ],
+            [
+              "extract:03-discovery__doc-08__response-discovery p1-10 | gpt-5.4-mini",
+              1,
+              0.00566,
+              5824,
+              2102
+            ],
+            [
+              "extract:04-medical-records__created__sportscare- p11-20 | gpt-5.4-mini",
+              1,
+              0.005639,
+              5683,
+              2109
+            ],
+            [
+              "extract:08-experts__doc-55__expert-exchange-neur p31-40 | gpt-5.4-mini",
+              1,
+              0.005418999999999999,
+              19107,
+              321
+            ],
+            [
+              "extract:04-medical-records__created__hudson-vall p1-7 | gpt-5.4-mini",
+              1,
+              0.005313,
+              4346,
+              2257
+            ],
+            [
+              "extract:04-medical-records__created__interventio p1-2 | gpt-5.4-mini",
+              1,
+              0.0051790000000000004,
+              2381,
+              2436
+            ],
+            [
+              "extract:04-medical-records__created__sportscare- p1-10 | gpt-5.4-mini",
+              1,
+              0.004940000000000001,
+              5722,
+              1755
+            ],
+            [
+              "share.redaction_gate | jev-1.13.0",
+              262,
+              0.004893,
+              116489,
+              18602
+            ],
+            [
+              "extract:04-medical-records__created__advanced-ro p81-90 | gpt-5.4-mini",
+              1,
+              0.004888,
+              5641,
+              1739
+            ],
+            [
+              "extract:04-medical-records__created__advanced-ro p121-130 | gpt-5.4-mini",
+              1,
+              0.004730000000000001,
+              5616,
+              1663
+            ],
+            [
+              "extract:04-medical-records__created__advanced-ro p31-40 | gpt-5.4-mini",
+              1,
+              0.004525,
+              5693,
+              1551
+            ],
+            [
+              "extract:03-discovery__doc-40__defendants-respons p1-10 | gpt-5.4-mini",
+              1,
+              0.0042380000000000004,
+              5800,
+              1394
+            ],
+            [
+              "extract:tasks+calendar+fields 3/3 | gpt-5.4-mini",
+              1,
+              0.004203999999999999,
+              2711,
+              1763
+            ],
+            [
+              "extract:contacts 1/1 | gpt-5.4-mini",
+              1,
+              0.004171,
+              4005,
+              1585
+            ],
+            [
+              "extract:05-medical-bills__created__mcculloch-ort p1-1 | gpt-5.4-mini",
+              1,
+              0.004006999999999999,
+              1996,
+              1898
+            ],
+            [
+              "extract:02-pleadings__doc-05__verified-answer-de p21-27 | gpt-5.4-mini",
+              1,
+              0.003959,
+              4285,
+              1444
+            ],
+            [
+              "extract:04-medical-records__created__advanced-ro p101-110 | gpt-5.4-mini",
+              1,
+              0.003953,
+              5603,
+              1276
+            ],
+            [
+              "extract:08-experts__doc-55__expert-exchange-neur p41-47 | gpt-5.4-mini",
+              1,
+              0.003864,
+              12168,
+              411
+            ],
+            [
+              "extract:04-medical-records__created__advanced-ro p71-80 | gpt-5.4-mini",
+              1,
+              0.0037280000000000004,
+              5623,
+              1161
+            ],
+            [
+              "extract:04-medical-records__created__montefiore- p1-3 | gpt-5.4-mini",
+              1,
+              0.003521,
+              2788,
+              1412
+            ],
+            [
+              "extract:02-pleadings__doc-41__bop-affirmative-de p1-3 | gpt-5.4-mini",
+              1,
+              0.003285,
+              2925,
+              1277
+            ],
+            [
+              "share.redaction_gate.fallback | gpt-5.4-mini",
+              9,
+              0.0032,
+              2238,
+              1320
+            ],
+            [
+              "extract:04-medical-records__created__new-horizon p1-3 | gpt-5.4-mini",
+              1,
+              0.003099,
+              2820,
+              1197
+            ],
+            [
+              "extract:emails+calls 5/5 | gpt-5.4-mini",
+              1,
+              0.003023,
+              2404,
+              1211
+            ],
+            [
+              "extract:05-medical-bills__created__hudson-valley p1-1 | gpt-5.4-mini",
+              1,
+              0.002898,
+              1913,
+              1210
+            ],
+            [
+              "extract:04-medical-records__created__advanced-ro p131-131 | gpt-5.4-mini",
+              1,
+              0.002699,
+              1765,
+              1129
+            ],
+            [
+              "extract:05-medical-bills__created__interventiona p1-1 | gpt-5.4-mini",
+              1,
+              0.002679,
+              1834,
+              1110
+            ],
+            [
+              "extract:01-intake__created__hipaa-authorization. p1-1 | gpt-5.4-mini",
+              1,
+              0.002644,
+              2041,
+              1067
+            ],
+            [
+              "extract:02-pleadings__doc-07__bill-of-particular p11-14 | gpt-5.4-mini",
+              1,
+              0.002427,
+              2980,
+              985
+            ],
+            [
+              "extract:05-medical-bills__created__montefiore-ny p1-1 | gpt-5.4-mini",
+              1,
+              0.002254,
+              1847,
+              1040
+            ],
+            [
+              "extract:04-medical-records__created__melinda-mil p1-2 | gpt-5.4-mini",
+              1,
+              0.002198,
+              2256,
+              817
+            ],
+            [
+              "extract:05-medical-bills__created__peter-kwan-ne p1-1 | gpt-5.4-mini",
+              1,
+              0.002186,
+              1857,
+              1005
+            ],
+            [
+              "extract:05-medical-bills__created__melinda-mille p1-1 | gpt-5.4-mini",
+              1,
+              0.002183,
+              1826,
+              1007
+            ],
+            [
+              "extract:05-medical-bills__created__new-horizon-s p1-1 | gpt-5.4-mini",
+              1,
+              0.002008,
+              1879,
+              913
+            ],
+            [
+              "assistant.extract | gpt-5.4-mini",
+              6,
+              0.001975,
+              3213,
+              586
+            ],
+            [
+              "extract:notes 5/5 | gpt-5.4-mini",
+              1,
+              0.001838,
+              1750,
+              844
+            ],
+            [
+              "search.embed | text-embedding-3-large",
+              1240,
+              0.00138,
+              10619,
+              0
+            ],
+            [
+              "extract:06-correspondence__doc-12__letter-to-jud p1-1 | gpt-5.4-mini",
+              1,
+              0.0013759999999999998,
+              1906,
+              594
+            ],
+            [
+              "extract:03-discovery__doc-43__subpoena-kyle-pull p1-2 | gpt-5.4-mini",
+              1,
+              0.0011220000000000002,
+              2431,
+              401
+            ],
+            [
+              "agent_action_leak | jev-1.13.0",
+              56,
+              0.0010409999999999998,
+              24780,
+              1176
+            ],
+            [
+              "client_photo | gpt-5.4-mini",
+              1,
+              0.000815,
+              3029,
+              29
+            ],
+            [
+              "extract:03-discovery__doc-40__defendants-respons p11-11 | gpt-5.4-mini",
+              1,
+              0.00045,
+              1576,
+              28
+            ],
+            [
+              "assistant.recall | text-embedding-3-large",
+              18,
+              0.000028,
+              212,
+              0
+            ],
+            [
+              "assistant.memory | text-embedding-3-large",
+              7,
+              0.000016,
+              121,
+              0
+            ]
+          ]
+        }
+      ],
+      "cost_usd": 0,
+      "secs": 7.017,
+      "matter_id": 1811206208,
+      "matter_label": "Justin Sapini (00001-Sapini)",
+      "generated_at": "2026-10-02T21:24:25.721Z"
+    },
+    {
+      "id": "baseline",
+      "name": "Single-shot long-context baseline",
+      "origin": "Long-context baseline in the style of RAG-vs-long-context comparisons (Li et al., 2024, arXiv:2407.16833)",
+      "adaptation": "One gpt-5.5 call (reasoning low) given the whole case text (all source items, then doc pages, cut at 900,000 chars) asked for a full digest plus answers to the 25 QA questions. Scored with the same recall judge and checklist as gist, and the same correctness judge as the RAG suite. One scored run (an earlier attempt died in judging after the model call; its prompt prefix was still in OpenAI's prompt cache, so the logged cost is mostly cached input; cost_usd_if_uncached is the list-price cost of the same tokens).",
+      "n": "48 checklist items, 25 questions; 591/591 source blocks fit",
+      "metrics": {
+        "checklist_recall": 0.813,
+        "qa_answer_correctness": 0.92,
+        "input_tokens": 222221,
+        "output_tokens": 5570,
+        "cost_usd": 0.08378000000000001,
+        "cost_usd_if_uncached": 0.333476,
+        "latency_s": 59.842,
+        "blocks_included": 591,
+        "blocks_total": 591
+      },
+      "tables": [
+        {
+          "title": "Baseline recall by category",
+          "columns": [
+            "category",
+            "found",
+            "total"
+          ],
+          "rows": [
+            [
+              "core_facts",
+              6,
+              6
+            ],
+            [
+              "injuries",
+              5,
+              6
+            ],
+            [
+              "money",
+              8,
+              9
+            ],
+            [
+              "liability_risk",
+              6,
+              8
+            ],
+            [
+              "defense_experts",
+              3,
+              4
+            ],
+            [
+              "operations",
+              7,
+              8
+            ],
+            [
+              "contradictions",
+              4,
+              7
+            ]
+          ]
+        },
+        {
+          "title": "Baseline misses",
+          "columns": [
+            "id",
+            "finding"
+          ],
+          "rows": [
+            [
+              "inj-spine",
+              "Neck and lower back injuries (C5-6 and L5-S1 disc bulges / radiculopathy)"
+            ],
+            [
+              "money-spend",
+              "Firm's own case expenses (records, court filing, IME observer) have not been reimbursed"
+            ],
+            [
+              "liab-scope",
+              "Whether Ferrara was acting within the scope of his Metro-North employment decides whether Metro-North is in the case"
+            ],
+            [
+              "liab-ankle",
+              "Prior 2011 left ankle fracture denied by the client at intake / under oath"
+            ],
+            [
+              "def-answer",
+              "Defendants' verified answer pleads affirmative defenses including statute of limitations / PAL 1276 / another action pending"
+            ],
+            [
+              "ops-compliance-conf",
+              "2026 compliance conference not yet set / not calendared"
+            ],
+            [
+              "con-pullano",
+              "Notes say Pullano was never contacted, but the file has a subpoena for his deposition (EBT 2025-12-08)"
+            ],
+            [
+              "con-coverage",
+              "Coverage conflict: Metro-North self-insured vs $100k/$300k confirmed vs a Travelers policy on the incident report"
+            ],
+            [
+              "con-index",
+              "Plaintiff's discovery response cites a different index number (150940/2024) than the caption (160000/2024)"
+            ]
+          ]
+        }
+      ],
+      "cost_usd": 0.12701980000000002,
+      "secs": 83.273,
+      "matter_id": 1811206208,
+      "matter_label": "Justin Sapini (00001-Sapini)",
+      "generated_at": "2026-10-02T21:36:34.901Z"
+    }
+  ]
+}
