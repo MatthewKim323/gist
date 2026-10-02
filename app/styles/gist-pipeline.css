@@ -74,7 +74,7 @@
 .gp-head {
   margin: 0 auto;
   max-width: 1170px;
-  padding: calc(18vh - 92px) 5% 0;
+  padding: max(2rem, calc(18vh - 92px)) 5% 0;
   text-align: center;
   width: 100%;
 }
