@@ -72,6 +72,24 @@ bun run job scripts/seed-demo.ts --reset         # remove every demo row (only i
 bun run job scripts/seed-demo.ts --reset --seed  # wipe and reseed
 ```
 
+## Security & compliance
+
+Case files are PHI-heavy (medical records, diagnoses, liens), so the data layer is locked down by default.
+
+**Today (verified on the live project):**
+- **Clio is read-only.** The OAuth app is scoped read-only and the code only issues GETs. gist never writes to the system of record.
+- **Row Level Security on every table.** The browser only holds the public anon key; all case data is read and written server-side with the service role, which never leaves the server. Probing every table with the anon key returns 0 rows (and writes return 401). The only anon-readable tables are pipeline progress (`agent_runs`, `agent_tasks`: counts and shard labels, no case content) and share-link view pings (`share_views`), which the live UI needs over Realtime.
+- **Hardening migration** (`supabase/migrations/0010_security_hardening.sql`): RLS forced on all tables, all table/sequence/function privileges revoked from client roles (except read-only on the three Realtime tables), default privileges revoked so new tables start locked, SQL functions (`hybrid_search`, `recall_memories`, ...) callable by the server only.
+- **Private document storage.** Clio documents, derived photos and provider uploads live in a private bucket; nothing is publicly addressable.
+- **Provider sharing is least-privilege.** Providers see only what the attorney toggles on, filtered server-side, behind a hashed, expiring, revocable token with a view log. Provider comms are treated as non-privileged ("deposition-safe by default").
+- **Minimal data to third-party models.** Model calls send the excerpts a stage needs, not the whole file, and every call is logged with tokens and cost.
+- **Secrets stay out of the repo** (`.env*` is git-ignored; the anon key is the only key shipped to the client).
+
+**Roadmap to HIPAA and SOC 2** (not certified today, this is the plan):
+- **HIPAA:** signed BAAs with every subprocessor that touches PHI (database/storage host, model providers, hosting), encryption at rest and in transit end to end (already TLS + provider-managed at-rest), field-level encryption for the most sensitive columns, immutable audit logs of every PHI read (who, what, when), minimum-necessary access by role, breach-notification runbook, and a zero-retention agreement with model providers.
+- **SOC 2 Type II:** SSO + MFA for firm users, role-based access with quarterly access reviews, centralized logging and alerting, change management (PR review, CI checks, migrations reviewed), vendor risk reviews, documented incident response and backup/restore drills, then an audit window with a third-party auditor.
+- **Firm controls:** per-firm data isolation (tenant id on every row, enforced in RLS), configurable retention and deletion, export on request, and a customer-facing trust page.
+
 ## Run it
 
 ```bash
