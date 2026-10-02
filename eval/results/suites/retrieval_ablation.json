@@ -1,0 +1,52 @@
+{
+  "id": "retrieval_ablation",
+  "name": "Retrieval ablation (hybrid vs vector vs keyword)",
+  "origin": "Standard IR recall@k (as in BEIR, Thakur et al., 2021, arXiv:2104.08663); RRF from Cormack et al., 2009",
+  "adaptation": "Same 25 questions, gold source refs from qa.json. Raw hybrid_search RPC (RRF k=60) with no query expansion and no dedup; vector-only passes an empty keyword query, keyword-only passes no embeddings. A doc page hit counts for its document. hit@k = any gold source in top k; recall@k = share of gold sources in top k.",
+  "n": 25,
+  "metrics": {
+    "hybrid_recall_at_10": 0.767,
+    "vector_only_recall_at_10": 0.867,
+    "keyword_only_recall_at_10": 0.593
+  },
+  "tables": [
+    {
+      "title": "Recall by retriever",
+      "columns": [
+        "retriever",
+        "hit@5",
+        "hit@10",
+        "recall@5",
+        "recall@10"
+      ],
+      "rows": [
+        [
+          "hybrid",
+          0.88,
+          0.92,
+          0.673,
+          0.767
+        ],
+        [
+          "vector_only",
+          0.96,
+          0.96,
+          0.76,
+          0.867
+        ],
+        [
+          "keyword_only",
+          0.64,
+          0.72,
+          0.44,
+          0.593
+        ]
+      ]
+    }
+  ],
+  "cost_usd": 0.021769999999999998,
+  "secs": 142.071,
+  "matter_id": 1811206208,
+  "matter_label": "Justin Sapini (00001-Sapini)",
+  "generated_at": "2026-10-02T21:25:38.573Z"
+}

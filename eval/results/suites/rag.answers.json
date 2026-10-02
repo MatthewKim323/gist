@@ -1,0 +1,255 @@
+[
+  {
+    "id": "q01",
+    "answer": "The accident date was April 23, 2023, at approximately 8:30 a.m. [doc:21122768993#p4]\n\nPlaintiff alleges it happened on Cedar Street at or near its intersection with Garden Street in New Rochelle, Westchester County, New York, immediately adjacent to a Metro-North facility. [doc:21122768993#p4]\n\nA Metro-North incident report instead lists the specific location as I-95 Southbound Exit 16 ramp, with the closest station/yard as New Rochelle. [doc:21122773658#p3]",
+    "cites": [
+      "doc:21122768993#p4",
+      "doc:21122773658#p3"
+    ]
+  },
+  {
+    "id": "q02",
+    "answer": "Estimated case value is **$375,000**. [field:20720243] [note:2997037613]\n\nThe stated rationale is that economics alone total **$332,400**, made up of **$118,400** in specials and **$214,000** claimed wage loss, with a second shoulder surgery still recommended but not dated. [field:20720258] [note:2997037613]\n\nPractical recovery is described as capped at the **$100,000** defendant per-person liability limit unless another defendant is reached, and the **$22,180** Medicaid lien comes off any recovery. [note:2997038633] [field:20720333]",
+    "cites": [
+      "field:20720243",
+      "note:2997037613",
+      "field:20720258",
+      "note:2997038633",
+      "field:20720333"
+    ]
+  },
+  {
+    "id": "q03",
+    "answer": "The confirmed bodily-injury liability limits are **$100,000 per person / $300,000 per occurrence**. [email:5029640123] [email:5029636778]\n\nCoverage has been **confirmed in writing** by Claims Service Bureau on **2026-09-08**. [email:5029640123] [email:5029636778]\n\nClaims Service Bureau also stated that **no excess or umbrella coverage is disclosed**. [email:5029640123] [email:5029636778]\n\nThe file’s policy-limits-confirmed field is marked **true**. [field:20720228]\n\nEarlier notes said Metro-North was self-insured with no stated ceiling and no declarations page, so the later 2026 written confirmation supersedes the earlier “unconfirmed/no stated ceiling” posture. [note:2997036953] [note:2997037898] [note:2997038633]",
+    "cites": [
+      "email:5029640123",
+      "email:5029636778",
+      "field:20720228",
+      "note:2997036953",
+      "note:2997037898",
+      "note:2997038633"
+    ]
+  },
+  {
+    "id": "q04",
+    "answer": "Medical specials to date are $118,400.00. [field:20720273]\n\nBreakdown: New Horizon Surgical Center, left shoulder arthroscopy facility and anesthesia: $60,000.00; Hudson Valley Radiology / Mid Rockland, seven MRI studies: $15,900.00; Advanced Rockland Chiropractic: $14,220.00; McCulloch / Dr. Capiola orthopaedic care including surgeon’s fee: $9,530.00; SportsCare PT: $5,825.00; Dr. Miller EMG/NCV: $4,800.00; Montefiore Nyack ER with CT head/cervical: $3,475.00; Dr. Kwan neurology: $3,200.00; Dr. Abramov physiatry: $1,450.00. [note:2997037403]\n\nThis is an interim working number because chiropractic and PT are ongoing/open and their ledgers still need reconciliation. [note:2997038468]",
+    "cites": [
+      "field:20720273",
+      "note:2997037403",
+      "note:2997038468"
+    ]
+  },
+  {
+    "id": "q05",
+    "answer": "The claimed wage loss is **$214,000 to date**. [field:20720288]\n\nSupport identified in the file is **Justin Sapini’s 2022 1099**, tied to his commission-only work as a Northwestern Mutual financial advisor at 875 Third Avenue, New York, NY 10022. [field:20720288]\n\nThe April 12, 2024 demand package likewise claimed **$214,000 in wage loss on the 2022 1099**. [note:2997037508]\n\nThe bill of particulars says Sapini has been **totally disabled from employment from April 23, 2023 through present and continuing**, and that he was paid **commission only** at Northwestern Mutual. [doc:21122770718#p9]\n\nThe file flags the support as weak because the claim rests on the 2022 1099 alone, no economic expert has been retained, and later production/commission records are still missing. [note:2997038798] [note:2997037613]\n\nThe defense/IME evidence conflicts with ongoing disability because Dr. Tsao opined on March 4, 2026 that Sapini can work and perform activities of daily living without restrictions. [doc:21122791073#p6]",
+    "cites": [
+      "field:20720288",
+      "note:2997037508",
+      "doc:21122770718#p9",
+      "note:2997038798",
+      "note:2997037613",
+      "doc:21122791073#p6"
+    ]
+  },
+  {
+    "id": "q06",
+    "answer": "The left shoulder surgery was performed on July 26, 2023, at New Horizon Surgical Center, LLC, and the surgeon was David Capiola, M.D. [doc:21122780573#p1]",
+    "cites": [
+      "doc:21122780573#p1"
+    ]
+  },
+  {
+    "id": "q07",
+    "answer": "Dr. Capiola recommended right shoulder arthroscopy on 05/27/2024 based on the right shoulder MRI showing an intermediate-grade interstitial tear of the anterior half of the infraspinatus and a partial posterior-inferior labral tear at 8 o’clock. [doc:21122778518#p8]\n\nThe right shoulder procedure has not been performed, is not booked, and no operative date has been assigned. [doc:21122778518#p8]\n\nAs of 09/17/2026, Matthew Kim reported this was the fifth attempt to obtain a surgical date and the recommended right shoulder arthroscopy still had no date. [email:5029637228]\n\nAs of 09/18/2026, the latest answer was that Dr. Capiola wanted to see the patient again before scheduling, and Matthew Kim identified the undated second surgery as the biggest open valuation issue. [note:2997038168]\n\nAs of 10/10/2026, a task remained pending to confirm whether and when the recommended surgery will take place so damages can be updated. [task:1417199708]",
+    "cites": [
+      "doc:21122778518#p8",
+      "email:5029637228",
+      "note:2997038168",
+      "task:1417199708"
+    ]
+  },
+  {
+    "id": "q08",
+    "answer": "Yes. Progressive confirmed the client’s no-fault/basic economic loss coverage was exhausted, and the amount was $50,000.00. [email:5029634498] [email:5029640708]\n\nThe client’s own no-fault carrier was Progressive Insurance Company. [doc:21122772158#p5]\n\nThe file also states that the exhausted $50,000 no-fault/basic economic loss is not recoverable from the tortfeasor under Insurance Law 5104(a). [field:20720333]",
+    "cites": [
+      "email:5029634498",
+      "email:5029640708",
+      "doc:21122772158#p5",
+      "field:20720333"
+    ]
+  },
+  {
+    "id": "q09",
+    "answer": "Yes. New York State Medicaid asserted a lien against any recovery in the amount of $22,180.00. [note:2997037448] [task:1417200023] [email:5029640798] [field:20720333]\n\nThe lien unit later acknowledged the file and said the asserted figure was unchanged at $22,180.00. [note:2997038348]\n\nThe file notes Medicaid will not re-audit until the case resolves, and the lien is expected to be negotiated at the end. [note:2997038348] [email:5029634978]",
+    "cites": [
+      "note:2997037448",
+      "task:1417200023",
+      "email:5029640798",
+      "field:20720333",
+      "note:2997038348",
+      "email:5029634978"
+    ]
+  },
+  {
+    "id": "q10",
+    "answer": "The client has given **three different/inconsistent accounts** of the accident mechanism. [note:2997036983] [note:2997038828] [note:2997037613]\n\nThe three accounts identified are: **(1)** the Metro-North vehicle merged into his lane and struck him, **(2)** both vehicles were merging and his own vehicle struck the other, and **(3)** he was sideswiped by a truck and then struck the sidewalk. [note:2997036983] [note:2997038828]",
+    "cites": [
+      "note:2997036983",
+      "note:2997038828",
+      "note:2997037613"
+    ]
+  },
+  {
+    "id": "q11",
+    "answer": "Yes, the strongest record says he was on duty: Metro-North’s IR-1 incident report for the 4/23/2023 8:30 a.m. crash has the “On-Duty” box checked for Anthony Ferrara and says he was “heading to the jobsite.” [doc:21122773658#p3]\n\nThat said, the broader scope-of-employment issue has not been fully resolved in discovery: Claims Service Bureau would not take a position when asked whether Metro-North accepted Ferrara was acting within the scope of employment, and counsel noted the vehicle assignment/dispatch records were still sought as the contemporaneous proof of whether he was on duty that morning. [call:5029638323] [note:2997038048]\n\nBottom line: there is affirmative Metro-North incident-report evidence that Ferrara was on duty, but Metro-North/CSB has not formally accepted scope of employment in the cited materials. [doc:21122773658#p3] [call:5029638323]",
+    "cites": [
+      "doc:21122773658#p3",
+      "call:5029638323",
+      "note:2997038048"
+    ]
+  },
+  {
+    "id": "q12",
+    "answer": "Kyle Pullano is a Metro-North employee identified as the person who can answer whether Anthony Ferrara was within the scope of employment/on duty at the time of the collision. [note:2997037058]\n\nHe had not been contacted as of Matthew Kim’s 2023-06-07 note, and a later 2026-09-15 note still says nobody had contacted him. [note:2997037058] [note:2997038828]\n\nThe file later contains a subpoena ad testificandum to Kyle Pullano, c/o defense counsel, commanding him to appear for a virtual examination before trial on December 8, 2025 at 10:00 a.m.; the provided facts do not state whether that deposition actually occurred or whether he otherwise responded. [doc:21122775203#p1]",
+    "cites": [
+      "note:2997037058",
+      "note:2997038828",
+      "doc:21122775203#p1"
+    ]
+  },
+  {
+    "id": "q13",
+    "answer": "The undisclosed prior injury was a 2011 left ankle/left foot injury: X-rays dated October 5, 2011 showed a small dorsal avulsion fracture of the anterior talus. [note:2997037043] [note:2997038828] [doc:21122792168#p5]\n\nThe client had answered “none” to prior injuries at intake, which the file says is contradicted by his own paperwork. [note:2997037043] [field:20720348]",
+    "cites": [
+      "note:2997037043",
+      "note:2997038828",
+      "doc:21122792168#p5",
+      "field:20720348"
+    ]
+  },
+  {
+    "id": "q14",
+    "answer": "The defense orthopedic IME was by Dr. Emmanuel Hostin, and Claims Service Bureau served the report on September 14, 2026. [email:5029637153]\n\nDr. Hostin diagnosed neck, mid-back, low-back, bilateral shoulder, bilateral elbow, bilateral knee, and bilateral wrist sprains as resolved. [doc:21122792168#p11]\n\nHe opined that Mr. Sapini’s condition had plateaued and was medically stationary. [doc:21122792168#p11]\n\nHe found the subjective complaints did not correlate with radiographic or other objective findings. [doc:21122792168#p11]\n\nHe stated lumbar range-of-motion limitations appeared only on direct testing, while transfers and ambulation showed no dysfunction or restriction. [doc:21122792168#p11]\n\nHe stated the shoulder and knee range-of-motion deficits were not associated with objective pathology, and he attributed them to subjective pain concerns with significant guarding. [doc:21122792168#p12]\n\nHe noted a positive Tinel’s over the left cubital tunnel indicating ulnar nerve irritability, but said there were no complaints consistent with ulnar neuritis and no treatment was indicated. [doc:21122792168#p12]\n\nHe concluded Mr. Sapini could return to work without restrictions. [doc:21122792168#p12]",
+    "cites": [
+      "email:5029637153",
+      "doc:21122792168#p11",
+      "doc:21122792168#p12"
+    ]
+  },
+  {
+    "id": "q15",
+    "answer": "Dr. Jack W. Tsao, the defense neurology expert, diagnosed Justin Sapini as status post traumatic brain injury, status post post-concussion syndrome, and status post post-traumatic headaches/migraines, all “objectively resolved.” [doc:21122791073#p6]\n\nHe also opined that Sapini could work and perform daily activities without restrictions. [doc:21122791073#p6]\n\nRelated defense radiology review was consistent with that position: Dr. Katzman found the 08/08/2023 brain MRI normal, with no evidence of traumatic brain injury, hemorrhage, contusion, or posttraumatic encephalomalacia. [doc:21122790428#p7]",
+    "cites": [
+      "doc:21122791073#p6",
+      "doc:21122790428#p7"
+    ]
+  },
+  {
+    "id": "q16",
+    "answer": "The defense radiology review was by Dr. Marc J. Katzman, M.D., and was served as an expert radiology report concerning Justin Sapini’s MRIs and other imaging. [doc:21122790428#p3] [doc:21122790428#p1]\n\nDr. Katzman repeatedly opined that the imaging studies showed no traumatic injury related to the claimed accident. [doc:21122790428#p3]\n\nFor the 08/08/2023 brain MRI, he found no traumatic brain injury, hemorrhage, contusion, or posttraumatic encephalomalacia, and called the examination normal. [doc:21122790428#p7]\n\nFor the 08/08/2023 DTI brain study, he found the study within normal limits with no significant white-matter microstructural disruption. [doc:21122790428#p7]\n\nFor the 08/08/2023 NeuroQuant analysis, he found no age-disproportionate or post-traumatic brain atrophy. [doc:21122790428#p7]\n\nFor the 07/03/2023 knee MRIs, he found no recent traumatic right or left knee injury or internal derangement. [doc:21122790428#p3] [doc:21122790428#p4]\n\nFor the 05/24/2023 right shoulder MRI, he found no evidence of recent traumatic right shoulder injury and called the exam unremarkable. [doc:21122790428#p5]\n\nFor the 09/10/2018 chest x-ray, he found no acute chest findings and noted that the exam predated the 04/23/2023 accident. [doc:21122790428#p6]\n\nThis conflicts with plaintiff-side imaging that reported abnormal DTI findings, a hemosiderin focus, and a positive predictive value for traumatic brain injury greater than 95%. [doc:21122777513#p7] [doc:21122790428#p7]",
+    "cites": [
+      "doc:21122790428#p3",
+      "doc:21122790428#p1",
+      "doc:21122790428#p7",
+      "doc:21122790428#p4",
+      "doc:21122790428#p5",
+      "doc:21122790428#p6",
+      "doc:21122777513#p7"
+    ]
+  },
+  {
+    "id": "q17",
+    "answer": "The last documented contact with the client was on 2026-09-27, when Justin Sapini called Matthew Kim about whether he should keep attending physical therapy while the case is pending. [call:5029636538] Matthew Kim told him to keep attending PT and to keep his own note of each visit. [call:5029636538] Justin also confirmed the right shoulder surgery still had no date and had no other questions. [call:5029636538] A parallel note adds that Justin said he was otherwise fine and would send updated employment records “soon.” [note:2997037838]",
+    "cites": [
+      "call:5029636538",
+      "note:2997037838"
+    ]
+  },
+  {
+    "id": "q18",
+    "answer": "As of 2026-10-02, the overdue pending tasks are:\n\n| Task | Due | Assignee | Why overdue |\n|---|---:|---|---|\n| By medical provider: McCulloch Orthopaedic Surgical Services, PLLC — updated records and right shoulder surgical date | 2026-08-25 | Matthew Kim | Status is pending, and the task seeks updated office notes since the last production and a confirmed date for the recommended right shoulder arthroscopy after three written requests with no date given. [task:1417199603] |\n| Obtain updated employment and commission records from client | 2026-09-26 | Matthew Kim | Status is pending, and the task seeks commission statements for later years because the $214,000.00 wage-loss claim rests on a single 2022 1099. [task:1417199693] |\n\nNot overdue as of 2026-10-02: the 2026-10-05, 2026-10-07, 2026-10-10, and 2026-10-14 pending tasks are not yet past due. [task:1417199678] [task:1417199618] [task:1417199708] [task:1417199648]",
+    "cites": [
+      "task:1417199603",
+      "task:1417199693",
+      "task:1417199678",
+      "task:1417199618",
+      "task:1417199708",
+      "task:1417199648"
+    ]
+  },
+  {
+    "id": "q19",
+    "answer": "Discovery is stuck for three main reasons:\n\n1. The plaintiff side still owes updated maintenance-treatment ledgers, because SportsCare PT and Advanced Rockland chiropractic treatment were ongoing and prior ledgers were only produced to date. [note:2997038783] [note:2997038543]\n\n2. Metro-North still owes scope-of-employment discovery, including the vehicle assignment/dispatch records and related disclosure, and those records matter because scope of employment decides whether Metro-North stays in the case. [note:2997038048] [email:5029636688] [note:2997038543]\n\n3. The Pullano deposition remains outstanding; Pullano is tied to the scope-of-employment issue. [note:2997038543]\n\nThere are also damages-side delays: treatment remains open, the recommended right shoulder surgery is still unscheduled, and the chiropractic/PT ledgers are unreconciled, so the damages picture remains provisional. [note:2997038498] [note:2997037733] [note:2997038258]\n\nKim’s bottom line was that neither side is obstructing, but both sides are slow. [note:2997038543]",
+    "cites": [
+      "note:2997038783",
+      "note:2997038543",
+      "note:2997038048",
+      "email:5029636688",
+      "note:2997038498",
+      "note:2997037733",
+      "note:2997038258"
+    ]
+  },
+  {
+    "id": "q20",
+    "answer": "Defendants pleaded these affirmative defenses:\n\n- Plaintiff’s culpable conduct/comparative negligence and assumption of risk, including reckless or negligent operation, failure to keep a proper lookout, speeding, failure to control the vehicle, failure to keep distance, failure to signal or use the horn, and failure to avoid the accident. [doc:21122771228#p1]\n- Seat-belt defense: plaintiff failed to use an available seat belt, causing, exacerbating, or contributing to the claimed damages. [doc:21122771228#p2]\n- Serious-injury threshold: defendants objected that plaintiff bears the burden to prove a serious injury under New York Insurance Law. [doc:21122771228#p2]\n- Failure to mitigate damages, including refusal or failure to seek timely/proper medical care, follow medical advice, comply with instructions, or otherwise take steps to recover. [doc:21122771228#p2]\n- Collateral source offset under CPLR 4545(c) for medical care, rehabilitative services, lost earnings, or other economic loss replaced or indemnified from collateral sources. [doc:21122771228#p2]\n- Emergency doctrine: defendants claimed a sudden event they did not cause or contribute to. [doc:21122771228#p3]",
+    "cites": [
+      "doc:21122771228#p1",
+      "doc:21122771228#p2",
+      "doc:21122771228#p3"
+    ]
+  },
+  {
+    "id": "q21",
+    "answer": "The index number is 160000/2024. [doc:21122768993#p1]\n\nThe judge is Hon. Christopher Chin. [doc:21122789783#p1]",
+    "cites": [
+      "doc:21122768993#p1",
+      "doc:21122789783#p1"
+    ]
+  },
+  {
+    "id": "q22",
+    "answer": "The medical specials cannot be closed because the $118,400.00 figure is only an interim running total, not a final schedule. [note:2997038468]\n\nThe chiropractic and physical therapy ledgers remain open because both treatments are ongoing, so the specials figure changes monthly. [note:2997038468]\n\nThe two largest uncertain components are Advanced Rockland Chiropractic and SportsCare Physical Therapy, and those ledgers have not been reconciled line by line against CPT codes. [note:2997038213]\n\nAdvanced Rockland’s updated notes since the last production plus an itemized ledger with CPT codes are still needed to close the specials figure. [task:1417199618]\n\nThe chiropractic/PT ledger reconciliation task is still pending, and the file notes those two components remain least certain until reconciled line by line. [task:1417199678]\n\nThere is also an unresolved SportsCare records issue: its discharge note is followed by daily treatment notes continuing another 91 days, creating a discharge/gap inconsistency. [note:2997037298]\n\nA separate damages issue remains open because the recommended right shoulder arthroscopy still has no date, and Matthew Kim called that a valuation problem rather than an administrative problem. [note:2997038168]",
+    "cites": [
+      "note:2997038468",
+      "note:2997038213",
+      "task:1417199618",
+      "task:1417199678",
+      "note:2997037298",
+      "note:2997038168"
+    ]
+  },
+  {
+    "id": "q23",
+    "answer": "Claims Service Bureau acknowledged the April 12, 2024 demand and opened negotiations on April 29, 2024 with an offer well under the defendant’s $100,000 limit. [note:2997037538]\n\nThe adjuster’s stated position was that liability was contested on mechanism, the day-after CT scans were clean, and the wage claim was unsupported by an expert. [note:2997037538]\n\nNo counter was served, and Matthew Kim noted that nothing should settle while treatment remained open and the ledgers were unreconciled. [note:2997037538]",
+    "cites": [
+      "note:2997037538"
+    ]
+  },
+  {
+    "id": "q24",
+    "answer": "Yes, SportsCare responded to the original records request: Matthew Kim requested the complete SportsCare physical therapy file on 2023-07-04, and SportsCare sent the physical therapy records through 2023-12-17. [email:5029633538] [email:5029633883]\n\nMatthew Kim logged the SportsCare file as received on 2023-12-17 and described it as including an initial exam, twenty daily visits, a re-exam, and a discharge note. [note:2997037298]\n\nAs of 2023-12-19, Matthew Kim stated SportsCare Physical Therapy had “produced in full.” [note:2997037973]\n\nHowever, later updated-record requests appear unanswered: Kim requested updated notes/ledger on 2025-05-07, followed with a second request on 2026-03-23, and wrote on 2026-05-05 that two prior requests for updated notes had received no response. [email:5029638143] [email:5029639958] [email:5029635533]\n\nAs of 2026-10-14, the task for SportsCare treatment notes from the last production to date remained pending, with “two requests unanswered.” [task:1417199648]",
+    "cites": [
+      "email:5029633538",
+      "email:5029633883",
+      "note:2997037298",
+      "note:2997037973",
+      "email:5029638143",
+      "email:5029639958",
+      "email:5029635533",
+      "task:1417199648"
+    ]
+  },
+  {
+    "id": "q25",
+    "answer": "The client formerly lived at 7 Valley Drive, Nanuet, NY 10954, which is also listed as his address at the time of the accident and in early treatment records. [doc:21122770718#p1] [doc:21122768993#p2] [doc:21122775923#p1]\n\nHe now lives in Texas, with current residence listed as 20510 Cypress Plaza Parkway, Apt. 3211, Cypress, Texas 77433. [doc:21122768993#p2] [doc:21122770718#p1]\n\nHis treatment, however, remains active and ongoing, including weekly chiropractic at Advanced Rockland and weekly physical therapy at SportsCare, with no discharge and no MMI declared. [field:20720318] [note:2997038258] [email:5029637948]\n\nWhat is missing: the materials do not state whether he is traveling from Texas for New York treatment, temporarily staying near providers, or receiving any treatment in Texas.",
+    "cites": [
+      "doc:21122770718#p1",
+      "doc:21122768993#p2",
+      "doc:21122775923#p1",
+      "field:20720318",
+      "note:2997038258",
+      "email:5029637948"
+    ]
+  }
+]

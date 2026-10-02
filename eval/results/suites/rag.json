@@ -1,0 +1,264 @@
+{
+  "id": "rag",
+  "name": "RAG quality (Ask the case)",
+  "origin": "RAGAS (Es et al., 2023, arXiv:2309.15217): faithfulness, answer relevancy, context precision, context recall",
+  "adaptation": "25 questions with gold answers and gold source refs written from the answer key. System = lib/server/retrieval/ask (query expansion + hybrid search k=15 + gpt-5.5 answer over verified facts and passages). One gpt-5.4-mini judge call per question produces the RAGAS intermediate judgments; answer relevancy = mean cosine (text-embedding-3-large) between the question and 3 judge-generated reverse questions, as in RAGAS. Contexts scored = top-10 retrieved passages.",
+  "n": 25,
+  "metrics": {
+    "faithfulness": 0.87,
+    "answer_relevancy": 0.677,
+    "context_precision": 0.717,
+    "context_recall": 0.893,
+    "answer_correctness": 0.84,
+    "retrieval_hit_at_5": 0.88,
+    "retrieval_hit_at_10": 0.92,
+    "gold_ref_recall_at_10": 0.787,
+    "median_latency_s": 11.854
+  },
+  "tables": [
+    {
+      "title": "Per question",
+      "columns": [
+        "id",
+        "question",
+        "correct",
+        "faithful",
+        "ctx precision",
+        "ctx recall",
+        "hit@10"
+      ],
+      "rows": [
+        [
+          "q01",
+          "What is the date of the accident and where did it happen?",
+          0.5,
+          0.5,
+          1,
+          0.333,
+          0
+        ],
+        [
+          "q02",
+          "What is the estimated case value?",
+          1,
+          1,
+          0.667,
+          1,
+          1
+        ],
+        [
+          "q03",
+          "What are the defendant's policy limits and has coverage been confirmed?",
+          1,
+          1,
+          0.876,
+          1,
+          1
+        ],
+        [
+          "q04",
+          "What are the medical specials to date?",
+          1,
+          1,
+          0.276,
+          1,
+          1
+        ],
+        [
+          "q05",
+          "How much wage loss is claimed and what supports it?",
+          1,
+          0.667,
+          0.346,
+          1,
+          1
+        ],
+        [
+          "q06",
+          "When was the left shoulder surgery and who performed it?",
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        [
+          "q07",
+          "What is the status of the right shoulder surgery?",
+          0.5,
+          0.8,
+          0.744,
+          0.667,
+          1
+        ],
+        [
+          "q08",
+          "Was the no-fault coverage exhausted, and how much was it?",
+          1,
+          1,
+          0.933,
+          1,
+          1
+        ],
+        [
+          "q09",
+          "Is there a Medicaid lien and how much?",
+          1,
+          1,
+          0.957,
+          1,
+          1
+        ],
+        [
+          "q10",
+          "How many different accounts of the accident has the client given?",
+          1,
+          1,
+          0.768,
+          1,
+          1
+        ],
+        [
+          "q11",
+          "Was the Metro-North driver on duty at the time of the crash?",
+          1,
+          1,
+          0.813,
+          1,
+          1
+        ],
+        [
+          "q12",
+          "Who is Kyle Pullano and has he been contacted?",
+          0.5,
+          0.8,
+          1,
+          0.667,
+          1
+        ],
+        [
+          "q13",
+          "What prior injury did the client fail to disclose?",
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        [
+          "q14",
+          "What did the defense orthopedic IME conclude?",
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        [
+          "q15",
+          "What did the defense neurology expert conclude about the brain injury?",
+          1,
+          0.833,
+          0.583,
+          1,
+          1
+        ],
+        [
+          "q16",
+          "What did the defense radiology review find?",
+          1,
+          1,
+          0.789,
+          1,
+          1
+        ],
+        [
+          "q17",
+          "When was the last contact with the client and what was it about?",
+          1,
+          1,
+          0.267,
+          1,
+          1
+        ],
+        [
+          "q18",
+          "Which tasks are overdue?",
+          1,
+          1,
+          0.268,
+          1,
+          1
+        ],
+        [
+          "q19",
+          "Why is discovery stuck?",
+          0.5,
+          0.375,
+          0.63,
+          1,
+          1
+        ],
+        [
+          "q20",
+          "What affirmative defenses did the defendants plead?",
+          0.5,
+          0.833,
+          0.692,
+          0.667,
+          1
+        ],
+        [
+          "q21",
+          "What is the index number and who is the judge?",
+          1,
+          1,
+          0.771,
+          1,
+          1
+        ],
+        [
+          "q22",
+          "Why can't the medical specials be closed?",
+          1,
+          0.571,
+          0.369,
+          1,
+          1
+        ],
+        [
+          "q23",
+          "What was the adjuster's response to the demand?",
+          1,
+          1,
+          0.778,
+          1,
+          1
+        ],
+        [
+          "q24",
+          "Has SportsCare physical therapy responded to records requests?",
+          0,
+          0.875,
+          0.932,
+          1,
+          1
+        ],
+        [
+          "q25",
+          "What is the client's current address situation relative to his treatment?",
+          0.5,
+          0.5,
+          0.467,
+          0,
+          0
+        ]
+      ]
+    }
+  ],
+  "secs": 131.273,
+  "cost_usd": 0.021769999999999998,
+  "matter_id": 1811206208,
+  "matter_label": "Justin Sapini (00001-Sapini)",
+  "generated_at": "2026-10-02T21:25:38.572Z"
+}

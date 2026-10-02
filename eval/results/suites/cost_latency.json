@@ -2,8 +2,8 @@
   "id": "cost_latency",
   "name": "Cost and latency per case",
   "origin": "Internal (from agent_runs, agent_tasks and llm_calls)",
-  "adaptation": "Cold run = the completed full pipeline run (extract + synth present) with the highest logged cost; warm run = latest completed full run whose extraction tasks were all cache hits. Costs are tokens x the hardcoded price table in lib/server/llm.ts (Jev cost is estimated from characters / 4). No fresh rerun was done for this eval to avoid mutating the live matter; timings are from logged runs.",
-  "n": "44 logged runs; 13 complete full runs; 4835 logged LLM calls",
+  "adaptation": "The first true cold extraction was spread over several parallel development runs, so no single run is a clean cold run. We report: first_pass_extract_cost = earliest logged call per extraction shard (what a new case pays to extract); cold_run = the completed full pipeline run (extract + synth present) with the highest logged cost (its extraction was already cached; it paid for reconcile, gates, Jev and embeddings); warm run = latest completed full run whose extraction tasks were all cache hits. Costs are tokens x the hardcoded price table in lib/server/llm.ts (Jev cost is estimated from characters / 4). No fresh rerun was done for this eval to avoid mutating the live matter; timings are from logged runs.",
+  "n": "44 logged runs; 13 complete full runs; 4917 logged LLM calls",
   "metrics": {
     "cold_run_cost_usd": 0.155734,
     "cold_run_secs": 250.586,
@@ -11,12 +11,99 @@
     "warm_run_cost_usd": 0.022753,
     "warm_run_secs": 296.161,
     "warm_run_id": "44a3fe08-ffe0-46e9-92ab-2b97beaf1116",
-    "all_logged_llm_cost_usd": 3.313672,
+    "first_pass_extract_cost_usd": 0.41489600000000004,
+    "extract_shards_logged": 69,
+    "all_logged_llm_cost_usd": 3.882292,
     "all_runs_cost_usd": 1.700873
   },
   "tables": [
     {
-      "title": "Cold run by stage",
+      "title": "All logged LLM cost by stage family (includes development reruns and interactive use)",
+      "columns": [
+        "family",
+        "calls",
+        "cost $"
+      ],
+      "rows": [
+        [
+          "ask",
+          33,
+          1.478931
+        ],
+        [
+          "gate",
+          1517,
+          0.7583540000000001
+        ],
+        [
+          "reconcile",
+          1274,
+          0.5301
+        ],
+        [
+          "extract",
+          75,
+          0.472067
+        ],
+        [
+          "synth",
+          12,
+          0.331788
+        ],
+        [
+          "embed",
+          85,
+          0.111622
+        ],
+        [
+          "audit",
+          213,
+          0.08569700000000001
+        ],
+        [
+          "voice",
+          1,
+          0.030768
+        ],
+        [
+          "ocr",
+          17,
+          0.023592
+        ],
+        [
+          "assistant",
+          51,
+          0.02045
+        ],
+        [
+          "agent_action",
+          24,
+          0.016272
+        ],
+        [
+          "search",
+          1287,
+          0.012704
+        ],
+        [
+          "share",
+          271,
+          0.008092
+        ],
+        [
+          "agent_action_leak",
+          56,
+          0.0010409999999999998
+        ],
+        [
+          "client_photo",
+          1,
+          0.000815
+        ]
+      ]
+    },
+    {
+      "title": "Most expensive full run by stage (labelled cold_run in metrics)",
       "columns": [
         "stage",
         "tasks",
@@ -27,36 +114,12 @@
       ],
       "rows": [
         [
-          "embed",
-          1,
-          0,
-          0.011264,
-          86645,
-          50.605
-        ],
-        [
           "extract",
           69,
           69,
           0,
           0,
           9.512
-        ],
-        [
-          "gate",
-          48,
-          6,
-          0.049046,
-          179726,
-          51.27
-        ],
-        [
-          "jev",
-          53,
-          0,
-          0.015867,
-          377778,
-          6.254
         ],
         [
           "ocr",
@@ -67,6 +130,30 @@
           0.83
         ],
         [
+          "sync",
+          10,
+          1,
+          0,
+          0,
+          22.782
+        ],
+        [
+          "jev",
+          53,
+          0,
+          0.015867,
+          377778,
+          6.254
+        ],
+        [
+          "embed",
+          1,
+          0,
+          0.011264,
+          86645,
+          50.605
+        ],
+        [
           "reconcile",
           112,
           0,
@@ -75,12 +162,12 @@
           65.009
         ],
         [
-          "sync",
-          10,
-          1,
-          0,
-          0,
-          22.782
+          "gate",
+          48,
+          6,
+          0.049046,
+          179726,
+          51.27
         ],
         [
           "synth",
@@ -173,10 +260,10 @@
       "rows": [
         [
           "ask | gpt-5.5",
-          15,
-          0.917029,
-          700119,
-          4188
+          33,
+          1.478931,
+          1578234,
+          8329
         ],
         [
           "gate | gpt-5.4-mini",
@@ -250,10 +337,10 @@
         ],
         [
           "assistant.turn | gpt-5.4-mini",
-          15,
-          0.017122,
-          58260,
-          3352
+          20,
+          0.018431999999999997,
+          62155,
+          3520
         ],
         [
           "agent_action | gpt-5.4-mini",
@@ -296,6 +383,13 @@
           0.011885,
           5740,
           5225
+        ],
+        [
+          "search.expand | gpt-5.4-mini",
+          47,
+          0.011323999999999999,
+          7455,
+          4730
         ],
         [
           "extract:02-pleadings__doc-05__verified-answer-de p11-20 | gpt-5.4-mini",
@@ -466,13 +560,6 @@
           2690
         ],
         [
-          "search.expand | gpt-5.4-mini",
-          27,
-          0.006082,
-          4288,
-          2505
-        ],
-        [
           "extract:emails+calls 4/5 | gpt-5.4-mini",
           1,
           0.006036,
@@ -550,18 +637,18 @@
           1755
         ],
         [
+          "share.redaction_gate | jev-1.13.0",
+          262,
+          0.004893,
+          116489,
+          18602
+        ],
+        [
           "extract:04-medical-records__created__advanced-ro p81-90 | gpt-5.4-mini",
           1,
           0.004888,
           5641,
           1739
-        ],
-        [
-          "share.redaction_gate | jev-1.13.0",
-          260,
-          0.004856,
-          115621,
-          18460
         ],
         [
           "extract:04-medical-records__created__advanced-ro p121-130 | gpt-5.4-mini",
@@ -753,18 +840,18 @@
           844
         ],
         [
+          "search.embed | text-embedding-3-large",
+          1240,
+          0.00138,
+          10619,
+          0
+        ],
+        [
           "extract:06-correspondence__doc-12__letter-to-jud p1-1 | gpt-5.4-mini",
           1,
           0.0013759999999999998,
           1906,
           594
-        ],
-        [
-          "search.embed | text-embedding-3-large",
-          1211,
-          0.001262,
-          9704,
-          0
         ],
         [
           "extract:03-discovery__doc-43__subpoena-kyle-pull p1-2 | gpt-5.4-mini",
@@ -796,24 +883,24 @@
         ],
         [
           "assistant.recall | text-embedding-3-large",
-          11,
-          0.000017999999999999997,
-          140,
+          18,
+          0.000028,
+          212,
           0
         ],
         [
           "assistant.memory | text-embedding-3-large",
-          6,
-          0.000014,
-          106,
+          7,
+          0.000016,
+          121,
           0
         ]
       ]
     }
   ],
   "cost_usd": 0,
-  "secs": 112.968,
+  "secs": 7.017,
   "matter_id": 1811206208,
   "matter_label": "Justin Sapini (00001-Sapini)",
-  "generated_at": "2026-10-02T21:21:42.769Z"
+  "generated_at": "2026-10-02T21:24:25.721Z"
 }

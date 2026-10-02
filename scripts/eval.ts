@@ -34,7 +34,7 @@ async function retry429<T>(fn: () => Promise<T>, tries = 12): Promise<T> {
   for (let i = 0; ; i++) {
     try { return await fn(); } catch (e) {
       const msg = String((e as Error)?.message ?? e);
-      if (i >= tries || !/rate limit|429|fetch failed|ECONNRESET/i.test(msg)) throw e;
+      if (i >= tries || !/rate limit|429|fetch failed|ECONNRESET|connection|timed? ?out|socket|5\d\d/i.test(msg)) throw e;
       await new Promise((r) => setTimeout(r, 1500 * (i + 1) + Math.random() * 1000));
     }
   }
@@ -429,20 +429,24 @@ async function suiteNeedle(m: number): Promise<Suite> {
   const res = await Promise.all(picks.map((p) => lim(async () => {
     const g = await judge(GEN_NEEDLE, `Document: ${d.name}, page ${p.page}\n\n${p.text.slice(0, 6000)}`, NeedleGen, "needle_gen");
     if (!g.usable) return null;
-    const hits = await search(m, g.question, { k: 10, expand: false });
+    const hits = await retry429(() => search(m, g.question, { k: 10, expand: false }));
     const cites = hits.map((h) => h.cite);
     const ref = `doc:${d.clio_id}#p${p.page}`;
-    return { ...p, q: g.question, page_hit: cites.includes(ref) ? 1 : 0, doc_hit: cites.some((c) => c.startsWith(`doc:${d.clio_id}#`)) ? 1 : 0, rank: cites.indexOf(ref) + 1 };
+    // Same query straight through the hybrid_search RPC, before the per-source dedup cap (2 hits per document).
+    const [qe] = await embed([g.question], { purpose: "eval.needle_embed", matterId: null });
+    const raw = await db().rpc("hybrid_search", { p_matter: m, q_text: g.question, q_embs: [qe], match_count: 10, kinds: null, audiences: ["firm", "provider_ok"] });
+    const rawCites = ((raw.data ?? []) as { cite: string }[]).map((x) => x.cite);
+    return { ...p, q: g.question, raw_page_hit: rawCites.includes(ref) ? 1 : 0, page_hit: cites.includes(ref) ? 1 : 0, doc_hit: cites.some((c) => c.startsWith(`doc:${d.clio_id}#`)) ? 1 : 0, rank: cites.indexOf(ref) + 1 };
   })));
   const ok = res.filter((x): x is NonNullable<typeof x> => !!x);
   fs.writeFileSync(path.join(SUITE_DIR, "needle.questions.json"), JSON.stringify(ok.map((x) => ({ page: x.page, bucket: x.bucket, question: x.q, page_hit: x.page_hit, rank: x.rank })), null, 2));
   return {
     id: "needle", name: "Long-document needle retrieval",
     origin: "Needle-in-a-Haystack (Kamradt, 2023) and RULER (Hsieh et al., 2024, arXiv:2404.06654); here on real pages, nothing planted",
-    adaptation: `Longest document in the matter (${d.name}, ${n} pages). Up to 4 pages per depth bucket chosen systematically; gpt-5.4-mini writes one question per page from a page-specific detail (questions committed in eval/results/suites/needle.questions.json). Retrieval = gist hybrid search (k=10, no expansion, with dedup). Page hit = the exact page in top 10. Caveat: daily treatment notes are repetitive, so near-duplicate pages make page-level hits harder and doc-level hits easier.`,
+    adaptation: `Longest document in the matter (${d.name}, ${n} pages). Up to 4 pages per depth bucket chosen systematically; gpt-5.4-mini writes one question per page from a page-specific detail (questions committed in eval/results/suites/needle.questions.json). Retrieval = gist hybrid search (k=10, no expansion, with dedup). Page hit = the exact page in top 10; also reported straight from the hybrid_search RPC before the 2-per-document dedup cap. Caveat: daily treatment notes are repetitive, so near-duplicate pages make page-level hits harder and doc-level hits easier.`,
     n: ok.length,
-    metrics: { page_recall_at_10: pct(ok.reduce((s, x) => s + x.page_hit, 0), ok.length), doc_recall_at_10: pct(ok.reduce((s, x) => s + x.doc_hit, 0), ok.length), doc_pages: n },
-    tables: [{ title: "Recall by page depth", columns: ["pages", "n", "page hit@10", "doc hit@10"], rows: buckets.map(([lo, hi]) => { const xs = ok.filter((x) => x.bucket === `${lo}-${hi}`); return [`${lo}-${hi}`, xs.length, pct(xs.reduce((s, x) => s + x.page_hit, 0), xs.length), pct(xs.reduce((s, x) => s + x.doc_hit, 0), xs.length)]; }) }],
+    metrics: { page_recall_at_10: pct(ok.reduce((s, x) => s + x.page_hit, 0), ok.length), raw_rpc_page_recall_at_10: pct(ok.reduce((s, x) => s + x.raw_page_hit, 0), ok.length), doc_recall_at_10: pct(ok.reduce((s, x) => s + x.doc_hit, 0), ok.length), doc_pages: n },
+    tables: [{ title: "Recall by page depth", columns: ["pages", "n", "page hit@10", "page hit@10 before dedup", "doc hit@10"], rows: buckets.map(([lo, hi]) => { const xs = ok.filter((x) => x.bucket === `${lo}-${hi}`); return [`${lo}-${hi}`, xs.length, pct(xs.reduce((s, x) => s + x.page_hit, 0), xs.length), pct(xs.reduce((s, x) => s + x.raw_page_hit, 0), xs.length), pct(xs.reduce((s, x) => s + x.doc_hit, 0), xs.length)]; }) }],
   };
 }
 
@@ -619,20 +623,30 @@ async function suiteCost(m: number): Promise<Suite> {
     db().from("llm_calls").select("purpose,model,cost_usd,input_tokens,output_tokens,latency_ms").eq("matter_id", m).order("id").range(a, b));
   const byPurpose = new Map<string, { n: number; cost: number; tin: number; tout: number }>();
   for (const c of calls) { const k = `${c.purpose ?? "?"} | ${c.model}`; const v = byPurpose.get(k) ?? { n: 0, cost: 0, tin: 0, tout: 0 }; v.n++; v.cost += Number(c.cost_usd ?? 0); v.tin += c.input_tokens ?? 0; v.tout += c.output_tokens ?? 0; byPurpose.set(k, v); }
+  // First-pass cost per stage family: for per-shard purposes (extract:<shard>, ocr) the earliest call per purpose is the cold
+  // cost; later calls with the same purpose are development reruns (prompt changes), not what a new case pays.
+  const fam = (p: string) => p.split(/[:.]/)[0];
+  const firstByPurpose = new Map<string, number>();
+  for (const c of calls) { const k = c.purpose ?? "?"; if (!firstByPurpose.has(k)) firstByPurpose.set(k, Number(c.cost_usd ?? 0)); }
+  const famAll = new Map<string, { all: number; n: number }>();
+  for (const c of calls) { const f = fam(c.purpose ?? "?"); const v = famAll.get(f) ?? { all: 0, n: 0 }; v.all += Number(c.cost_usd ?? 0); v.n++; famAll.set(f, v); }
+  const extractFirst = [...firstByPurpose].filter(([k]) => k.startsWith("extract")).reduce((s, [, v]) => s + v, 0);
   const stageRows = (s: typeof cold | undefined) => s ? s.roles.map((x) => [x.role, x.tasks, x.cached, r3(x.cost * 1000) / 1000, x.tokens_in, x.wall == null ? null : r3(x.wall)]) : [];
   return {
     id: "cost_latency", name: "Cost and latency per case",
     origin: "Internal (from agent_runs, agent_tasks and llm_calls)",
-    adaptation: "Cold run = the completed full pipeline run (extract + synth present) with the highest logged cost; warm run = latest completed full run whose extraction tasks were all cache hits. Costs are tokens x the hardcoded price table in lib/server/llm.ts (Jev cost is estimated from characters / 4). No fresh rerun was done for this eval to avoid mutating the live matter; timings are from logged runs.",
+    adaptation: "The first true cold extraction was spread over several parallel development runs, so no single run is a clean cold run. We report: first_pass_extract_cost = earliest logged call per extraction shard (what a new case pays to extract); cold_run = the completed full pipeline run (extract + synth present) with the highest logged cost (its extraction was already cached; it paid for reconcile, gates, Jev and embeddings); warm run = latest completed full run whose extraction tasks were all cache hits. Costs are tokens x the hardcoded price table in lib/server/llm.ts (Jev cost is estimated from characters / 4). No fresh rerun was done for this eval to avoid mutating the live matter; timings are from logged runs.",
     n: `${runs.length} logged runs; ${full.length} complete full runs; ${calls.length} logged LLM calls`,
     metrics: {
       cold_run_cost_usd: cold ? r3(Number(cold.run.cost_usd) * 1000) / 1000 : null, cold_run_secs: cold?.secs ?? null, cold_run_id: cold?.run.id ?? null,
       warm_run_cost_usd: warm ? r3(Number(warm.run.cost_usd) * 1000) / 1000 : null, warm_run_secs: warm?.secs ?? null, warm_run_id: warm?.run.id ?? null,
+      first_pass_extract_cost_usd: r3(extractFirst * 1000) / 1000, extract_shards_logged: [...firstByPurpose.keys()].filter((k) => k.startsWith("extract")).length,
       all_logged_llm_cost_usd: r3(calls.reduce((s, c) => s + Number(c.cost_usd ?? 0), 0) * 1000) / 1000,
       all_runs_cost_usd: r3(runs.reduce((s, r) => s + Number(r.cost_usd ?? 0), 0) * 1000) / 1000,
     },
     tables: [
-      { title: "Cold run by stage", columns: ["stage", "tasks", "cached", "cost $", "tokens in", "wall s"], rows: stageRows(cold) },
+      { title: "All logged LLM cost by stage family (includes development reruns and interactive use)", columns: ["family", "calls", "cost $"], rows: [...famAll].sort((a, b) => b[1].all - a[1].all).map(([k, v]) => [k, v.n, r3(v.all * 1000) / 1000]) },
+      { title: "Most expensive full run by stage (labelled cold_run in metrics)", columns: ["stage", "tasks", "cached", "cost $", "tokens in", "wall s"], rows: stageRows(cold) },
       { title: "Warm (cached) run by stage", columns: ["stage", "tasks", "cached", "cost $", "tokens in", "wall s"], rows: stageRows(warm) },
       { title: "All logged LLM calls for this matter by purpose", columns: ["purpose | model", "calls", "cost $", "tokens in", "tokens out"], rows: [...byPurpose].sort((a, b) => b[1].cost - a[1].cost).map(([k, v]) => [k, v.n, r3(v.cost * 1000) / 1000, v.tin, v.tout]) },
     ],
@@ -690,11 +704,11 @@ async function suiteBaseline(m: number, qaOnly = false): Promise<Suite> {
   return {
     id: "baseline", name: "Single-shot long-context baseline",
     origin: "Long-context baseline in the style of RAG-vs-long-context comparisons (Li et al., 2024, arXiv:2407.16833)",
-    adaptation: `One ${BASELINE_MODEL} call (reasoning low) given the whole case text (all source items, then doc pages, cut at ${MAX_CHARS.toLocaleString("en-US")} chars) asked for a full digest plus answers to the 25 QA questions. Scored with the same recall judge and checklist as gist, and the same correctness judge as the RAG suite. One run only.`,
+    adaptation: `One ${BASELINE_MODEL} call (reasoning low) given the whole case text (all source items, then doc pages, cut at ${MAX_CHARS.toLocaleString("en-US")} chars) asked for a full digest plus answers to the 25 QA questions. Scored with the same recall judge and checklist as gist, and the same correctness judge as the RAG suite. One scored run (an earlier attempt died in judging after the model call; its prompt prefix was still in OpenAI's prompt cache, so the logged cost is mostly cached input; cost_usd_if_uncached is the list-price cost of the same tokens).`,
     n: `${chk.length} checklist items, ${qa.length} questions; ${included}/${all.length} source blocks fit`,
     metrics: {
       checklist_recall: pct(rec.filter((r) => r.j.found).length, chk.length), qa_answer_correctness: r3(mean(cor)),
-      input_tokens: meta.input_tokens, output_tokens: meta.output_tokens, cost_usd: r3(cost * 1000) / 1000, latency_s: r3(secs),
+      input_tokens: meta.input_tokens, output_tokens: meta.output_tokens, cost_usd: r3(cost * 1000) / 1000, cost_usd_if_uncached: r3(costOf(BASELINE_MODEL, meta.input_tokens, meta.output_tokens, 0) * 1000) / 1000, latency_s: r3(secs),
       blocks_included: included, blocks_total: all.length,
     },
     tables: [
@@ -716,10 +730,29 @@ async function merge() {
   const suites = files.map((f) => JSON.parse(fs.readFileSync(path.join(SUITE_DIR, f), "utf8")) as Suite & { matter_id: number; matter_label: string; generated_at: string });
   suites.sort((a, b) => ORDER.indexOf(a.id) - ORDER.indexOf(b.id));
   const first = suites[0];
+  // Total spend during the eval window from llm_calls: judges (eval.*) plus the systems under test (ask, search, assistant).
+  // Upper bound: any concurrent interactive use of those features in the same window is included. The baseline calls OpenAI
+  // directly (not logged), so it is added from the baseline suite.
+  const si = process.argv.indexOf("--since");
+  let spend: Record<string, number | string> | null = null;
+  if (si >= 0) {
+    const since = process.argv[si + 1];
+    const rows = await fetchAll<{ purpose: string | null; cost_usd: number | null }>((a, b) => db().from("llm_calls").select("purpose,cost_usd").gte("created_at", since).order("id").range(a, b));
+    const pick = rows.filter((r) => /^(eval\.|ask$|search\.|assistant\.)/.test(r.purpose ?? ""));
+    const sum = (re: RegExp) => r3(pick.filter((r) => re.test(r.purpose ?? "")).reduce((x, r) => x + Number(r.cost_usd ?? 0), 0) * 1000) / 1000;
+    const base = suites.find((x) => x.id === "baseline")?.metrics ?? {};
+    spend = {
+      since, judges_usd: sum(/^eval\./), ask_usd: sum(/^ask$/), search_usd: sum(/^search\./), assistant_usd: sum(/^assistant\./),
+      baseline_scored_run_usd: Number(base.cost_usd ?? 0),
+      baseline_unrecorded_attempt_usd_estimate: Number(base.cost_usd_if_uncached ?? 0),
+    };
+    spend.total_usd = r3(Object.entries(spend).filter(([k, v]) => k !== "since" && typeof v === "number").reduce((x, [, v]) => x + Number(v), 0) * 1000) / 1000;
+  }
   const out = {
     generated_at: new Date().toISOString(), matter_id: first?.matter_id ?? null, matter_label: first?.matter_label ?? null,
     judge_model: JUDGE_MODEL,
-    total_eval_cost_usd: r3(suites.reduce((s, x) => s + (x.cost_usd ?? 0), 0) * 1000) / 1000,
+    total_eval_cost_usd: spend ? Number(spend.total_usd) : r3(suites.reduce((s, x) => s + (x.cost_usd ?? 0), 0) * 1000) / 1000,
+    eval_spend: spend,
     note: "Adaptations of published benchmarks on one real matter. Not official leaderboard numbers. Reproduce: bun run job scripts/eval.ts --suites <ids>; bun run job scripts/eval.ts --merge",
     suites,
   };
