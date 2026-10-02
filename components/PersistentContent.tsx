@@ -1,3 +1,4 @@
+import SceneSignIn from "@/components/gist/auth/SceneSignIn";
 // Persistent home/contact content: sits outside <main> like the source; HomeContact pulls
 // .js-view-projects-btn and .js-contact-content into its CSS3D layer.
 const EMAIL = "founders@kalilabs.ai";
@@ -97,7 +98,7 @@ export function PersistentContent() {
           </span>
         </a>
         {/* full page load into the role picker (firm or provider) */}
-        <a href="/signin" title="Sign in" data-router-disabled="" style={{ marginLeft: "1.25rem" }} className="btn btn--regular btn--fill btn--light js-manager-ignore js-btn" data-btn="fill" data-cursor="hide">
+        <a href="/contact" title="Sign in" style={{ marginLeft: "1.25rem" }} className="btn btn--regular btn--fill btn--light js-manager-ignore js-btn" data-btn="fill" data-cursor="hide">
           <span className="btn__inner js-btn-inner">
             <span className="btn__content js-btn-content">
               <span className="d-flex flex-row items-end">
@@ -112,90 +113,21 @@ export function PersistentContent() {
       </div>
       
       <div className="w-1/1 w-auto@sm js-contact-content" style={{ visibility: "hidden" }}>
-        <div className="d-flex flex-column flex-row@sm mt-8 mt-0@sm pb-5 pb-0@sm">
+        {/* the contact scene is the sign-in: the camera turns here from the landing (toContact) */}
+        <div className="d-flex flex-column flex-row@sm items-center@sm mt-8 mt-0@sm pb-5 pb-0@sm">
           <div className="d-flex flex-column items-center items-end@sm mr-2@sm">
             <div className="mb-2 | js-reveal-anim">
-              <h2 className="t-center t-5 t-6@sm t-lh-0.9 mb-0">
-                <span className="d-block t-serif t-normal t-ls-tighter t-italic">Say hello :)</span>
+              <h2 className="t-center t-right@sm t-5 t-6@sm t-lh-0.9 mb-0">
+                <span className="d-block t-serif t-normal t-ls-tighter t-italic">Who&apos;s opening</span>
+                <span className="d-block t-serif t-normal t-ls-tighter t-italic">the case?</span>
               </h2>
             </div>
             <div className="d-flex justify-end t-center t-right@sm t-uppercase t-lh-1.3 | js-reveal-anim">
-              <p className="t-0.9 mb-0">one case, two sides<br /> reads clio, writes nothing</p>
+              <p className="t-0.9 mb-0">one case, two sides<br /> each sees only what is theirs</p>
             </div>
           </div>
-          <div className="d-flex flex-column mt-1 mt-2.5@sm">
-            <div className="d-flex items-center items-end@sm justify-center justify-start@sm mb-1 mb-2@sm | js-reveal-anim">
-              {CONTACT_TABS.map((tab, i) => (
-                <div key={tab.key} className={(i === 0 ? "mr-1 " : "") + "d-flex" + (i > 0 ? " | js-reveal-anim" : "")}>
-                  <a
-                    href="#"
-                    title={tab.label}
-                    className={
-                      "btn btn--regular btn--border btn--dark js-content-toggle-btn " +
-                      (i === 0 ? "js-btn-selected" : "js-btn-not-selected") +
-                      " js-manager-ignore js-btn"
-                    }
-                    data-btn="border"
-                    data-togglecontent={tab.key}
-                    data-router-disabled=""
-                    data-audio-enter={i === 0 ? "audio.hover" : undefined}
-                    data-cursor="hide"
-                  >
-                    <span className="btn__inner js-btn-inner">
-                      <span className="btn__content js-btn-content">
-                        <span className="d-flex flex-row items-end">
-                          <span className="btn__text">{tab.label}</span>
-                          <svg className="btn__icon d-inline-block js-btn-icon">
-                            <use href="#arrow"></use>
-                          </svg>
-                        </span>
-                      </span>
-                    </span>
-                  </a>
-                </div>
-              ))}
-            </div>
-            <div className="t-center t-left@sm relative js-content-toggle | js-reveal-anim">
-              <div data-content="elsewhere" className="js-content-toggle-section">
-                <div className="d-flex flex-column items-center items-start@sm">
-                  {SOCIALS.map((l) => (
-                    <div key={l.label} className="t-normal overflow-hidden mb-0.25">
-                      <a
-                        href={l.href}
-                        target="_blank"
-                        rel="noopener"
-                        className="t-lh-1.1 t-1.5 t-no-underline t-300 d-block arrow-link"
-                        data-cursor="hide"
-                      >
-                        <ArrowLabel>{l.label}</ArrowLabel>
-                      </a>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="w-1/1 absolute top js-content-toggle-section" data-content="email">
-                <div className="t-normal mb-1 t-center overflow-hidden t-left@sm">
-                  <a href={"mailto:" + EMAIL} className="t-lh-1 t-2 t-no-underline t-300 d-block arrow-link arrow-link--large" data-cursor="hide">
-                    <ArrowLabel>{EMAIL}</ArrowLabel>
-                  </a>
-                </div>
-                <div className="d-flex flex-column flex-row@sm">
-                  <div className="mr-2@sm">
-                    <span className="d-block t-uppercase t-base t-small@sm mb-0.25 t-center overflow-hidden t-left@sm">Built at</span>
-                    <p className="t-1.2 t-lh-1.3 t-center overflow-hidden t-left@sm">
-                      Law-Di-Gras<br />San Diego
-                    </p>
-                  </div>
-                  <div>
-                    <span className="d-block t-uppercase t-base t-small@sm mb-0.25 t-center overflow-hidden t-left@sm">Input</span>
-                    <p className="t-1.2 t-lh-1.3 t-center overflow-hidden t-left@sm">
-                      Clio Manage<br />
-                      read-only
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div className="mt-1 mt-0@sm | js-reveal-anim">
+            <SceneSignIn />
           </div>
         </div>
       </div>

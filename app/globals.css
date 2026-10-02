@@ -3771,3 +3771,120 @@ html.theme-dark .btn--fill.btn--light {
 .mykm-loader__line span {
   display: inline-block;
 }
+
+/* in-scene sign-in (components/gist/auth/SceneSignIn.tsx), lives in the contact scene's CSS3D layer */
+.ssi {
+  width: 34rem;
+  max-width: 86vw;
+  padding: 1.2rem;
+  border: 1px solid rgba(232, 235, 244, 0.16);
+  border-radius: 1.6rem;
+  background: rgba(10, 14, 26, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  color: #e8ebf4;
+  font-family: var(--font-hanken), "Neue Montreal", sans-serif;
+  text-align: left;
+}
+.ssi__tabs {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 0.9rem;
+  padding: 0.3rem;
+  border-radius: 999px;
+  background: rgba(232, 235, 244, 0.06);
+}
+.ssi__tab {
+  flex: 1;
+  padding: 0.65rem 1rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(232, 235, 244, 0.6);
+  font: inherit;
+  font-size: 1.3rem;
+  cursor: pointer;
+  transition: background-color 0.3s cubic-bezier(0.22, 1, 0.36, 1), color 0.3s;
+}
+.ssi__tab[data-on] {
+  background: #e8ebf4;
+  color: #0c1120;
+}
+.ssi__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.ssi__row {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid transparent;
+  border-radius: 1.2rem;
+  background: rgba(232, 235, 244, 0.04);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.25s, border-color 0.25s;
+}
+.ssi__row:hover {
+  border-color: rgba(232, 235, 244, 0.18);
+  background: rgba(232, 235, 244, 0.08);
+}
+.ssi__row:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+.ssi__avatar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 3.2rem;
+  height: 3.2rem;
+  border-radius: 1rem;
+  background: rgba(232, 235, 244, 0.1);
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+.ssi__who {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+.ssi__name {
+  overflow: hidden;
+  font-size: 1.35rem;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ssi__sub {
+  color: rgba(232, 235, 244, 0.5);
+  font-size: 1.1rem;
+}
+.ssi__go {
+  flex: none;
+  color: rgba(232, 235, 244, 0.7);
+  font-size: 1.15rem;
+}
+.ssi__hint,
+.ssi__err {
+  padding: 0.6rem 0.4rem;
+  color: rgba(232, 235, 244, 0.55);
+  font-size: 1.2rem;
+}
+.ssi__err {
+  color: #ee9585;
+}
+.ssi__more {
+  display: inline-block;
+  margin-top: 0.8rem;
+  color: rgba(232, 235, 244, 0.55);
+  font-size: 1.15rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
