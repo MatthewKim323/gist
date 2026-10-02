@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
   const body = (await req.json().catch(() => ({}))) as { role?: string; providerContactId?: unknown };
   if (body.role === "firm") {
     await setSession({ role: "firm", name: "Firm staff" });
-    return NextResponse.json({ ok: true, next: "/matter?view=digest" });
+    return NextResponse.json({ ok: true, next: "/cases" });
   }
   if (body.role === "provider") {
     const id = Number(body.providerContactId);

@@ -15,7 +15,7 @@ export async function getSession(): Promise<Session | null> {
 /** Server components: send anyone without the role to /signin. */
 export async function requireRole(role: Role): Promise<Session> {
   const s = await getSession();
-  if (!s || s.role !== role) redirect(`/signin?next=${role === "provider" ? "/provider" : "/matter"}`);
+  if (!s || s.role !== role) redirect(`/signin?next=${role === "provider" ? "/provider" : "/cases"}`);
   return s;
 }
 

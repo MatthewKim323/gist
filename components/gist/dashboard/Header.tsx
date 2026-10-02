@@ -84,6 +84,20 @@ export default function Header({ d, fixture }: { d: Digest; fixture: boolean }) 
         <Button href={m.clio_url} external arrow variant="border">
           Open in Clio
         </Button>
+        {fixture ? null : (
+          <Button
+            href="/cases"
+            variant="border"
+            onClick={(e) => {
+              // full navigation: /cases is its own Next route, not an engine router view
+              e.preventDefault();
+              e.stopPropagation();
+              window.location.assign("/cases");
+            }}
+          >
+            All cases
+          </Button>
+        )}
         </div>
         <div className="gd-cost" title={d.cost.models.join(" · ")}>
           <span className="gd-num">{fmtUsd(d.cost.cold_usd, { cents: true })}</span> to digest

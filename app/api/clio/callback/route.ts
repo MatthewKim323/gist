@@ -9,11 +9,22 @@ export async function GET(req: NextRequest) {
   const code = url.searchParams.get("code");
   const state = url.searchParams.get("state");
   const expected = req.cookies.get("clio_oauth_state")?.value;
-  if (url.searchParams.get("error")) return NextResponse.json({ error: url.searchParams.get("error") }, { status: 400 });
-  if (!code) return NextResponse.json({ error: "missing code" }, { status: 400 });
-  if (expected && state !== expected) return NextResponse.json({ error: "state mismatch" }, { status: 400 });
-  await exchangeCode(code);
-  const res = NextResponse.redirect(new URL("/", req.url));
+  // Every outcome lands back on the firm workspace, which shows the result.
+  const back = (q: string) => {
+    const res = NextResponse.redirect(new URL(`/cases?${q}`, req.url));
+    res.cookies.delete("clio_oauth_state");
+    return res;
+  };
+  const err = url.searchParams.get("error");
+  if (err) return back(`clio_error=${encodeURIComponent(err)}`);
+  if (!code) return back("clio_error=missing_code");
+  if (expected && state !== expected) return back("clio_error=state_mismatch");
+  try {
+    await exchangeCode(code);
+  } catch (e) {
+    return back(`clio_error=${encodeURIComponent((e as Error).message.slice(0, 120))}`);
+  }
+  const res = NextResponse.redirect(new URL("/cases?connected=1", req.url));
   res.cookies.delete("clio_oauth_state");
   return res;
 }

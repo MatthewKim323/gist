@@ -6,7 +6,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { SESSION_COOKIE, verifySession } from "@/lib/server/auth/token";
 
-const FIRM_PAGES = [/^\/matter(\/|$)/, /^\/s\/compose(\/|$)/, /^\/pipeline-preview(\/|$)/];
+const FIRM_PAGES = [/^\/matter(\/|$)/, /^\/cases(\/|$)/, /^\/s\/compose(\/|$)/, /^\/pipeline-preview(\/|$)/];
 const FIRM_APIS = [
   /^\/api\/matter(\/|$)/,
   /^\/api\/ask(\/|$)/,
@@ -15,6 +15,7 @@ const FIRM_APIS = [
   /^\/api\/sync(\/|$)/,
   /^\/api\/docs(\/|$)/,
   /^\/api\/clio(\/|$)/,
+  /^\/api\/cases(\/|$)/,
   // The share composer (create, preview any config, revoke) is firm-only.
   /^\/api\/share(\/|$)/,
 ];
@@ -34,5 +35,5 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/matter/:path*", "/s/compose/:path*", "/pipeline-preview/:path*", "/api/:path*"],
+  matcher: ["/matter/:path*", "/cases/:path*", "/s/compose/:path*", "/pipeline-preview/:path*", "/api/:path*"],
 };
