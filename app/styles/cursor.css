@@ -1,7 +1,12 @@
-/* the custom ring is the only cursor on pointer devices, from the intro gate on (see lib/engine/dom/cursor.ts) */
+/* the custom ring is the only cursor on pointer devices, but only on the landing scene (home / contact).
+   Everywhere else (matter timeline, dashboard, cases, share pages) the native cursor is back and the ring is
+   hidden. See lib/engine/dom/cursor.ts. */
 @media (hover: hover) and (pointer: fine) {
-  html,
-  html * {
+  body.page-template-home-contact,
+  body.page-template-home-contact * {
     cursor: none !important;
   }
+}
+body:not(.page-template-home-contact) .cursor {
+  display: none !important;
 }
