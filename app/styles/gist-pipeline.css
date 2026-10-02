@@ -1023,3 +1023,31 @@
   letter-spacing: 0.02em;
   white-space: nowrap;
 }
+
+/* thought line trace: never runs into the card across the spine; long shard names truncate */
+.gp-thought {
+  max-width: min(340px, 34vw);
+}
+.gp-thought .thought-line__trace,
+.gp-thought .thought-line__fold {
+  max-width: 100%;
+}
+.gp-thought .thought-line__steps {
+  width: auto;
+  max-width: 100%;
+}
+.gp-thought .thought-line__step {
+  min-width: 0;
+  max-width: 100%;
+}
+.gp-thought .thought-line__step-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media only screen and (min-width: 1170px) {
+  .gp-tl .vertical-timeline-element:not(.vertical-timeline-element--left) .gp-thought .thought-line__steps {
+    margin-left: auto;
+  }
+}
