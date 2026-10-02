@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { autopilotTick, cleanupSimulated, getState, isDue, type Simulate } from "@/lib/server/autopilot/tick";
 
 export const runtime = "nodejs";
-export const maxDuration = 800;
+export const maxDuration = 300;
 export const dynamic = "force-dynamic";
 
 /**

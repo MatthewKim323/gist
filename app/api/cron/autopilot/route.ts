@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { autopilotTick, getState, isDue } from "@/lib/server/autopilot/tick";
 
 export const runtime = "nodejs";
-export const maxDuration = 800;
+export const maxDuration = 300;
 export const dynamic = "force-dynamic";
 
 /** Vercel Cron entry. Checks the bearer secret when CRON_SECRET is set, then ticks if autopilot is on and due. */

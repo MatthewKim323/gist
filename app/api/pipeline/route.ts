@@ -3,7 +3,7 @@ import { db } from "@/lib/server/db";
 import { createRun, runPipeline, type StageName } from "@/lib/server/pipeline/run";
 
 export const runtime = "nodejs";
-export const maxDuration = 800;
+export const maxDuration = 300;
 
 /** POST {matterId, only?, skip?} starts a run in the background and returns its id right away. */
 export async function POST(req: Request) {
