@@ -1,5 +1,6 @@
 "use client";
 
+import Button from "@/components/gist/ui/Button";
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import type { Digest } from "@/lib/types";
@@ -146,9 +147,14 @@ export function Completeness({ d, rejected }: { d: Digest; rejected: { summary: 
           ))}
           <div className="gd-receipt__row gd-receipt__row--rej">
             <dt>
-              <button type="button" className="gd-linkbtn" onClick={() => setOpen((o) => !o)} aria-expanded={open} disabled={!rejected.length}>
-                Facts rejected by the verifier {rejected.length ? (open ? "(hide)" : "(show)") : null}
-              </button>
+              <span className="gd-receipt__rejk">
+                Facts rejected by the verifier
+                {rejected.length ? (
+                  <Button size="xs" variant="border" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
+                    {open ? "Hide" : "Show why"}
+                  </Button>
+                ) : null}
+              </span>
             </dt>
             <dd className="gd-num">{c.facts_rejected.toLocaleString()}</dd>
           </div>

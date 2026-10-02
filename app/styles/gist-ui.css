@@ -1,0 +1,77 @@
+/* gist Button: the home "Open the case" button (globals.css .btn--regular) plus sizes and a CSS
+   fallback for when the engine's SvgButton has not drawn the pill yet (or failed). */
+
+.gb {
+  font-family: "Neue Montreal", "Helvetica Neue", Arial, sans-serif;
+  white-space: nowrap;
+  vertical-align: middle;
+  flex: none;
+}
+.gb .btn__text {
+  letter-spacing: 0.005em;
+}
+
+/* sizes: md is the home button as is */
+.gb--sm .btn__inner {
+  padding: calc(0.55rem - 2px) 1.05rem;
+  border-radius: 1.2rem;
+}
+.gb--sm .btn__text {
+  font-size: 0.88rem;
+  line-height: 0.8rem;
+}
+.gb--sm .btn__icon {
+  height: 0.55rem;
+  width: 0.48rem;
+  margin-left: 0.45rem;
+}
+.gb--xs .btn__inner {
+  padding: calc(0.4rem - 2px) 0.8rem;
+  border-radius: 1rem;
+}
+.gb--xs .btn__text {
+  font-size: 0.78rem;
+  line-height: 0.72rem;
+}
+.gb--xs .btn__icon {
+  height: 0.48rem;
+  width: 0.42rem;
+  margin-left: 0.35rem;
+}
+
+/* before SvgButton builds (first frame) and if it fails: same pill drawn in CSS */
+.gb:not(.gb--svg) .btn__inner {
+  box-shadow: inset 0 0 0 2px var(--border);
+  background: var(--background);
+  transition: background 0.5s cubic-bezier(0.87, 0, 0.13, 1), box-shadow 0.5s;
+}
+.gb--nosvg:hover .btn__inner {
+  background: var(--hoverFill);
+  box-shadow: inset 0 0 0 2px var(--hoverBorder, var(--hoverFill));
+}
+.gb--nosvg:hover .btn__text {
+  color: var(--hoverText);
+}
+.gb--nosvg:hover .btn__icon {
+  fill: var(--hoverText);
+}
+
+/* border + light on the night scene: soft outline, fills white on hover */
+.gb.btn--border.btn--light {
+  --border: rgba(255, 255, 255, 0.55);
+  --hoverBorder: #fff;
+  --hoverFill: #fff;
+  --hoverText: #141a2a;
+}
+
+.gb--disabled,
+.gb:disabled {
+  opacity: 0.35;
+  cursor: default;
+  pointer-events: none;
+}
+.gb:focus-visible {
+  outline: 2px solid rgba(214, 194, 154, 0.8);
+  outline-offset: 2px;
+  border-radius: 1.6rem;
+}

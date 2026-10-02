@@ -1,5 +1,6 @@
 "use client";
 
+import Button from "@/components/gist/ui/Button";
 import { useState } from "react";
 import type { Digest } from "@/lib/types";
 import { CiteChip, Cites } from "./cite";
@@ -78,9 +79,11 @@ export function RedFlags({ d }: { d: Digest }) {
           ))}
       </div>
       {sorted.length > first ? (
-        <button type="button" className="gd-linkbtn gd-flags__more" onClick={() => setAll((v) => !v)}>
-          {all ? "Show only the top flags" : `Show all ${sorted.length} red flags (${sorted.length - first} more)`}
-        </button>
+        <div className="gd-more">
+          <Button size="sm" variant="border" onClick={() => setAll((v) => !v)}>
+            {all ? "Show only the top flags" : `Show all ${sorted.length} red flags (${sorted.length - first} more)`}
+          </Button>
+        </div>
       ) : null}
     </Panel>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import Button from "@/components/gist/ui/Button";
 import { useState } from "react";
 import { motion } from "motion/react";
 import { PHASES, type Digest, type GateItem, type GateStatus, type Owner } from "@/lib/types";
@@ -38,16 +39,12 @@ function GateRow({ g, i }: { g: GateItem; i: number }) {
         </div>
         {g.note ? <div className="gd-gate__note">{g.note}</div> : null}
         {g.owed_by === "provider" && g.status !== "have" && g.owed_by_name ? (
-          <button
-            type="button"
-            className="gd-gate__hint"
-            onClick={() => share(g.owed_by_contact_id)}
-            title={`Open ${g.owed_by_name}'s share link with this ask on it`}
-          >
-            <svg viewBox="0 0 12 12" width="10" height="10"><path d="M5 7l2-2M4.2 5.6L3 6.8a1.6 1.6 0 0 0 2.2 2.2l1.2-1.2M7.8 6.4L9 5.2A1.6 1.6 0 0 0 6.8 3L5.6 4.2" stroke="currentColor" strokeWidth="1" fill="none" strokeLinecap="round" /></svg>
-            On {g.owed_by_name}&rsquo;s share link
-            <span className="gd-gate__hint-go">Share</span>
-          </button>
+          <div className="gd-gate__hint">
+            <span>On {g.owed_by_name}&rsquo;s share link</span>
+            <Button size="xs" arrow onClick={() => share(g.owed_by_contact_id)} title={`Open ${g.owed_by_name}'s share link with this ask on it`}>
+              Share
+            </Button>
+          </div>
         ) : null}
       </div>
       <div className="gd-gate__owner">{g.status !== "have" ? <OwnerChip owner={g.owed_by} name={g.owed_by_name} /> : null}</div>
@@ -168,11 +165,13 @@ export default function PhaseSpine({ d }: { d: Digest }) {
           ))}
         </ul>
         {hidden > 0 || showAll ? (
-          <button type="button" className="gd-linkbtn" onClick={() => setShowAll((v) => !v)}>
+          <div className="gd-more">
+          <Button size="sm" variant="border" onClick={() => setShowAll((v) => !v)}>
             {showAll
               ? "Show only the most urgent"
               : `Show all ${gates.length} requirements (${open.length - visible.length} more open, ${have} in hand)`}
-          </button>
+          </Button>
+          </div>
         ) : null}
       </div>
     </section>

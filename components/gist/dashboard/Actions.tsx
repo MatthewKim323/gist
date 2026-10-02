@@ -1,5 +1,6 @@
 "use client";
 
+import Button from "@/components/gist/ui/Button";
 import { useState } from "react";
 import type { ActionItem, Digest } from "@/lib/types";
 import { CiteChip, CitedValue } from "./cite";
@@ -80,9 +81,9 @@ export default function Actions({ d }: { d: Digest }) {
                   ))}
                   {items.length > CAP ? (
                     <li>
-                      <button type="button" className="gd-linkbtn" onClick={() => setAll((v) => !v)}>
+                      <Button size="xs" variant="border" onClick={() => setAll((v) => !v)}>
                         {all ? "Show fewer" : `${items.length - CAP} more`}
-                      </button>
+                      </Button>
                     </li>
                   ) : null}
                 </ul>

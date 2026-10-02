@@ -1,5 +1,6 @@
 "use client";
 
+import Button from "@/components/gist/ui/Button";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ShareSheet } from "@/components/gist/share";
@@ -157,9 +158,9 @@ export default function Dashboard({ matterId: givenId, fixture: givenFixture }: 
             <nav className="gd-nav" aria-label="Sections">
               <div className="gd-nav__links">
                 {NAV.map(([id, label]) => (
-                  <button key={id} type="button" onClick={() => jump(id)}>
+                  <Button key={id} size="xs" variant="border" onClick={() => jump(id)}>
                     {label}
-                  </button>
+                  </Button>
                 ))}
               </div>
               <AskPalette matterId={digest.matter.id} fixture={fixture} />

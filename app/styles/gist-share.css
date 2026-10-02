@@ -727,25 +727,9 @@ html .gsc [role="separator"] {
   background: #0b0f19;
 }
 .gsc-seg {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  background: var(--gs-card);
-  border: 1px solid var(--gs-hair);
-  border-radius: 10px;
-  padding: 3px;
-  gap: 3px;
-}
-.gsc-seg button {
-  border: 0;
-  border-radius: 8px;
-  padding: 7px 0;
-  background: transparent;
-  color: var(--gs-ink-2);
-  font: inherit;
-}
-.gsc-seg button[aria-pressed="true"] {
-  background: var(--gs-card-2);
-  color: var(--gs-ink);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 .gsc-chips {
   display: flex;
@@ -1025,4 +1009,19 @@ html .gsc [role="separator"] {
     animation: none;
     opacity: 0;
   }
+}
+
+/* home-style buttons inside the composer */
+.gsc-close-wrap {
+  margin-left: 12px;
+}
+.gsc-publish {
+  margin: 4px 0 12px;
+}
+.gsc .gsc-revoke {
+  --text: #f1a99b;
+  --border: rgba(241, 169, 155, 0.55);
+  --hoverBorder: #f1a99b;
+  --hoverFill: #f1a99b;
+  --hoverText: #1a1010;
 }

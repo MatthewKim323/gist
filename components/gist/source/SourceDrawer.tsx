@@ -1,5 +1,6 @@
 "use client";
 
+import Button from "@/components/gist/ui/Button";
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { createPortal } from "react-dom";
@@ -120,13 +121,13 @@ export default function SourceDrawer({
               {data?.occurred_at ? <div className="gs-date">{fmtDateAgo(data.occurred_at)}</div> : null}
               <div className="gs-head__actions">
                 {data?.clio_url ? (
-                  <a className="gs-btn" href={data.clio_url} target="_blank" rel="noreferrer" data-router-disabled>
+                  <Button size="sm" variant="border" href={data.clio_url} external arrow>
                     Open in Clio
-                  </a>
+                  </Button>
                 ) : null}
-                <button type="button" className="gs-btn gs-btn--icon" onClick={onClose} aria-label="Close">
-                  <svg viewBox="0 0 16 16" width="14" height="14"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" strokeWidth="1.4" /></svg>
-                </button>
+                <Button size="sm" onClick={onClose} aria-label="Close">
+                  Close
+                </Button>
               </div>
             </header>
 
@@ -153,16 +154,16 @@ export default function SourceDrawer({
                 <div className="gs-split">
                   <div className="gs-split__pdf">
                     <div className="gs-pager">
-                      <button type="button" className="gs-btn gs-btn--icon" disabled={page <= 1} onClick={() => setPage((p) => p - 1)} aria-label="Previous page">
-                        <svg viewBox="0 0 16 16" width="12" height="12"><path d="M10 3L5 8l5 5" stroke="currentColor" strokeWidth="1.4" fill="none" /></svg>
-                      </button>
+                      <Button size="xs" variant="border" disabled={page <= 1} onClick={() => setPage((p) => p - 1)} aria-label="Previous page">
+                        Prev
+                      </Button>
                       <span className="gs-pager__n">
                         p.{page}
                         {pages ? <span className="gs-dim"> / {pages}</span> : null}
                       </span>
-                      <button type="button" className="gs-btn gs-btn--icon" disabled={pages != null && page >= pages} onClick={() => setPage((p) => p + 1)} aria-label="Next page">
-                        <svg viewBox="0 0 16 16" width="12" height="12"><path d="M6 3l5 5-5 5" stroke="currentColor" strokeWidth="1.4" fill="none" /></svg>
-                      </button>
+                      <Button size="xs" variant="border" disabled={pages != null && page >= pages} onClick={() => setPage((p) => p + 1)} aria-label="Next page">
+                        Next
+                      </Button>
                     </div>
                     {data.doc.pdf_url ? (
                       <PdfPage url={data.doc.pdf_url} page={page} onPages={setPages} />
@@ -188,9 +189,9 @@ export default function SourceDrawer({
                       <div className="gs-empty">No transcript for this page yet.</div>
                     )}
                     {!onCitedPage ? (
-                      <button type="button" className="gs-btn gs-split__note" onClick={() => setPage(data.doc!.page ?? 1)}>
+                      <div className="gs-split__note"><Button size="xs" onClick={() => setPage(data.doc!.page ?? 1)}>
                         Back to cited p.{data.doc.page}
-                      </button>
+                      </Button></div>
                     ) : null}
                   </div>
                 </div>

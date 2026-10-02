@@ -1,5 +1,6 @@
 "use client";
 
+import Button from "@/components/gist/ui/Button";
 import { useEffect, useState } from "react";
 import { useCites } from "./cite";
 import { Panel } from "./bits";
@@ -43,9 +44,9 @@ export default function ShareLog({ matterId, fixture }: { matterId: number; fixt
       title="Share log"
       kicker={rows ? `${rows.length} link${rows.length === 1 ? "" : "s"} sent · ${opens} open${opens === 1 ? "" : "s"}` : "Loading"}
       aside={
-        <button type="button" className="gd-sharebtn gd-sharebtn--sm" onClick={() => share()}>
+        <Button size="sm" arrow onClick={() => share()}>
           New share link
-        </button>
+        </Button>
       }
     >
       {rows && rows.length ? (
@@ -66,9 +67,9 @@ export default function ShareLog({ matterId, fixture }: { matterId: number; fixt
                   <span className="gd-dim">not opened yet</span>
                 )}
               </span>
-              <button type="button" className="gd-linkbtn" onClick={() => share(r.provider_contact_id)}>
+              <Button size="xs" variant="border" onClick={() => share(r.provider_contact_id)}>
                 Open
-              </button>
+              </Button>
             </li>
           ))}
         </ul>

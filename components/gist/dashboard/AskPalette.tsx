@@ -1,5 +1,6 @@
 "use client";
 
+import Button from "@/components/gist/ui/Button";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "motion/react";
@@ -117,10 +118,9 @@ export default function AskPalette({ matterId, fixture }: { matterId: number | n
 
   return (
     <>
-      <button type="button" className="gd-askbtn" onClick={() => setOpen(true)}>
-        Ask the case
-        <kbd>⌘K</kbd>
-      </button>
+      <Button size="sm" variant="border" onClick={() => setOpen(true)} title="Ask the case (cmd K)">
+        Ask the case ⌘K
+      </Button>
       {createPortal(
       <div className="gd-portal">
       <AnimatePresence>
@@ -152,9 +152,9 @@ export default function AskPalette({ matterId, fixture }: { matterId: number | n
                 {!answers.length && !busy ? (
                   <div className="gd-ask__suggest">
                     {SUGGEST.map((s) => (
-                      <button key={s} type="button" onClick={() => void ask(s)}>
+                      <Button key={s} size="sm" variant="border" onClick={() => void ask(s)}>
                         {s}
-                      </button>
+                      </Button>
                     ))}
                   </div>
                 ) : null}

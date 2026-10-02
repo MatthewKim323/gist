@@ -132,7 +132,7 @@
 .gd-wrap {
   max-width: 1380px;
   margin: 0 auto;
-  padding: 104px clamp(20px, 3.4vw, 48px) 80px;
+  padding: 24px clamp(20px, 3.4vw, 48px) 80px;
 }
 
 /* ---------------- header ---------------- */
@@ -1508,7 +1508,7 @@ button.gd-cite:focus-visible {
   font-weight: 400;
   font-size: 28px;
   line-height: 1.1;
-  margin: 8px 120px 4px 0 !important;
+  margin: 8px 250px 4px 0 !important;
 }
 .gs-date {
   font-size: 13px;
@@ -1929,4 +1929,36 @@ button.gd-gate__hint:focus-visible .gd-gate__hint-go {
   .gd-sharelog__row {
     grid-template-columns: minmax(0, 1fr) auto;
   }
+}
+
+/* ---------------- home buttons in the dashboard ---------------- */
+.gd-more {
+  margin-top: 16px;
+}
+.gd-nav__links {
+  gap: 6px;
+  align-items: center;
+  padding: 2px 0;
+}
+.gd-gate__hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.gd-receipt__rejk {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.gd-sharelog__row {
+  grid-template-columns: minmax(0, 1.4fr) 90px 70px minmax(0, 1.4fr) auto;
+}
+.gd-header__btns {
+  align-items: center;
+}
+.gs-head__actions {
+  align-items: center;
+}
+.gs-split__note {
+  margin-top: 12px;
 }

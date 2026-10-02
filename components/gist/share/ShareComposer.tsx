@@ -3,6 +3,7 @@
 // Attorney share composer: pick a provider, toggle sections, override facts, redact terms, watch the
 // exact provider page update on the right (hidden sections drawn as "Redacted by firm"), see what the
 // Jev gate held back, publish a tokenized link + QR, and watch it get opened live. Revoke any time.
+import Button from "@/components/gist/ui/Button";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
@@ -265,9 +266,11 @@ export default function ShareComposer({ matterId, initialProviderId, onClose, cl
         <h2>Share with provider</h2>
         <span className="gsc-sub">Filtered on the server. Deposition-safe by default.</span>
         {onClose && (
-          <button className="gsc-close" onClick={onClose} aria-label="Close">
-            ×
-          </button>
+          <span className="gsc-close-wrap">
+            <Button size="sm" variant="border" onClick={onClose} aria-label="Close">
+              Close
+            </Button>
+          </span>
         )}
       </div>
 
@@ -324,14 +327,15 @@ export default function ShareComposer({ matterId, initialProviderId, onClose, cl
             <span className="gsc-label">Coverage detail</span>
             <div className="gsc-seg" role="group">
               {(["hidden", "tier", "exact"] as const).map((v) => (
-                <button
+                <Button
                   key={v}
-                  type="button"
+                  size="sm"
+                  variant={config.coverage_detail === v ? "fill" : "border"}
                   aria-pressed={config.coverage_detail === v}
                   onClick={() => setConfig((c) => ({ ...c, coverage_detail: v }))}
                 >
                   {v === "hidden" ? "Hidden" : v === "tier" ? "Tier only" : "Exact"}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -411,9 +415,11 @@ export default function ShareComposer({ matterId, initialProviderId, onClose, cl
 
           {err && <div className="gsc-err">{err}</div>}
 
-          <button className="gsc-btn" disabled={!providerId || publishing} onClick={publish}>
-            {publishing ? "Publishing" : published ? "Publish another link" : "Publish link"}
-          </button>
+          <div className="gsc-publish">
+            <Button arrow disabled={!providerId || publishing} onClick={publish}>
+              {publishing ? "Publishing" : published ? "Publish another link" : "Publish link"}
+            </Button>
+          </div>
 
           {published && (
             <div className="gsc-published">
@@ -422,12 +428,12 @@ export default function ShareComposer({ matterId, initialProviderId, onClose, cl
                 <div>Link ready for {published.provider}</div>
                 <div className="gsc-published__url">{published.url}</div>
                 <div style={{ display: "flex", gap: 8 }}>
-                  <button className="gsc-btn gsc-btn--ghost" style={{ padding: "6px 10px", fontSize: 12 }} onClick={() => navigator.clipboard?.writeText(published.url)}>
+                  <Button size="xs" variant="border" onClick={() => void navigator.clipboard?.writeText(published.url)}>
                     Copy
-                  </button>
-                  <a className="gsc-btn gsc-btn--ghost" style={{ padding: "6px 10px", fontSize: 12, textDecoration: "none" }} href={published.url} target="_blank" rel="noreferrer" data-router-disabled>
+                  </Button>
+                  <Button size="xs" href={published.url} external arrow>
                     Open
-                  </a>
+                  </Button>
                 </div>
                 {published.held > 0 && <div className="gsc-share__meta" style={{ marginTop: 6 }}>{published.held} lines held back by the gate</div>}
               </div>
@@ -446,9 +452,9 @@ export default function ShareComposer({ matterId, initialProviderId, onClose, cl
                       {s.view_count ? `Opened ${s.view_count}x, last ${timeOf(s.last_viewed_at)}` : "Not opened yet"}
                     </span>
                     {s.state === "active" && (
-                      <button className="gsc-btn gsc-btn--danger" onClick={() => revoke(s.id)}>
+                      <Button size="xs" variant="border" className="gsc-revoke" onClick={() => revoke(s.id)}>
                         Revoke
-                      </button>
+                      </Button>
                     )}
                   </div>
                   <span className="gsc-share__meta">
