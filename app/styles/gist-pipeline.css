@@ -1017,3 +1017,9 @@
   font: inherit;
   font-size: 11px;
 }
+.gp-counter__note {
+  color: var(--gp-ink-3);
+  font-size: 10px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}

@@ -112,6 +112,36 @@ export default function PipelineTimeline({
     return () => clearTimeout(t);
   }, [dwellRole, pace]);
   const allRevealed = stages.length > 0 && pendingRoles.length === 0;
+
+  // ---- case totals: counters show what the case IS (from the digest), not only what this run newly paid
+  // for, so a cached reopen doesn't read as dead zeros. Each total switches in when the stage that produces
+  // it is revealed; "spent" stays this run's real cost, the first cold digest cost sits beside it.
+  const [caseTotals, setCaseTotals] = useState<CaseTotals | null>(null);
+  const matterId = (run as { matter_id?: number } | null)?.matter_id;
+  useEffect(() => {
+    if (!matterId || source) return;
+    let live = true;
+    fetch(`/api/matter/${matterId}/digest?peek=1`, { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => {
+        const d = j && ("digest" in j ? j.digest : j);
+        if (!live || !d?.completeness) return;
+        const c = d.completeness;
+        setCaseTotals({
+          entries: c.entries_read,
+          entriesTotal: c.entries_total,
+          pages: c.pages_read,
+          pagesTotal: c.pages_total,
+          facts: c.facts_verified + c.facts_rejected + c.facts_review,
+          rejected: c.facts_rejected,
+          coldUsd: Number(d.cost?.cold_usd ?? 0),
+        });
+      })
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, [matterId, source]);
   useEffect(() => {
     if (runOver && allRevealed) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setSkipped(true);
@@ -281,7 +311,7 @@ export default function PipelineTimeline({
           </button>
         ) : null}
         <div className="gp-counters-wrap">
-          <Counters c={counters} cached={allCached} />
+          <Counters c={counters} cached={allCached} totals={caseTotals} revealed={revealed} stageCount={stages.length} done={digested} />
         </div>
 
         <div className="gp-tl" ref={wrapRef}>
@@ -332,24 +362,83 @@ function liveLabel(l: string, over: boolean) {
 
 // ------------------------------------------------------------------------------------------------
 
-function Counters({ c, cached }: { c: RunCounters; cached: boolean }) {
-  const cells: { k: string; v: string; sub?: string }[] = [
-    { k: "entries read", v: fmtInt(c.entries.n), sub: c.entries.of ? `of ${fmtInt(c.entries.of)}` : undefined },
-    { k: "pages read", v: fmtInt(c.pages.n), sub: c.pages.of ? `of ${fmtInt(c.pages.of)}` : undefined },
-    { k: "facts emitted", v: fmtInt(c.factsEmitted) },
-    { k: "verifier rejects", v: fmtInt(c.rejected) },
-    { k: "jev checks", v: fmtInt(c.jevChecks) },
-    { k: cached ? "spent, all cached" : "spent", v: fmtUsd(c.cost) },
+interface CaseTotals {
+  entries: number;
+  entriesTotal: number;
+  pages: number;
+  pagesTotal: number;
+  facts: number;
+  rejected: number;
+  coldUsd: number;
+}
+
+/** Eases a number toward its target (700ms, out-cubic). Display only; the target is always a real value. */
+function useCountUp(target: number) {
+  const [v, setV] = useState(target);
+  const from = useRef(target);
+  useEffect(() => {
+    const start = performance.now();
+    const a = from.current;
+    let raf = 0;
+    const tick = (t: number) => {
+      const k = Math.min(1, (t - start) / 700);
+      const next = a + (target - a) * (1 - Math.pow(1 - k, 3));
+      from.current = next;
+      setV(next);
+      if (k < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target]);
+  return v;
+}
+
+function Counters({
+  c,
+  cached,
+  totals,
+  revealed,
+  stageCount,
+  done,
+}: {
+  c: RunCounters;
+  cached: boolean;
+  totals: CaseTotals | null;
+  revealed: AgentRole[];
+  stageCount: number;
+  done: boolean;
+}) {
+  const on = (r: AgentRole) => revealed.includes(r);
+  const entries = useCountUp(Math.max(c.entries.n, totals && on("sync") ? totals.entries : 0));
+  const pages = useCountUp(Math.max(c.pages.n, totals && on("ocr") ? totals.pages : 0));
+  const facts = useCountUp(Math.max(c.factsEmitted, totals && on("extract") ? totals.facts : 0));
+  const rejects = useCountUp(Math.max(c.rejected, totals && on("verify") ? totals.rejected : 0));
+  const jev = useCountUp(c.jevChecks);
+  // first cold digest of this case, filled in as the stages land; exact once the run is done
+  const coldShown = totals ? (done || !stageCount ? totals.coldUsd : totals.coldUsd * (revealed.length / stageCount)) : 0;
+  const cold = useCountUp(coldShown);
+  const entriesOf = c.entries.of ?? totals?.entriesTotal ?? null;
+  const pagesOf = c.pages.of ?? totals?.pagesTotal ?? null;
+  const cells: { k: string; v: string; sub?: string; note?: string }[] = [
+    { k: "entries read", v: fmtInt(Math.round(entries)), sub: entriesOf ? `of ${fmtInt(entriesOf)}` : undefined },
+    { k: "pages read", v: fmtInt(Math.round(pages)), sub: pagesOf ? `of ${fmtInt(pagesOf)}` : undefined },
+    { k: "facts extracted", v: fmtInt(Math.round(facts)) },
+    { k: "verifier rejects", v: fmtInt(Math.round(rejects)) },
+    { k: "jev checks", v: fmtInt(Math.round(jev)) },
+    totals && totals.coldUsd > 0
+      ? { k: "to digest this case", v: fmtUsd(cold), note: `this run ${fmtUsd(c.cost)}${cached ? ", cached" : ""}` }
+      : { k: cached ? "spent, all cached" : "spent", v: fmtUsd(c.cost) },
   ];
   return (
     <div className="gp-counters" role="status" aria-live="polite">
       {cells.map((x) => (
         <div className="gp-counter" key={x.k}>
-          <span className="gp-counter__v" key={x.v}>
+          <span className="gp-counter__v">
             {x.v}
             {x.sub && <em> {x.sub}</em>}
           </span>
           <span className="gp-counter__k">{x.k}</span>
+          {x.note ? <span className="gp-counter__note">{x.note}</span> : null}
         </div>
       ))}
     </div>
