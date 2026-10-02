@@ -7,12 +7,13 @@ import Dashboard from "@/components/gist/dashboard/Dashboard";
 import PipelineTimeline from "@/components/gist/pipeline/PipelineTimeline";
 import { createMockSource } from "@/components/gist/pipeline/mock";
 import { createReplaySource } from "@/components/gist/pipeline/replay";
+import CasePicker, { type Picked } from "@/components/gist/cases/CasePicker";
 
-type Phase = "boot" | "pipeline" | "digest";
+type Phase = "boot" | "pick" | "pipeline" | "digest";
 
 /**
- * /matter              -> starts a pipeline run on the first synced matter, plays the live timeline, then
- *                         seam-wipes to the dashboard (a rerun over unchanged data is the cached $0 pass)
+ * /matter              -> case picker: choose a case to ingest, then the timeline plays and seam-wipes to the
+ *                         dashboard (?start=1 keeps the old behaviour: first synced matter, straight into a run)
  * /matter?run=<id>     -> watch that run, then the dashboard (the start flow rewrites the url to this, so a
  *                         refresh keeps watching instead of starting another run)
  * /matter?view=digest  -> straight to the dashboard
@@ -50,6 +51,8 @@ export default function MatterView() {
       setPhase("pipeline");
     } else if (p.get("view") === "digest" || p.get("fixture") === "1") {
       setPhase("digest");
+    } else if (p.get("start") !== "1") {
+      setPhase("pick");
     } else {
       let cancelled = false;
       startRun()
@@ -80,6 +83,25 @@ export default function MatterView() {
   const toDigest = () => void seamWipe(() => flushSync(() => setPhase("digest")));
 
   if (phase === "boot") return null;
+  if (phase === "pick") {
+    return (
+      <CasePicker
+        onPicked={({ matterId: id, runId: rid }: Picked) => {
+          const url = new URL(window.location.href);
+          url.searchParams.set("run", rid);
+          url.searchParams.set("id", String(id));
+          window.history.replaceState(window.history.state, "", url);
+          void seamWipe(() =>
+            flushSync(() => {
+              setMatterId(id);
+              setRunId(rid);
+              setPhase("pipeline");
+            }),
+          );
+        }}
+      />
+    );
+  }
   if (phase === "pipeline") {
     if (source) return <PipelineTimeline key={source.runId} runId={source.runId} source={source} onComplete={toDigest} />;
     // a failed run still lands on the dashboard: it shows the last good digest and the gaps
