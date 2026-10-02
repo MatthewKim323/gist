@@ -60,7 +60,8 @@ async function searchAnswer(ctx: ToolCtx, q: string, emit: Emit): Promise<string
     const m = head.match(/^\[([^\]]+)\]\s*(.*)$/);
     if (!m) continue;
     const snip = body.join(" ").replace(/\s+/g, " ").trim().slice(0, 220);
-    L.push(`- ${m[2] || m[1]}: ${snip}${snip.length >= 220 ? "..." : ""} [${m[1]}]`);
+    const title = m[2].replace(/^\[[^\]]*\]\s*/, "").trim();
+    L.push(`- ${title ? `${title}: ` : ""}${snip}${snip.length >= 220 ? "..." : ""} [${m[1]}]`);
   }
   return L.join("\n");
 }
