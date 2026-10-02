@@ -105,7 +105,7 @@ export interface Contradiction {
   title: string;
   why_it_matters: string;
   severity: "low" | "medium" | "high";
-  claims: { source_ref: SourceRef; says: string; quote: string; date: string | null }[];
+  claims: { source_ref: SourceRef; says: string; quote: string; date: string | null; label?: string }[];
 }
 
 export interface ProviderLane {
@@ -136,6 +136,9 @@ export interface Digest {
     stage_since: string | null;
     responsible_attorney: string | null;
     clio_url: string;
+    /** statute of limitations: matter field + SOL task; days_remaining negative once passed */
+    sol?: { date: Cited<string>; days_remaining: number; satisfied: boolean | null } | null;
+    open_date?: string | null;
   };
   money: {
     case_value: Cited<number> | null;
@@ -146,6 +149,11 @@ export interface Digest {
     specials: Cited<number> | null;
     liens: Cited<number>[];
     firm_spend: Cited<number>;
+    wage_loss?: Cited<number> | null;
+    gap_usd?: number | null;             // case value minus per-person limit
+    limit_pct_of_value?: number | null;  // limit as % of value
+    coverage_lines?: { label: string; per_person: number | null; per_occurrence: number | null; raw: string }[];
+    expense_count?: number;
   };
   story: { text: string; cites: Citation[] }[];
   phase: {
@@ -157,6 +165,7 @@ export interface Digest {
   red_flags: Contradiction[];
   actions: ActionItem[];
   last_client_contact: Cited<string> | null;
+  last_client_contact_detail?: { channel: string | null; days_ago: number | null; last_written_from_client: Cited<string> | null };
   since_last_opened: { at: string | null; items: { label: string; kind: string; cite: Citation }[] };
   injuries: { label: string; body_part: string | null; cites: Citation[] }[];
   providers: ProviderLane[];
