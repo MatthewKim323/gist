@@ -33,6 +33,8 @@ import {
   Share08Icon,
   Stethoscope02Icon,
   Task01Icon,
+  Tick02Icon,
+  UnfoldMoreIcon,
 } from "@hugeicons/core-free-icons";
 import { fmtUsd, initials } from "./format";
 
@@ -209,6 +211,15 @@ export default function Dashboard({ matterId: givenId, fixture: givenFixture }: 
     window.addEventListener("gist:open-tab", on);
     return () => window.removeEventListener("gist:open-tab", on);
   }, [go]);
+  // anything outside the cite context (the Ask gist dock) can open the source drawer by ref
+  useEffect(() => {
+    const on = (e: Event) => {
+      const { ref, quote, label } = (e as CustomEvent<{ ref?: string; quote?: string; label?: string }>).detail ?? {};
+      if (ref) setCite({ source_ref: ref, quote, label });
+    };
+    window.addEventListener("gist:open-cite", on);
+    return () => window.removeEventListener("gist:open-cite", on);
+  }, []);
 
   return (
     <div className="gd-root gd-app" data-lenis-prevent>
@@ -324,22 +335,7 @@ function Sidebar({ d, fixture, tab, go }: { d: Digest; fixture: boolean; tab: Ta
       >
         gist
       </a>
-      <div className="gd-side__matter">
-        <div className="gd-side__avatar">
-          {photo && photoOk ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={photo} alt={m.client_name} onError={() => setPhotoOk(false)} />
-          ) : (
-            <span>{initials(m.client_name)}</span>
-          )}
-        </div>
-        <div className="gd-side__who">
-          <div className="gd-side__name">{m.client_name}</div>
-          <div className="gd-side__sub">
-            {m.display_number} · <span className="gd-side__stage">{m.stage}</span>
-          </div>
-        </div>
-      </div>
+      <CaseSwitcher d={d} photo={photo && photoOk ? photo : null} onPhotoError={() => setPhotoOk(false)} />
       <nav className="gd-side__nav" aria-label="Case sections">
         {TABS.map((g) => (
           <div className="gd-side__group" key={g.group}>
@@ -378,5 +374,91 @@ function Sidebar({ d, fixture, tab, go }: { d: Digest; fixture: boolean; tab: Ta
         <div className="gd-side__ro">Reads Clio, writes nothing</div>
       </div>
     </aside>
+  );
+}
+
+type CaseRow = { id: number; display_number: string; client_name: string | null; stage: string | null };
+
+/** Top of the sidebar: the open case, and a menu of the firm's other cases (GET /api/cases). */
+function CaseSwitcher({ d, photo, onPhotoError }: { d: Digest; photo: string | null; onPhotoError: () => void }) {
+  const m = d.matter;
+  const [open, setOpen] = useState(false);
+  const [cases, setCases] = useState<CaseRow[] | null>(null);
+  const box = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open || cases) return;
+    fetch("/api/cases", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j: { matters?: CaseRow[] } | null) => setCases(j?.matters ?? []))
+      .catch(() => setCases([]));
+  }, [open, cases]);
+  useEffect(() => {
+    if (!open) return;
+    const away = (e: PointerEvent) => !box.current?.contains(e.target as Node) && setOpen(false);
+    const esc = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("pointerdown", away);
+    document.addEventListener("keydown", esc);
+    return () => {
+      document.removeEventListener("pointerdown", away);
+      document.removeEventListener("keydown", esc);
+    };
+  }, [open]);
+  const goTo = (url: string) => window.location.assign(url);
+  return (
+    <div className="gd-switch" ref={box}>
+      <button type="button" className="gd-side__matter" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
+        <div className="gd-side__avatar">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          {photo ? <img src={photo} alt={m.client_name} onError={onPhotoError} /> : <span>{initials(m.client_name)}</span>}
+        </div>
+        <div className="gd-side__who">
+          <div className="gd-side__name">{m.client_name}</div>
+          <div className="gd-side__sub">
+            {m.display_number} · <span className="gd-side__stage">{m.stage}</span>
+          </div>
+        </div>
+        <HugeiconsIcon icon={UnfoldMoreIcon} size={15} strokeWidth={1.8} className="gd-switch__chev" />
+      </button>
+      <AnimatePresence>
+        {open ? (
+          <motion.div
+            className="gd-switch__menu"
+            role="menu"
+            initial={{ opacity: 0, y: -5, scale: 0.985 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -4, scale: 0.99 }}
+            transition={{ duration: 0.135, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <div className="gd-switch__label">Your cases</div>
+            {cases === null ? <div className="gd-switch__empty">Loading…</div> : null}
+            {cases?.map((c) => {
+              const here = c.id === m.id;
+              return (
+                <button
+                  key={c.id}
+                  type="button"
+                  role="menuitem"
+                  className="gd-switch__item"
+                  data-active={here ? "" : undefined}
+                  onClick={() => (here ? setOpen(false) : goTo(`/matter?view=digest&id=${c.id}${window.location.hash}`))}
+                >
+                  <span className="gd-switch__name">{c.client_name ?? c.display_number}</span>
+                  <span className="gd-switch__meta">
+                    {c.display_number}
+                    {c.stage ? ` · ${c.stage}` : ""}
+                  </span>
+                  {here ? <HugeiconsIcon icon={Tick02Icon} size={14} strokeWidth={2} className="gd-switch__tick" /> : null}
+                </button>
+              );
+            })}
+            <div className="gd-switch__sep" />
+            <button type="button" role="menuitem" className="gd-switch__item gd-switch__all" onClick={() => goTo("/cases")}>
+              <span className="gd-switch__name">All cases</span>
+              <span className="gd-switch__meta">Connect Clio, sync and digest</span>
+            </button>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+    </div>
   );
 }

@@ -2028,7 +2028,6 @@ button.gd-gate__hint:focus-visible .gd-gate__hint-go {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin: 0 12px 6px;
   padding: 10px 12px;
   border: 1px solid var(--line);
   border-radius: 16px;
@@ -2409,3 +2408,90 @@ button.gd-gate__hint:focus-visible .gd-gate__hint-go {
 .gd-chart .w-full { width: 100%; }
 .gd-chart .select-none { user-select: none; }
 .gd-chart .overflow-visible { overflow: visible; }
+
+/* ---------------- case switcher ---------------- */
+.gd-switch {
+  position: relative;
+  margin: 0 12px 6px;
+}
+.gd-switch .gd-side__matter {
+  width: 100%;
+  margin: 0;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color 0.25s var(--ease),
+    border-color 0.25s var(--ease);
+}
+.gd-switch .gd-side__matter:hover,
+.gd-switch .gd-side__matter[aria-expanded="true"] {
+  border-color: var(--line-2);
+  background: rgba(232, 235, 244, 0.06);
+}
+.gd-switch__chev {
+  flex: none;
+  margin-left: auto;
+  color: var(--ink-3);
+}
+.gd-switch__menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  left: 0;
+  z-index: 40;
+  padding: 6px;
+  border: 1px solid var(--line-2);
+  border-radius: 16px;
+  background: rgba(14, 19, 34, 0.98);
+  box-shadow: 0 18px 50px -18px rgba(0, 0, 0, 0.8);
+  transform-origin: 50% 0;
+}
+.gd-switch__label {
+  padding: 8px 10px 6px;
+  color: var(--ink-4);
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+.gd-switch__empty {
+  padding: 8px 10px;
+  color: var(--ink-3);
+  font-size: 12.5px;
+}
+.gd-switch__item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  width: 100%;
+  padding: 8px 30px 8px 10px;
+  border-radius: 12px;
+  text-align: left;
+  transition: background-color 0.2s var(--ease);
+}
+.gd-switch__item:hover,
+.gd-switch__item[data-active] {
+  background: var(--pill);
+}
+.gd-switch__name {
+  font-size: 13px;
+  font-weight: 500;
+}
+.gd-switch__meta {
+  color: var(--ink-3);
+  font-size: 11.5px;
+}
+.gd-switch__tick {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  color: var(--brass);
+  transform: translateY(-50%);
+}
+.gd-switch__sep {
+  height: 1px;
+  margin: 6px 4px;
+  background: var(--line);
+}
