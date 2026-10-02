@@ -56,8 +56,8 @@
 }
 
 .gp-scroll {
-  /* starts below the fixed site nav (~60px tall, z-80) so nothing ever scrolls under it */
-  inset: 92px 0 0;
+  /* the site nav is gone, so the scroll area runs to a normal top gutter */
+  inset: 24px 0 0;
   -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 28px);
   mask-image: linear-gradient(to bottom, transparent 0, #000 28px);
   outline: none;
@@ -76,7 +76,7 @@
 .gp-head {
   margin: 0 auto;
   max-width: 1170px;
-  padding: max(2rem, calc(18vh - 92px)) 5% 0;
+  padding: max(2rem, calc(18vh - 24px)) 5% 0;
   text-align: center;
   width: 100%;
 }
