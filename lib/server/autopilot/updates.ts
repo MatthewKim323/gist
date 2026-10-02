@@ -2,6 +2,8 @@ import "server-only";
 import { db } from "../db";
 import { plainStage } from "../share/plain";
 
+const PROVIDER_KINDS = ["stage_change", "case_update"];
+
 export interface CaseUpdate {
   message: string;
   created_at: string;
@@ -21,6 +23,8 @@ export async function caseUpdates(opts: { shareId?: string; matterId?: number; p
   }
   if (!ids.length) return [];
   const { data } = await db().from("share_notifications").select("message,created_at,kind").in("share_id", ids)
+    // Only provider-facing kinds; other rows (publish receipts and the like) are firm bookkeeping.
+    .in("kind", PROVIDER_KINDS)
     .order("created_at", { ascending: false }).limit(limit * 3);
   const seen = new Set<string>();
   const out: CaseUpdate[] = [];
