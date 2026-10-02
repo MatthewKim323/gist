@@ -26,7 +26,7 @@ function colorOf(n: GNode): string {
     case "document": return "#7fd1c7";
     case "source": return "#6f8fb0";
     case "topic": return "#9fd0ae";
-    case "cluster": return "#b9e2c4";
+    case "cluster": return "#6fae86";
     case "gate": return n.status === "conflicting" ? "#ee9585" : "#ffcf7a";
     case "contradiction": return "#ff7a7a";
   }
@@ -117,7 +117,7 @@ export default function CaseGraph({ matterId }: { matterId: number | string }) {
   }, [data, hiddenTypes]);
 
   // Fit view to the canvas once on first data.
-  useEffect(() => { setView({ x: size.w / 2, y: size.h / 2, k: Math.min(size.w, size.h) / 900 }); }, [data, size.w, size.h]);
+  useEffect(() => { setView({ x: size.w / 2, y: size.h / 2, k: Math.min(size.w, size.h) / 980 }); }, [data, size.w, size.h]);
 
   const nodes = nodesRef.current, links = linksRef.current;
   const byId = useMemo(() => new Map(nodes.map((n) => [n.id, n])), [nodes]);
