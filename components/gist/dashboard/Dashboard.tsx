@@ -20,6 +20,7 @@ import SubmissionsInbox from "@/components/gist/submissions/Inbox";
 import AgentDrafts from "@/components/gist/actions/AgentDrafts";
 import { FactsFunnel, MoneyBars } from "./Charts";
 import Brief from "./Brief";
+import NextMoves from "@/components/gist/moves/NextMoves";
 import { AnimatePresence, motion } from "motion/react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
@@ -233,6 +234,17 @@ export default function Dashboard({ matterId: givenId, fixture: givenFixture }: 
         <div className="gd-wrap gd-errorbox">
           <div className="gd-kicker">Digest unavailable</div>
           <p>{load.message}</p>
+          <a
+            className="gd-side__link"
+            style={{ display: "inline-flex", marginTop: 16, padding: "0 16px" }}
+            href="/cases"
+            onClick={(e) => {
+              e.preventDefault();
+              window.location.assign("/cases");
+            }}
+          >
+            Back to all cases
+          </a>
         </div>
       ) : null}
       {digest ? (
@@ -285,7 +297,7 @@ function Panel({ tab, d, fixture, rejected }: { tab: TabId; d: Digest; fixture: 
       return (
         <>
           <Header d={d} fixture={fixture} />
-          {/* Next moves (components/gist/moves) mounts here, above the brief, when it lands */}
+          <NextMoves matterId={d.matter.id} compact />
           <Brief d={d} />
         </>
       );
