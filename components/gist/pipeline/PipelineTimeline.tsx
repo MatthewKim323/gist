@@ -70,7 +70,7 @@ export default function PipelineTimeline({
   // jumps to the end.
   const [paceMs, setPaceMs] = useState(() => {
     const env = Number(process.env.NEXT_PUBLIC_TIMELINE_MIN_STAGE_MS);
-    return Number.isFinite(env) && process.env.NEXT_PUBLIC_TIMELINE_MIN_STAGE_MS ? env : 2800;
+    return Number.isFinite(env) && process.env.NEXT_PUBLIC_TIMELINE_MIN_STAGE_MS ? env : 6000;
   });
   useEffect(() => {
     const q = new URLSearchParams(window.location.search).get("pace");

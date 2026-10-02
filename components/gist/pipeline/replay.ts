@@ -16,7 +16,7 @@ export type ReplaySource = PipelineSource & { replayInfo: ReplayInfo | null };
 
 const ms = (s: string | null | undefined) => (s ? Date.parse(s) : NaN);
 
-export function createReplaySource(targetMs = 35_000): ReplaySource {
+export function createReplaySource(targetMs = 75_000): ReplaySource {
   let recorded: { run: AgentRun; tasks: AgentTask[] } | null = null;
   let ended = false;
   let firstLoad: Promise<unknown> | null = null;
