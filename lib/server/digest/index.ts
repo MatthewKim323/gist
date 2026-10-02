@@ -5,7 +5,7 @@ import { db } from "../db";
 import { env } from "../env";
 import { structured } from "../llm";
 import type { RunCtx } from "../pipeline/ctx";
-import { ownerContact } from "../gates";
+import { isFallbackNote, ownerContact } from "../gates";
 import type { Citation, Contradiction, Digest, Fact, GateItem, Phase } from "@/lib/types";
 import { computeSignals, markViewed, sinceLastOpened, type Signals, type MatterData } from "../signals";
 
@@ -36,7 +36,7 @@ async function loadGates(matterId: number, sig: Sig): Promise<GateItem[]> {
         due_date: g.due_date,
         days_outstanding: g.status !== "have" && s?.unanswered[0] ? Math.max(0, Math.round((Date.parse(sig.today) - Date.parse(s.unanswered[0].date)) / 86_400_000)) : null,
         evidence: ((g.evidence ?? []) as Citation[]).map((e) => ({ ...e, label: e.label ?? sig.label(e.source_ref) })),
-        note: g.note, confidence: g.confidence,
+        note: isFallbackNote(g.note) ? null : g.note, confidence: g.confidence,
       };
     })
     // current phase: everything; earlier phases: only what is still unmet

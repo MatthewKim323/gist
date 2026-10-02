@@ -1,4 +1,5 @@
 import "server-only";
+import { createHash } from "node:crypto";
 import pLimit from "p-limit";
 import { z } from "zod";
 import { db } from "../db";
@@ -32,6 +33,13 @@ async function getSearch(): Promise<SearchFn | null> {
 async function keywordSearch(matterId: number, q: string, k: number, kinds: string[] | null = null) {
   const r = await db().rpc("hybrid_search", { p_matter: matterId, q_text: q, q_embs: [], match_count: k, kinds });
   return ((r.data ?? []) as { cite: string; header: string; body: string; event_date: string | null }[]).slice(0, k);
+}
+
+const GATE_PROMPT_VERSION = 3;
+export const FALLBACK_NOTE = "[auditor-only] Status from the auditor over the retrieved sources; not yet reviewed by the gate checker.";
+/** Fallback gates (model unavailable) carry this marker; older runs used the plain sentence. */
+export function isFallbackNote(note: string | null | undefined): boolean {
+  return !!note && /^\[auditor-only\]|^Status from the auditor over/.test(note);
 }
 
 const OWNERS = ["client", "provider", "defense", "carrier", "firm", "court"] as const;
@@ -149,6 +157,22 @@ export async function checkOne(ctx: RunCtx, data: MatterData, sig: Signals, r: E
     const { snips, extra } = await gather(ctx.matterId, data, sig, r);
     const allowed = new Set(snips.map((s) => s.ref));
     const ev = evidenceText(snips, extra);
+
+    // cache: same requirement + same evidence (refs and content) + same prompt => same answer, $0
+    const cacheKey = "gate:" + createHash("sha256").update(JSON.stringify({
+      v: GATE_PROMPT_VERSION, model: env.swarmModel(), m: ctx.matterId, k: r.key, label: r.label,
+      ev: [...snips].sort((a, b) => a.ref.localeCompare(b.ref) || a.text.localeCompare(b.text)).map((x) => [x.ref, createHash("sha256").update(x.text).digest("hex")]),
+      extra,
+    })).digest("hex");
+    const hit = await db().from("extraction_cache").select("output").eq("cache_key", cacheKey).maybeSingle();
+    const cachedOut = hit.data?.output as { item: GateItem; fallback: boolean } | undefined;
+    if (cachedOut && !cachedOut.fallback) {
+      t.cached();
+      await upsertGate(ctx.matterId, cachedOut.item);
+      await t.event(`${cachedOut.item.status}, cached`);
+      return cachedOut.item;
+    }
+
     let status: GateStatus = "missing";
     let owed: Owner | null = r.owner;
     let evidence: Citation[] = [];
@@ -203,7 +227,7 @@ export async function checkOne(ctx: RunCtx, data: MatterData, sig: Signals, r: E
             status = a.choice as GateStatus;
             confidence = a.confidence ?? probs[a.choice] ?? null;
             owed = status === "have" ? null : r.owner;
-            note = `Status from the auditor over ${snips.length} retrieved sources; not yet reviewed by the gate checker.`;
+            note = FALLBACK_NOTE;
           } else {
             const mine = status === "conflicting" ? null : probs[status];
             confidence = mine ?? (a.choice === status ? a.confidence ?? null : a.confidence != null ? 1 - a.confidence : null);
@@ -240,14 +264,28 @@ export async function checkOne(ctx: RunCtx, data: MatterData, sig: Signals, r: E
       days_outstanding: status !== "have" && s?.unanswered[0] ? Math.round((Date.parse(sig.today) - Date.parse(s.unanswered[0].date)) / 86_400_000) : null,
       evidence, note, confidence,
     };
-    await db().from("gate_items").upsert({
-      matter_id: ctx.matterId, phase: item.phase, requirement_key: item.requirement_key, label: item.label, status: item.status,
-      owed_by: item.owed_by, owed_by_contact_id: item.owed_by_contact_id, due_date: item.due_date,
-      evidence: item.evidence, note: item.note, confidence: item.confidence, updated_at: new Date().toISOString(),
-    }, { onConflict: "matter_id,requirement_key" });
+    const fallback = !modelOk && snips.length > 0;
+    if (fallback) {
+      // never let a degraded answer replace a reviewed one
+      const ex = await db().from("gate_items").select("*").eq("matter_id", ctx.matterId).eq("requirement_key", r.key).maybeSingle();
+      if (ex.data && !isFallbackNote(ex.data.note)) {
+        await t.event(`kept reviewed gate (${ex.data.status}); checker unavailable`);
+        return { ...item, status: ex.data.status, owed_by: ex.data.owed_by, owed_by_contact_id: ex.data.owed_by_contact_id, due_date: ex.data.due_date, evidence: ex.data.evidence ?? [], note: ex.data.note, confidence: ex.data.confidence };
+      }
+    }
+    await upsertGate(ctx.matterId, item);
+    await db().from("extraction_cache").upsert({ cache_key: cacheKey, output: { item, fallback } }, { onConflict: "cache_key" });
     await t.event(`${status}${evidence.length ? `, ${evidence.length} cites` : ""}`);
     return item;
   });
+}
+
+async function upsertGate(matterId: number, item: GateItem) {
+  await db().from("gate_items").upsert({
+    matter_id: matterId, phase: item.phase, requirement_key: item.requirement_key, label: item.label, status: item.status,
+    owed_by: item.owed_by, owed_by_contact_id: item.owed_by_contact_id, due_date: item.due_date,
+    evidence: item.evidence, note: item.note, confidence: item.confidence, updated_at: new Date().toISOString(),
+  }, { onConflict: "matter_id,requirement_key" });
 }
 
 /** Pipeline stage 6: check every gate requirement for the current phase (and unmet earlier ones). */
