@@ -6,7 +6,7 @@ import { createPortal } from "react-dom";
 import { ShareSheet } from "@/components/gist/share";
 import type { Citation, Digest } from "@/lib/types";
 import SourceDrawer from "@/components/gist/source/SourceDrawer";
-import { CiteProvider, numberRefs } from "./cite";
+import { CiteProvider, numberRefs, useCites } from "./cite";
 import { FIXTURE_DIGEST, FIXTURE_REJECTED } from "./fixture";
 import Header from "./Header";
 import PhaseSpine from "./PhaseSpine";
@@ -17,6 +17,23 @@ import { Completeness, Injuries, ProviderLanes, SinceRail } from "./Detail";
 import AskPalette from "./AskPalette";
 import ShareLog from "./ShareLog";
 import SubmissionsInbox from "@/components/gist/submissions/Inbox";
+import AgentDrafts from "@/components/gist/actions/AgentDrafts";
+import { AnimatePresence, motion } from "motion/react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  Alert02Icon,
+  Bone01Icon,
+  DashboardSquare01Icon,
+  FileEditIcon,
+  InboxDownloadIcon,
+  Invoice01Icon,
+  MoneyBag02Icon,
+  Route02Icon,
+  Share08Icon,
+  Stethoscope02Icon,
+  Task01Icon,
+} from "@hugeicons/core-free-icons";
+import { fmtUsd, initials } from "./format";
 
 type Load =
   | { state: "loading" }
@@ -55,16 +72,50 @@ function Loading() {
   );
 }
 
-const NAV = [
-  ["phase", "Phase"],
-  ["money", "Money"],
-  ["story", "Story"],
-  ["flags", "Red flags"],
-  ["actions", "Action"],
-  ["providers", "Treatment"],
-  ["shares", "Shares"],
-  ["receipt", "Receipt"],
-] as const;
+// The sidebar: one tab per part of the case, grouped the way an attorney walks a file.
+type TabId =
+  | "overview"
+  | "phase"
+  | "money"
+  | "flags"
+  | "actions"
+  | "drafts"
+  | "treatment"
+  | "injuries"
+  | "inbox"
+  | "shares"
+  | "receipt";
+type IconT = typeof DashboardSquare01Icon;
+const TABS: { group: string; items: { id: TabId; label: string; icon: IconT }[] }[] = [
+  {
+    group: "Case",
+    items: [
+      { id: "overview", label: "Overview", icon: DashboardSquare01Icon },
+      { id: "phase", label: "Phase & gates", icon: Route02Icon },
+      { id: "money", label: "Money", icon: MoneyBag02Icon },
+      { id: "flags", label: "Red flags", icon: Alert02Icon },
+    ],
+  },
+  {
+    group: "Work",
+    items: [
+      { id: "actions", label: "Next actions", icon: Task01Icon },
+      { id: "drafts", label: "Agent drafts", icon: FileEditIcon },
+      { id: "treatment", label: "Treatment", icon: Stethoscope02Icon },
+      { id: "injuries", label: "Injuries", icon: Bone01Icon },
+    ],
+  },
+  {
+    group: "Providers",
+    items: [
+      { id: "inbox", label: "From providers", icon: InboxDownloadIcon },
+      { id: "shares", label: "Shares", icon: Share08Icon },
+    ],
+  },
+  { group: "Audit", items: [{ id: "receipt", label: "Receipt", icon: Invoice01Icon }] },
+];
+const ALL_TABS = TABS.flatMap((g) => g.items);
+const isTab = (x: string): x is TabId => ALL_TABS.some((t) => t.id === x);
 
 export default function Dashboard({ matterId: givenId, fixture: givenFixture }: { matterId?: number; fixture?: boolean }) {
   const [load, setLoad] = useState<Load>({ state: "loading" });
@@ -135,17 +186,32 @@ export default function Dashboard({ matterId: givenId, fixture: givenFixture }: 
     return fromFacts.length ? fromFacts : fixture ? FIXTURE_REJECTED : [];
   }, [digest, fixture]);
 
-  const jump = (id: string) => {
-    const el = document.getElementById(id);
-    const sc = scroller.current;
-    if (el && sc) sc.scrollTo({ top: el.getBoundingClientRect().top - sc.getBoundingClientRect().top + sc.scrollTop - 72, behavior: "smooth" });
-  };
+  // tab lives in the hash so a refresh or a shared link reopens the same section
+  const [tab, setTab] = useState<TabId>("overview");
+  useEffect(() => {
+    const h = window.location.hash.slice(1);
+    if (isTab(h)) setTab(h);
+  }, []);
+  const go = useCallback((id: TabId) => {
+    setTab(id);
+    window.history.replaceState(window.history.state, "", `#${id}`);
+    scroller.current?.scrollTo({ top: 0 });
+  }, []);
+  // panels can ask for another tab (a "Draft ready" chip on a gate row opens Drafts, then focuses the draft)
+  useEffect(() => {
+    const on = (e: Event) => {
+      const { tab: want, then } = (e as CustomEvent<{ tab: string; then?: () => void }>).detail ?? {};
+      if (!want || !isTab(want)) return;
+      go(want);
+      if (then) setTimeout(then, 450);
+    };
+    window.addEventListener("gist:open-tab", on);
+    return () => window.removeEventListener("gist:open-tab", on);
+  }, [go]);
 
   return (
-    <div className="gd-root" ref={scroller} data-lenis-prevent>
-      {load.state === "loading" ? (
-        <Loading />
-      ) : null}
+    <div className="gd-root gd-app" data-lenis-prevent>
+      {load.state === "loading" ? <Loading /> : null}
       {load.state === "error" ? (
         <div className="gd-wrap gd-errorbox">
           <div className="gd-kicker">Digest unavailable</div>
@@ -154,37 +220,32 @@ export default function Dashboard({ matterId: givenId, fixture: givenFixture }: 
       ) : null}
       {digest ? (
         <CiteProvider value={ctx}>
-          <div className="gd-wrap">
-            <Header d={digest} fixture={fixture} />
-            <nav className="gd-nav" aria-label="Sections">
-              <div className="gd-nav__links">
-                {NAV.map(([id, label]) => (
-                  <Button key={id} size="xs" variant="border" onClick={() => jump(id)}>
-                    {label}
-                  </Button>
-                ))}
+          <Sidebar d={digest} fixture={fixture} tab={tab} go={go} />
+          <div className="gd-body" ref={scroller}>
+            <div className="gd-top">
+              <div className="gd-crumbs">
+                <span>Cases</span>
+                <span className="gd-crumbs__sep">/</span>
+                <span>{digest.matter.display_number}</span>
+                <span className="gd-crumbs__sep">/</span>
+                <span className="gd-crumbs__here">{ALL_TABS.find((t) => t.id === tab)?.label}</span>
               </div>
-              <AskPalette matterId={digest.matter.id} fixture={fixture} />
-            </nav>
-            <div className="gd-layout">
-              <div className="gd-main">
-                <PhaseSpine d={digest} />
-                <div className="gd-duo">
-                  <Money d={digest} />
-                  <Story d={digest} />
-                </div>
-                <RedFlags d={digest} />
-                <Actions d={digest} />
-                <ProviderLanes d={digest} />
-                <SubmissionsInbox matterId={digest.matter.id} fixture={fixture} />
-                <ShareLog matterId={digest.matter.id} fixture={fixture} />
-                <Completeness d={digest} rejected={rejected} />
-              </div>
-              <div className="gd-rail">
-                <SinceRail d={digest} />
-                <Injuries d={digest} />
+              <div className="gd-top__actions">
+                <AskPalette matterId={digest.matter.id} fixture={fixture} />
               </div>
             </div>
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.main
+                key={tab}
+                className={`gd-view gd-view--${tab}`}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <Panel tab={tab} d={digest} fixture={fixture} rejected={rejected} />
+              </motion.main>
+            </AnimatePresence>
             <footer className="gd-foot">Drafted for attorney review · Reads Clio, writes nothing · Every figure links to its source</footer>
           </div>
           <SourceDrawer cite={cite} matterId={digest.matter.id} fixture={fixture} onClose={close} />
@@ -197,5 +258,114 @@ export default function Dashboard({ matterId: givenId, fixture: givenFixture }: 
         </CiteProvider>
       ) : null}
     </div>
+  );
+}
+
+function Panel({ tab, d, fixture, rejected }: { tab: TabId; d: Digest; fixture: boolean; rejected: { summary: string; reason: string }[] }) {
+  switch (tab) {
+    case "overview":
+      return (
+        <>
+          <Header d={d} fixture={fixture} />
+          <div className="gd-overview">
+            <Story d={d} />
+            <SinceRail d={d} />
+          </div>
+        </>
+      );
+    case "phase":
+      return <PhaseSpine d={d} />;
+    case "money":
+      return <Money d={d} />;
+    case "flags":
+      return <RedFlags d={d} />;
+    case "actions":
+      return <Actions d={d} />;
+    case "drafts":
+      return <AgentDrafts matterId={d.matter.id} digest={d} fixture={fixture} />;
+    case "treatment":
+      return <ProviderLanes d={d} />;
+    case "injuries":
+      return <Injuries d={d} />;
+    case "inbox":
+      return <SubmissionsInbox matterId={d.matter.id} fixture={fixture} />;
+    case "shares":
+      return <ShareLog matterId={d.matter.id} fixture={fixture} />;
+    case "receipt":
+      return <Completeness d={d} rejected={rejected} />;
+  }
+}
+
+function Sidebar({ d, fixture, tab, go }: { d: Digest; fixture: boolean; tab: TabId; go: (id: TabId) => void }) {
+  const m = d.matter;
+  const { share } = useCites();
+  const [photoOk, setPhotoOk] = useState(true);
+  const photo = fixture ? null : m.photo_url;
+  return (
+    <aside className="gd-side">
+      <a
+        className="gd-side__brand"
+        href="/"
+        onClick={(e) => {
+          e.preventDefault();
+          window.location.assign("/");
+        }}
+      >
+        gist
+      </a>
+      <div className="gd-side__matter">
+        <div className="gd-side__avatar">
+          {photo && photoOk ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={photo} alt={m.client_name} onError={() => setPhotoOk(false)} />
+          ) : (
+            <span>{initials(m.client_name)}</span>
+          )}
+        </div>
+        <div className="gd-side__who">
+          <div className="gd-side__name">{m.client_name}</div>
+          <div className="gd-side__sub">
+            {m.display_number} · <span className="gd-side__stage">{m.stage}</span>
+          </div>
+        </div>
+      </div>
+      <nav className="gd-side__nav" aria-label="Case sections">
+        {TABS.map((g) => (
+          <div className="gd-side__group" key={g.group}>
+            <div className="gd-side__label">{g.group}</div>
+            {g.items.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                className="gd-side__item"
+                data-active={tab === t.id ? "" : undefined}
+                aria-current={tab === t.id ? "page" : undefined}
+                onClick={() => go(t.id)}
+              >
+                {tab === t.id ? <motion.span layoutId="gd-side-active" className="gd-side__active" transition={{ type: "spring", stiffness: 520, damping: 42 }} /> : null}
+                <HugeiconsIcon icon={t.icon} size={16} strokeWidth={1.6} />
+                <span>{t.label}</span>
+              </button>
+            ))}
+          </div>
+        ))}
+      </nav>
+      <div className="gd-side__foot">
+        {fixture ? null : (
+          <button type="button" className="gd-side__cta" onClick={() => share()}>
+            Share with provider
+          </button>
+        )}
+        {m.clio_url ? (
+          <a className="gd-side__link" href={m.clio_url} target="_blank" rel="noreferrer">
+            Open in Clio ↗
+          </a>
+        ) : null}
+        <div className="gd-side__cost" title={d.cost.models.join(" · ")}>
+          {fmtUsd(d.cost.cold_usd, { cents: true })} to digest · {fmtUsd(d.cost.last_run_usd, { cents: true })} to reopen
+        </div>
+        <div className="gd-side__ro">Reads Clio, writes nothing</div>
+      </div>
+    </aside>
   );
 }

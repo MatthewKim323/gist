@@ -75,7 +75,11 @@ export function useActions(matterId: number | null): State {
 /** Scrolls the dashboard to a draft card and flashes it. */
 export function focusDraft(id: string) {
   const el = document.getElementById(`draft-${id}`);
-  if (!el) return;
+  if (!el) {
+    // the drafts live in their own dashboard tab: ask the shell to open it, then come back here
+    window.dispatchEvent(new CustomEvent("gist:open-tab", { detail: { tab: "drafts", then: () => focusDraft(id) } }));
+    return;
+  }
   el.scrollIntoView({ behavior: "smooth", block: "center" });
   el.classList.remove("is-flash");
   void el.offsetWidth;

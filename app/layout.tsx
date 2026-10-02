@@ -1,8 +1,14 @@
 import type { Metadata } from "next";
+import { Hanken_Grotesk, Inter } from "next/font/google";
 import "./globals.css";
 import "./styles/cursor.css";
 import Shell, { ShellPost } from "@/components/Shell";
 import EngineRoot from "@/components/EngineRoot";
+
+// App UI type system (dashboard, cases, share pages): Hanken Grotesk for text, Inter for small uppercase
+// labels and numbers. The landing keeps its own faces.
+const hanken = Hanken_Grotesk({ variable: "--font-hanken", subsets: ["latin"], display: "swap" });
+const inter = Inter({ variable: "--font-inter", subsets: ["latin"], display: "swap" });
 
 export const metadata: Metadata = {
   title: "gist",
@@ -24,7 +30,7 @@ document.body.className=c;})();`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en-GB" className="asscroll-disabled theme-dark" suppressHydrationWarning>
+    <html lang="en-GB" className={`asscroll-disabled theme-dark ${hanken.variable} ${inter.variable}`} suppressHydrationWarning>
       <body className="home page-template-home-contact" suppressHydrationWarning>
         <script dangerouslySetInnerHTML={{ __html: BODY_CLASS_SCRIPT }} />
         <Shell />
