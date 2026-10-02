@@ -19,6 +19,7 @@ import ShareLog from "./ShareLog";
 import SubmissionsInbox from "@/components/gist/submissions/Inbox";
 import AgentDrafts from "@/components/gist/actions/AgentDrafts";
 import { FactsFunnel, MoneyBars } from "./Charts";
+import Brief from "./Brief";
 import { AnimatePresence, motion } from "motion/react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
@@ -284,10 +285,8 @@ function Panel({ tab, d, fixture, rejected }: { tab: TabId; d: Digest; fixture: 
       return (
         <>
           <Header d={d} fixture={fixture} />
-          <div className="gd-overview">
-            <Story d={d} />
-            <SinceRail d={d} />
-          </div>
+          {/* Next moves (components/gist/moves) mounts here, above the brief, when it lands */}
+          <Brief d={d} />
         </>
       );
     case "phase":
