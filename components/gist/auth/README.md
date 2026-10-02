@@ -25,7 +25,7 @@ import SessionChip from "@/components/gist/auth/SessionChip";
 
 ## Landing "Sign in" entry (for the owner of components/PersistentContent.tsx)
 
-Same markup as "Open the case"; drop it next to that button. `data-router-disabled` makes it a full
+Same markup as "Open the case" (or `<Button href="/signin" arrow>Sign in</Button>` from components/gist/ui/Button); drop it next to that button. `data-router-disabled` makes it a full
 page load so the engine router does not try a contextual transition to an unknown route.
 
 ```tsx
