@@ -77,7 +77,7 @@ function build(d: Digest, drafts: AgentAction[], subs: SubLite[], shares: ShareL
       .filter(Boolean).join(", ");
     out.push({
       id: `records:${cid}`, rank: (idx < 2 ? 100 : 650) + idx,
-      title: `Chase ${name}'s ${gs.some((g) => /bill/i.test(g.label)) && gs.every((g) => /bill/i.test(g.label)) ? "bills" : "records"}`,
+      title: `Chase ${name.endsWith("s") ? `${name}'` : `${name}'s`} ${gs.some((g) => /bill/i.test(g.label)) && gs.every((g) => /bill/i.test(g.label)) ? "bills" : "records"}`,
       why, unblocks: unblocks(gs.length, total, next), party: name, owner: "provider",
       cites: cites(gs), primary: draftAction(draft, keys, name),
       secondary: [{ kind: "open_share", label: "Share status", payload: { providerId: cid } }, { kind: "mark_done", label: "Mark done", payload: {} }],
@@ -117,7 +117,7 @@ function build(d: Digest, drafts: AgentAction[], subs: SubLite[], shares: ShareL
     const name = shortName(s.provider_name ?? "Provider");
     out.push({
       id: `review:${s.id}`, rank: s.status === "pending" ? 50 : 500,
-      title: `Review ${name}'s upload`,
+      title: `Review ${name.endsWith("s") ? `${name}'` : `${name}'s`} upload`,
       why: `${s.item_label ?? s.kind}${s.file_name ? `, ${s.file_name}` : ""}, sent ${s.created_at.slice(0, 10)}`,
       unblocks: s.gate_requirement_key ? unblocks(1, total, next) : null, party: name, owner: "provider", cites: [],
       primary: { kind: "review_upload", label: "Accept into the file", payload: { submissionId: s.id, url: s.url } },

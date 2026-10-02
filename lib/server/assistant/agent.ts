@@ -114,6 +114,7 @@ export async function runTurn(o: TurnOpts, emit: (e: AssistantEvent) => void): P
   let text = "";
   let cost = 0;
 
+  try {
   for (let step = 0; step < MAX_STEPS; step++) {
     const t0 = Date.now();
     const stream = openai().responses.stream({
@@ -151,9 +152,25 @@ export async function runTurn(o: TurnOpts, emit: (e: AssistantEvent) => void): P
       return { type: "function_call_output" as const, call_id: call.call_id, output };
     }));
   }
+  } catch (e) {
+    // model unavailable (no key, no credits, outage): "what do I do" still answers, from the moves alone
+    if (!WHAT_NEXT.test(o.message)) throw e;
+    text = "";
+  }
 
   // "yo what do I do": always hand back the action cards, even if the model answered without the tool
   if (!ctx.moves && WHAT_NEXT.test(o.message)) await runTool(ctx, "get_next_moves", {});
+  if (!text.trim() && ctx.moves) {
+    const top = ctx.moves.slice(0, 3);
+    const d = ctx.digest;
+    const who = d ? d.matter.client_name.split(/\s+/).pop() : "this case";
+    const head = top.length
+      ? `**${ctx.moves.length} moves** to get ${who} to ${d?.phase.next ?? "the next phase"}${d ? `, ${d.phase.gates.filter((g) => g.status === "have").length} of ${d.phase.gates.length} gate items in hand` : ""}. Start here:`
+      : "Nothing is blocking this case right now.";
+    const lines = top.map((m) => `- **${m.title}**: ${m.why}${m.cites[0] ? ` [${m.cites[0].source_ref}]` : ""}`);
+    text = [head, ...lines].join("\n");
+    emit({ type: "delta", text });
+  }
 
   const v = verifyCites(undash(text.trim() || "I couldn't put an answer together from the file. Try asking more specifically."), new Set(ctx.refs.keys()));
   const missing = v.refs.filter((r) => !ctx.refs.get(r)?.label);
