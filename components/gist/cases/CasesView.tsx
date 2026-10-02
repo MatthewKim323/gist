@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState, type MouseEvent } from "react";
 import Button from "@/components/gist/ui/Button";
 import SessionChip from "@/components/gist/auth/SessionChip";
+import AutopilotCard from "@/components/gist/autopilot/AutopilotCard";
 
 interface Clio {
   connected: boolean;
@@ -204,6 +205,10 @@ export default function CasesView({ session }: { session: { role: string; name: 
             </Button>
           </div>
         </section>
+      )}
+
+      {clio && clio.connected && (
+        <AutopilotCard onChanged={() => void fetchCases().then((d) => setLoad({ state: "ready", data: d })).catch(() => null)} />
       )}
 
       {data && clio?.connected && data.matters.length === 0 && (

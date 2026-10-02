@@ -4,6 +4,7 @@
 import "@/app/styles/gist-share.css";
 import type { GateStatus, ProviderView, ShareSection } from "@/lib/types";
 import RespondBox from "@/components/gist/submissions/RespondBox";
+import CaseMoves, { type CaseMove } from "@/components/gist/autopilot/CaseMoves";
 import type { RespondAuth } from "@/components/gist/submissions/types";
 import { PLAIN_STAGES, SECTION_LABELS, daysAgo, fmtDate, plainStage } from "@/lib/server/share/plain";
 
@@ -11,6 +12,8 @@ export interface ProviderViewCardProps {
   view: ProviderView;
   mode?: "live" | "preview";
   stageNotice?: { message: string; created_at: string } | null;
+  /** Autopilot case moves for this provider, newest first. When present, replaces the single stage notice. */
+  caseMoves?: CaseMove[] | null;
   now?: number;
   /** Live provider pages pass this to let the office answer each firm-needs item. */
   respond?: RespondAuth | null;
@@ -46,7 +49,7 @@ function Redacted({ section }: { section: ShareSection }) {
 
 const clock = () => Date.now();
 
-export default function ProviderViewCard({ view, mode = "live", stageNotice, now: nowProp, respond }: ProviderViewCardProps) {
+export default function ProviderViewCard({ view, mode = "live", stageNotice, caseMoves, now: nowProp, respond }: ProviderViewCardProps) {
   const now = nowProp ?? clock();
   const preview = mode === "preview";
   const hidden = new Set(view.redacted_sections);
@@ -85,7 +88,8 @@ export default function ProviderViewCard({ view, mode = "live", stageNotice, now
                 </div>
               </div>
             </div>
-            {stageNotice && (
+            {caseMoves && caseMoves.length > 0 && <CaseMoves items={caseMoves} />}
+            {stageNotice && !(caseMoves && caseMoves.length) && (
               <div className="gs-notice">
                 {(() => {
                   const ns = plainStage(stageNotice.message.replace(/^Case moved to\s*/i, ""));
