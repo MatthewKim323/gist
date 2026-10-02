@@ -11,85 +11,436 @@
   "attorney": "Rowan Pell",
   "client_id": 1,
   "contacts": [
-    { "id": 1, "name": "Harold Benbow", "type": "Person", "role": "Client", "dob": "1962-02-19", "email": "hbenbow@example.test", "phone": "(914) 555-0177", "address": "17 Odell Avenue, Yonkers, NY, 10701" },
-    { "id": 2, "name": "Ridgeway Fresh Market, Inc.", "type": "Company", "role": "Adverse party, store owner and operator", "address": "1100 Central Park Avenue, Yonkers, NY, 10704" },
-    { "id": 3, "name": "Northgate Commercial Insurance", "type": "Company", "role": "Adverse carrier, general liability for Ridgeway Fresh Market", "email": "gl-claims@northgatecommercial.test", "address": "PO Box 3302, White Plains, NY, 10602" },
-    { "id": 4, "name": "St. Aldric Hospital", "type": "Company", "role": "Hospital, emergency care on the date of incident", "email": "records@staldric.test", "address": "330 Ashburton Avenue, Yonkers, NY, 10701" },
-    { "id": 5, "name": "Westbridge Hand & Upper Extremity Surgery", "type": "Company", "role": "Treating provider, hand surgery (Naomi Fairweather, M.D.)", "email": "billing@westbridgehand.test", "address": "2 Gateway Plaza, Suite 310, Tarrytown, NY, 10591" },
-    { "id": 6, "name": "Palisade Ambulatory Surgery Center", "type": "Company", "role": "Medical provider: surgical facility, right wrist ORIF", "email": "accounts@palisadeasc.test", "address": "75 South Broadway, White Plains, NY, 10601" },
-    { "id": 7, "name": "Ironleaf Occupational Therapy", "type": "Company", "role": "Treating provider, hand therapy", "email": "office@ironleafot.test", "address": "450 Mamaroneck Avenue, Harrison, NY, 10528" },
-    { "id": 8, "name": "Empire Crest Health Plan", "type": "Company", "role": "Health insurer, lien holder", "email": "recovery@empirecrest.test", "address": "PO Box 9001, Latham, NY, 12110" },
-    { "id": 9, "name": "Tomas Lerner", "type": "Person", "role": "Witness, store customer", "phone": "(914) 555-0102" }
+    {
+      "id": 1,
+      "name": "Harold Benbow",
+      "type": "Person",
+      "role": "Client",
+      "dob": "1962-02-19",
+      "email": "hbenbow@example.test",
+      "phone": "(914) 555-0177",
+      "address": "17 Odell Avenue, Yonkers, NY, 10701"
+    },
+    {
+      "id": 2,
+      "name": "Ridgeway Fresh Market, Inc.",
+      "type": "Company",
+      "role": "Adverse party, store owner and operator",
+      "address": "1100 Central Park Avenue, Yonkers, NY, 10704"
+    },
+    {
+      "id": 3,
+      "name": "Northgate Commercial Insurance",
+      "type": "Company",
+      "role": "Adverse carrier, general liability for Ridgeway Fresh Market",
+      "email": "gl-claims@northgatecommercial.test",
+      "address": "PO Box 3302, White Plains, NY, 10602"
+    },
+    {
+      "id": 4,
+      "name": "St. Aldric Hospital",
+      "type": "Company",
+      "role": "Hospital, emergency care on the date of incident",
+      "email": "records@staldric.test",
+      "address": "330 Ashburton Avenue, Yonkers, NY, 10701"
+    },
+    {
+      "id": 5,
+      "name": "Westbridge Hand & Upper Extremity Surgery",
+      "type": "Company",
+      "role": "Treating provider, hand surgery (Naomi Fairweather, M.D.)",
+      "email": "billing@westbridgehand.test",
+      "address": "2 Gateway Plaza, Suite 310, Tarrytown, NY, 10591"
+    },
+    {
+      "id": 6,
+      "name": "Palisade Ambulatory Surgery Center",
+      "type": "Company",
+      "role": "Medical provider: surgical facility, right wrist ORIF",
+      "email": "accounts@palisadeasc.test",
+      "address": "75 South Broadway, White Plains, NY, 10601"
+    },
+    {
+      "id": 7,
+      "name": "Ironleaf Occupational Therapy",
+      "type": "Company",
+      "role": "Treating provider, hand therapy",
+      "email": "office@ironleafot.test",
+      "address": "450 Mamaroneck Avenue, Harrison, NY, 10528"
+    },
+    {
+      "id": 8,
+      "name": "Empire Crest Health Plan",
+      "type": "Company",
+      "role": "Health insurer, lien holder",
+      "email": "recovery@empirecrest.test",
+      "address": "PO Box 9001, Latham, NY, 12110"
+    },
+    {
+      "id": 9,
+      "name": "Tomas Lerner",
+      "type": "Person",
+      "role": "Witness, store customer",
+      "phone": "(914) 555-0102"
+    }
   ],
   "fields": [
-    { "id": 1, "name": "Date of Incident", "type": "date", "value": "@-415" },
-    { "id": 2, "name": "Accident Location", "type": "text", "value": "Ridgeway Fresh Market, 1100 Central Park Avenue, Yonkers, Westchester County, NY (produce aisle 3)" },
-    { "id": 3, "name": "Insurance Carrier", "type": "text", "value": "Northgate Commercial Insurance, commercial general liability for Ridgeway Fresh Market, Inc." },
-    { "id": 4, "name": "Claim Number", "type": "text", "value": "NCI-GL-0047719" },
-    { "id": 5, "name": "Case Summary", "type": "text", "value": "Slipped on a wet floor in the produce aisle with no warning sign. Displaced right distal radius fracture, open reduction and internal fixation, months of hand therapy." },
-    { "id": 6, "name": "Policy Limits", "type": "text", "value": "Defendant liability: $100,000 per occurrence / $200,000 aggregate" },
-    { "id": 7, "name": "Policy Limits Confirmed", "type": "checkbox", "value": "true" },
-    { "id": 8, "name": "Estimated Case Value", "type": "currency", "value": 325000 },
-    { "id": 9, "name": "Medical Specials To Date", "type": "currency", "value": 108400 },
-    { "id": 10, "name": "Case Value Rationale", "type": "text", "value": "Specials of $108,400.00 already exceed the $100,000 per occurrence limit. Surgical fracture with hardware in a 63 year old right-hand dominant retired machinist. A policy limits demand is the right move once the surgery center's itemized bill is in." },
-    { "id": 11, "name": "Health Insurance or Lien Holder", "type": "text", "value": "Empire Crest Health Plan lien, $31,250.00 asserted. Final lien letter not yet received." },
-    { "id": 12, "name": "Treatment Status", "type": "text", "value": "Discharged from hand therapy. Dr. Fairweather declared MMI with permanent loss of wrist extension." },
-    { "id": 13, "name": "HIPAA Authorization Received", "type": "checkbox", "value": "true" },
-    { "id": 14, "name": "Liability Assessment", "type": "text", "value": "Strong. Store incident report shows the aisle was mopped minutes before the fall and no wet floor sign was out." }
+    {
+      "id": 1,
+      "name": "Date of Incident",
+      "type": "date",
+      "value": "@-415"
+    },
+    {
+      "id": 2,
+      "name": "Accident Location",
+      "type": "text",
+      "value": "Ridgeway Fresh Market, 1100 Central Park Avenue, Yonkers, Westchester County, NY (produce aisle 3)"
+    },
+    {
+      "id": 3,
+      "name": "Insurance Carrier",
+      "type": "text",
+      "value": "Northgate Commercial Insurance, commercial general liability for Ridgeway Fresh Market, Inc."
+    },
+    {
+      "id": 4,
+      "name": "Claim Number",
+      "type": "text",
+      "value": "NCI-GL-0047719"
+    },
+    {
+      "id": 5,
+      "name": "Case Summary",
+      "type": "text",
+      "value": "Slipped on a wet floor in the produce aisle with no warning sign. Displaced right distal radius fracture, open reduction and internal fixation, months of hand therapy."
+    },
+    {
+      "id": 6,
+      "name": "Policy Limits",
+      "type": "text",
+      "value": "Defendant liability: $100,000 per occurrence / $200,000 aggregate"
+    },
+    {
+      "id": 7,
+      "name": "Policy Limits Confirmed",
+      "type": "checkbox",
+      "value": "true"
+    },
+    {
+      "id": 8,
+      "name": "Estimated Case Value",
+      "type": "currency",
+      "value": 325000
+    },
+    {
+      "id": 9,
+      "name": "Medical Specials To Date",
+      "type": "currency",
+      "value": 108400
+    },
+    {
+      "id": 10,
+      "name": "Case Value Rationale",
+      "type": "text",
+      "value": "Specials of $108,400.00 already exceed the $100,000 per occurrence limit. Surgical fracture with hardware in a 63 year old right-hand dominant retired machinist. A policy limits demand is the right move once the surgery center's itemized bill is in."
+    },
+    {
+      "id": 11,
+      "name": "Health Insurance or Lien Holder",
+      "type": "text",
+      "value": "Empire Crest Health Plan lien, $31,250.00 asserted. Final lien letter not yet received."
+    },
+    {
+      "id": 12,
+      "name": "Treatment Status",
+      "type": "text",
+      "value": "Discharged from hand therapy. Dr. Fairweather declared MMI with permanent loss of wrist extension."
+    },
+    {
+      "id": 13,
+      "name": "HIPAA Authorization Received",
+      "type": "checkbox",
+      "value": "true"
+    },
+    {
+      "id": 14,
+      "name": "Liability Assessment",
+      "type": "text",
+      "value": "Strong. Store incident report shows the aisle was mopped minutes before the fall and no wet floor sign was out."
+    }
   ],
   "notes": [
-    { "id": 1, "date": "@-410", "subject": "Intake: fall at Ridgeway Fresh Market", "detail": "Harold Benbow, 63, retired machinist. On {{-415}} at about 11:20 am he slipped in produce aisle 3 at Ridgeway Fresh Market in Yonkers and fell onto his outstretched right hand. He says the floor was wet and shiny and there was no yellow sign. A store employee helped him up and filled out an incident report. Taken by ambulance to St. Aldric Hospital. Right wrist fracture. Retainer and HIPAA authorizations signed." },
-    { "id": 2, "date": "@-402", "subject": "Preservation letter", "detail": "Sent a preservation letter to Ridgeway Fresh Market demanding the produce aisle video from {{-415}}, the incident report, the mopping and floor inspection logs, and the names of employees on shift." },
-    { "id": 3, "date": "@-395", "subject": "Witness: Tomas Lerner", "detail": "Spoke with Tomas Lerner, a customer who saw the fall. He says an employee had just mopped near the bananas and walked away with the bucket. He did not see any wet floor sign. Willing to give a statement." },
-    { "id": 4, "date": "@-388", "subject": "Surgery", "detail": "Dr. Naomi Fairweather performed open reduction and internal fixation of the right distal radius at Palisade Ambulatory Surgery Center. Volar plate and screws. Hand therapy to start in two weeks." },
-    { "id": 5, "date": "@-120", "subject": "MMI and discharge", "detail": "Dr. Fairweather's final visit note: maximum medical improvement reached. Permanent loss of about 25 degrees of wrist extension and reduced grip strength on the right. Hardware stays in unless symptomatic. Discharged from Ironleaf OT the same week." },
-    { "id": 6, "date": "@-35", "subject": "Moving to demand: limits problem", "detail": "Specials now total $108,400.00 against a $100,000 per occurrence limit that Northgate confirmed in writing. Plus the Empire Crest lien of $31,250.00. This is a policy limits demand case. Before we serve it we need the itemized bill with CPT codes from Palisade Ambulatory Surgery Center. All we have is their balance statement showing $58,000.00." },
-    { "id": 7, "date": "@-9", "subject": "Palisade still has not sent the itemized bill", "detail": "Called Palisade billing again. They say the itemized statement is in the queue. This is the only thing holding up the demand. Also asked Harold about any excess or umbrella policy the store might have; Northgate's letter only mentions the primary policy." }
+    {
+      "id": 1,
+      "date": "@-410",
+      "subject": "Intake: fall at Ridgeway Fresh Market",
+      "detail": "Harold Benbow, 63, retired machinist. On {{-415}} at about 11:20 am he slipped in produce aisle 3 at Ridgeway Fresh Market in Yonkers and fell onto his outstretched right hand. He says the floor was wet and shiny and there was no yellow sign. A store employee helped him up and filled out an incident report. Taken by ambulance to St. Aldric Hospital. Right wrist fracture. Retainer and HIPAA authorizations signed."
+    },
+    {
+      "id": 2,
+      "date": "@-402",
+      "subject": "Preservation letter",
+      "detail": "Sent a preservation letter to Ridgeway Fresh Market demanding the produce aisle video from {{-415}}, the incident report, the mopping and floor inspection logs, and the names of employees on shift."
+    },
+    {
+      "id": 3,
+      "date": "@-395",
+      "subject": "Witness: Tomas Lerner",
+      "detail": "Spoke with Tomas Lerner, a customer who saw the fall. He says an employee had just mopped near the bananas and walked away with the bucket. He did not see any wet floor sign. Willing to give a statement."
+    },
+    {
+      "id": 4,
+      "date": "@-388",
+      "subject": "Surgery",
+      "detail": "Dr. Naomi Fairweather performed open reduction and internal fixation of the right distal radius at Palisade Ambulatory Surgery Center. Volar plate and screws. Hand therapy to start in two weeks."
+    },
+    {
+      "id": 5,
+      "date": "@-120",
+      "subject": "MMI and discharge",
+      "detail": "Dr. Fairweather's final visit note: maximum medical improvement reached. Permanent loss of about 25 degrees of wrist extension and reduced grip strength on the right. Hardware stays in unless symptomatic. Discharged from Ironleaf OT the same week."
+    },
+    {
+      "id": 6,
+      "date": "@-35",
+      "subject": "Moving to demand: limits problem",
+      "detail": "Specials now total $108,400.00 against a $100,000 per occurrence limit that Northgate confirmed in writing. Plus the Empire Crest lien of $31,250.00. This is a policy limits demand case. Before we serve it we need the itemized bill with CPT codes from Palisade Ambulatory Surgery Center. All we have is their balance statement showing $58,000.00."
+    },
+    {
+      "id": 7,
+      "date": "@-9",
+      "subject": "Palisade still has not sent the itemized bill",
+      "detail": "Called Palisade billing again. They say the itemized statement is in the queue. This is the only thing holding up the demand. Also asked Harold about any excess or umbrella policy the store might have; Northgate's letter only mentions the primary policy."
+    },
+    {
+      "id": 8,
+      "date": "@-100",
+      "subject": "Records and bills status",
+      "detail": "Complete records received from St. Aldric Hospital (ER and radiology), Westbridge Hand & Upper Extremity Surgery (office notes through the MMI visit) and Ironleaf Occupational Therapy (discharge summary). Itemized ledgers with CPT codes received from St. Aldric ($9,800.00 ER, $3,200.00 radiology), Westbridge ($22,500.00) and Ironleaf ($14,900.00). Palisade Ambulatory Surgery Center has sent the operative report but only a balance statement of $58,000.00, no itemized bill and no facility records beyond the operative report."
+    },
+    {
+      "id": 9,
+      "date": "@-405",
+      "subject": "Photos",
+      "detail": "Harold's daughter took three photos of the wet floor in aisle 3 and of his swollen wrist right after the fall, before EMS arrived. Photos received by email and saved to the file. One photo shows no yellow sign anywhere in the aisle."
+    }
   ],
   "emails": [
-    { "id": 1, "date": "@-380", "subject": "Ridgeway Fresh Market claim: letter of representation", "from": "Rowan Pell", "to": "Northgate Commercial Insurance", "body": "We represent Harold Benbow for injuries sustained in a fall at your insured's store on {{-415}}. Please direct all communication to this office and confirm the limits of all applicable policies, including any excess or umbrella coverage." },
-    { "id": 2, "date": "@-360", "subject": "RE: Ridgeway Fresh Market claim", "from": "Northgate Commercial Insurance", "to": "Rowan Pell", "body": "Claim NCI-GL-0047719 is assigned to me. The commercial general liability policy carries limits of $100,000 per occurrence and $200,000 aggregate. A declarations page is enclosed. Kendra Volk, Senior Claims Specialist." },
-    { "id": 3, "date": "@-300", "subject": "Store incident report and video", "from": "Northgate Commercial Insurance", "to": "Rowan Pell", "body": "Enclosed is the store incident report. The store advises that surveillance video of aisle 3 for that date was overwritten under its 30 day retention policy. Kendra Volk." },
-    { "id": 4, "date": "@-60", "subject": "Lien amount", "from": "Empire Crest Health Plan", "to": "Ines Marlow", "body": "Empire Crest Health Plan asserts a lien in the amount of $31,250.00 for accident related claims paid on behalf of Harold Benbow. This amount is subject to change. A final lien letter will be issued upon notice of settlement." },
-    { "id": 5, "date": "@-30", "subject": "Itemized bill request", "from": "Ines Marlow", "to": "Palisade Ambulatory Surgery Center", "body": "Please send the itemized bill with CPT codes and dates of service for Harold Benbow. We have only the balance statement showing $58,000.00. HIPAA authorization attached." },
-    { "id": 6, "date": "@-20", "subject": "RE: Itemized bill request", "from": "Palisade Ambulatory Surgery Center", "to": "Ines Marlow", "body": "Your request has been received and forwarded to our billing vendor. Please allow 30 business days." }
+    {
+      "id": 1,
+      "date": "@-380",
+      "subject": "Ridgeway Fresh Market claim: letter of representation",
+      "from": "Rowan Pell",
+      "to": "Northgate Commercial Insurance",
+      "body": "We represent Harold Benbow for injuries sustained in a fall at your insured's store on {{-415}}. Please direct all communication to this office and confirm the limits of all applicable policies, including any excess or umbrella coverage."
+    },
+    {
+      "id": 2,
+      "date": "@-360",
+      "subject": "RE: Ridgeway Fresh Market claim",
+      "from": "Northgate Commercial Insurance",
+      "to": "Rowan Pell",
+      "body": "Claim NCI-GL-0047719 is assigned to me. The commercial general liability policy carries limits of $100,000 per occurrence and $200,000 aggregate. A declarations page is enclosed. Kendra Volk, Senior Claims Specialist."
+    },
+    {
+      "id": 3,
+      "date": "@-300",
+      "subject": "Store incident report and video",
+      "from": "Northgate Commercial Insurance",
+      "to": "Rowan Pell",
+      "body": "Enclosed is the store incident report. The store advises that surveillance video of aisle 3 for that date was overwritten under its 30 day retention policy. Kendra Volk."
+    },
+    {
+      "id": 4,
+      "date": "@-60",
+      "subject": "Lien amount",
+      "from": "Empire Crest Health Plan",
+      "to": "Ines Marlow",
+      "body": "Empire Crest Health Plan asserts a lien in the amount of $31,250.00 for accident related claims paid on behalf of Harold Benbow. This amount is subject to change. A final lien letter will be issued upon notice of settlement."
+    },
+    {
+      "id": 5,
+      "date": "@-30",
+      "subject": "Itemized bill request",
+      "from": "Ines Marlow",
+      "to": "Palisade Ambulatory Surgery Center",
+      "body": "Please send the itemized bill with CPT codes and dates of service for Harold Benbow. We have only the balance statement showing $58,000.00. HIPAA authorization attached."
+    },
+    {
+      "id": 6,
+      "date": "@-20",
+      "subject": "RE: Itemized bill request",
+      "from": "Palisade Ambulatory Surgery Center",
+      "to": "Ines Marlow",
+      "body": "Your request has been received and forwarded to our billing vendor. Please allow 30 business days."
+    },
+    {
+      "id": 7,
+      "date": "@-45",
+      "subject": "RE: Ridgeway Fresh Market claim: liability position",
+      "from": "Northgate Commercial Insurance",
+      "to": "Rowan Pell",
+      "body": "Our insured's store manager advises that a yellow wet floor sign was in place at the end of aisle 3 at the time of the fall and that your client walked past it. Northgate therefore disputes liability. Kendra Volk, Senior Claims Specialist."
+    }
   ],
   "calls": [
-    { "id": 1, "date": "@-200", "subject": "Client check-in: hand therapy", "from": "Ines Marlow", "to": "Harold Benbow", "body": "Harold says the grip is getting better but he still cannot turn a wrench or open jars. Going to Ironleaf twice a week." },
-    { "id": 2, "date": "@-15", "subject": "Client call: demand timing", "from": "Harold Benbow", "to": "Rowan Pell", "body": "Harold asked when we will send the demand. Explained we are waiting on the surgery center's itemized bill and that we expect to demand the full policy. He understands." }
+    {
+      "id": 1,
+      "date": "@-200",
+      "subject": "Client check-in: hand therapy",
+      "from": "Ines Marlow",
+      "to": "Harold Benbow",
+      "body": "Harold says the grip is getting better but he still cannot turn a wrench or open jars. Going to Ironleaf twice a week."
+    },
+    {
+      "id": 2,
+      "date": "@-15",
+      "subject": "Client call: demand timing",
+      "from": "Harold Benbow",
+      "to": "Rowan Pell",
+      "body": "Harold asked when we will send the demand. Explained we are waiting on the surgery center's itemized bill and that we expect to demand the full policy. He understands."
+    }
   ],
   "tasks": [
-    { "id": 1, "name": "By medical provider: Palisade Ambulatory Surgery Center - Itemized bill with CPT codes", "due": "@-4", "status": "pending", "priority": "high", "description": "Only a balance statement of $58,000.00 is on file. Needed before the demand goes out." },
-    { "id": 2, "name": "Draft policy limits demand to Northgate Commercial Insurance", "due": "@+10", "status": "pending", "priority": "high", "description": "Time-limited demand for the $100,000 per occurrence limit with records, bills, MMI report and the incident report." },
-    { "id": 3, "name": "Request final lien letter from Empire Crest Health Plan", "due": "@+21", "status": "pending", "description": "Current asserted amount $31,250.00." },
-    { "id": 4, "name": "Ask Northgate in writing about excess or umbrella coverage", "due": "@-2", "status": "pending", "description": "The declarations page shows only the primary CGL policy." },
-    { "id": 5, "name": "Witness statement: Tomas Lerner", "due": "@-380", "status": "complete", "completed": "@-382", "description": "Signed statement on file." }
+    {
+      "id": 1,
+      "name": "By medical provider: Palisade Ambulatory Surgery Center - Itemized bill with CPT codes",
+      "due": "@-4",
+      "status": "pending",
+      "priority": "high",
+      "description": "Only a balance statement of $58,000.00 is on file. Needed before the demand goes out."
+    },
+    {
+      "id": 2,
+      "name": "Draft policy limits demand to Northgate Commercial Insurance",
+      "due": "@+10",
+      "status": "pending",
+      "priority": "high",
+      "description": "Time-limited demand for the $100,000 per occurrence limit with records, bills, MMI report and the incident report."
+    },
+    {
+      "id": 3,
+      "name": "Request final lien letter from Empire Crest Health Plan",
+      "due": "@+21",
+      "status": "pending",
+      "description": "Current asserted amount $31,250.00."
+    },
+    {
+      "id": 4,
+      "name": "Ask Northgate in writing about excess or umbrella coverage",
+      "due": "@-2",
+      "status": "pending",
+      "description": "The declarations page shows only the primary CGL policy."
+    },
+    {
+      "id": 5,
+      "name": "Witness statement: Tomas Lerner",
+      "due": "@-380",
+      "status": "complete",
+      "completed": "@-382",
+      "description": "Signed statement on file."
+    }
   ],
   "calendar": [
-    { "id": 1, "start": "@-388T07:30", "end": "@-388T10:30", "summary": "Surgery: right distal radius ORIF, Palisade Ambulatory Surgery Center", "description": "Dr. Naomi Fairweather." },
-    { "id": 2, "start": "@-150T14:00", "end": "@-150T15:00", "summary": "Hand therapy visit: Ironleaf Occupational Therapy", "description": "" },
-    { "id": 3, "start": "@-120T10:00", "end": "@-120T10:30", "summary": "Final visit: Dr. Fairweather (MMI)", "description": "" },
-    { "id": 4, "start": "@+10T09:00", "end": "@+10T10:00", "summary": "Demand package review with Rowan", "description": "Review the policy limits demand before service." }
+    {
+      "id": 1,
+      "start": "@-388T07:30",
+      "end": "@-388T10:30",
+      "summary": "Surgery: right distal radius ORIF, Palisade Ambulatory Surgery Center",
+      "description": "Dr. Naomi Fairweather."
+    },
+    {
+      "id": 2,
+      "start": "@-150T14:00",
+      "end": "@-150T15:00",
+      "summary": "Hand therapy visit: Ironleaf Occupational Therapy",
+      "description": ""
+    },
+    {
+      "id": 3,
+      "start": "@-120T10:00",
+      "end": "@-120T10:30",
+      "summary": "Final visit: Dr. Fairweather (MMI)",
+      "description": ""
+    },
+    {
+      "id": 4,
+      "start": "@+10T09:00",
+      "end": "@+10T10:00",
+      "summary": "Demand package review with Rowan",
+      "description": "Review the policy limits demand before service."
+    }
   ],
   "expenses": [
-    { "id": 1, "date": "@-400", "total": 9800, "note": "Medical treatment charges: St. Aldric Hospital; services {{iso:-415}} to {{iso:-415}}", "category": "Medical" },
-    { "id": 2, "date": "@-300", "total": 58000, "note": "Medical treatment charges: Palisade Ambulatory Surgery Center; services {{iso:-388}} to {{iso:-388}} (balance statement only, not itemized)", "category": "Medical" },
-    { "id": 3, "date": "@-280", "total": 22500, "note": "Medical treatment charges: Westbridge Hand & Upper Extremity Surgery; services {{iso:-412}} to {{iso:-120}}", "category": "Medical" },
-    { "id": 4, "date": "@-115", "total": 14900, "note": "Medical treatment charges: Ironleaf Occupational Therapy; services {{iso:-372}} to {{iso:-122}}", "category": "Medical" },
-    { "id": 5, "date": "@-390", "total": 3200, "note": "Medical treatment charges: St. Aldric Hospital radiology; services {{iso:-415}} to {{iso:-390}}", "category": "Medical" },
-    { "id": 6, "date": "@-120", "total": 450, "note": "Narrative report fee: Dr. Naomi Fairweather MMI report", "category": "Records" }
+    {
+      "id": 1,
+      "date": "@-400",
+      "total": 9800,
+      "note": "Medical treatment charges: St. Aldric Hospital; services {{iso:-415}} to {{iso:-415}}",
+      "category": "Medical"
+    },
+    {
+      "id": 2,
+      "date": "@-300",
+      "total": 58000,
+      "note": "Medical treatment charges: Palisade Ambulatory Surgery Center; services {{iso:-388}} to {{iso:-388}} (balance statement only, not itemized)",
+      "category": "Medical"
+    },
+    {
+      "id": 3,
+      "date": "@-280",
+      "total": 22500,
+      "note": "Medical treatment charges: Westbridge Hand & Upper Extremity Surgery; services {{iso:-412}} to {{iso:-120}}",
+      "category": "Medical"
+    },
+    {
+      "id": 4,
+      "date": "@-115",
+      "total": 14900,
+      "note": "Medical treatment charges: Ironleaf Occupational Therapy; services {{iso:-372}} to {{iso:-122}}",
+      "category": "Medical"
+    },
+    {
+      "id": 5,
+      "date": "@-390",
+      "total": 3200,
+      "note": "Medical treatment charges: St. Aldric Hospital radiology; services {{iso:-415}} to {{iso:-390}}",
+      "category": "Medical"
+    },
+    {
+      "id": 6,
+      "date": "@-120",
+      "total": 450,
+      "note": "Narrative report fee: Dr. Naomi Fairweather MMI report",
+      "category": "Records"
+    }
   ],
   "documents": [
     {
-      "id": 1, "name": "Palisade ASC operative report", "filename": "palisade-operative-report.pdf", "folder": "Medical Records", "received": "@-370",
+      "id": 1,
+      "name": "Palisade ASC operative report",
+      "filename": "palisade-operative-report.pdf",
+      "folder": "Medical Records",
+      "received": "@-370",
       "pages": [
-        { "page_type": "medical_record", "text": "PALISADE AMBULATORY SURGERY CENTER\nOPERATIVE REPORT\nPatient: BENBOW, HAROLD   DOB: 02/19/1962\nDate of surgery: {{iso:-388}}\nSurgeon: Naomi Fairweather, M.D.\n\nPreoperative diagnosis: Displaced intra-articular fracture of the right distal radius (S52.571A).\nProcedure: Open reduction and internal fixation of the right distal radius with volar locking plate and seven screws.\nAnesthesia: General with regional block.\nFindings: Dorsally angulated fracture with articular step-off of 3 mm, reduced anatomically under fluoroscopy.\nComplications: None.\nPlan: Splint for two weeks, then begin hand therapy. Hardware is expected to remain in place." }
+        {
+          "page_type": "medical_record",
+          "text": "PALISADE AMBULATORY SURGERY CENTER\nOPERATIVE REPORT\nPatient: BENBOW, HAROLD   DOB: 02/19/1962\nDate of surgery: {{iso:-388}}\nSurgeon: Naomi Fairweather, M.D.\n\nPreoperative diagnosis: Displaced intra-articular fracture of the right distal radius (S52.571A).\nProcedure: Open reduction and internal fixation of the right distal radius with volar locking plate and seven screws.\nAnesthesia: General with regional block.\nFindings: Dorsally angulated fracture with articular step-off of 3 mm, reduced anatomically under fluoroscopy.\nComplications: None.\nPlan: Splint for two weeks, then begin hand therapy. Hardware is expected to remain in place."
+        }
       ]
     },
     {
-      "id": 2, "name": "Ridgeway Fresh Market incident report", "filename": "store-incident-report.pdf", "folder": "Liability", "received": "@-300",
+      "id": 2,
+      "name": "Ridgeway Fresh Market incident report",
+      "filename": "store-incident-report.pdf",
+      "folder": "Liability",
+      "received": "@-300",
       "pages": [
-        { "page_type": "other", "text": "RIDGEWAY FRESH MARKET - CUSTOMER INCIDENT REPORT\nStore #14, Yonkers\nDate: {{iso:-415}}   Time: 11:20 AM\nLocation: Produce aisle 3, near banana display\nCustomer: Harold Benbow\nDescription: Customer slipped and fell on right side. Floor in aisle 3 was mopped at approx 11:10 AM by associate J. Castell after a spill. Wet floor sign: not placed (sign was in use at register 6).\nInjury reported: Right wrist pain, possible deformity. EMS called 11:24 AM.\nCompleted by: D. Mirza, Assistant Store Manager" }
+        {
+          "page_type": "other",
+          "text": "RIDGEWAY FRESH MARKET - CUSTOMER INCIDENT REPORT\nStore #14, Yonkers\nDate: {{iso:-415}}   Time: 11:20 AM\nLocation: Produce aisle 3, near banana display\nCustomer: Harold Benbow\nDescription: Customer slipped and fell on right side. Floor in aisle 3 was mopped at approx 11:10 AM by associate J. Castell after a spill. Wet floor sign: not placed (sign was in use at register 6).\nInjury reported: Right wrist pain, possible deformity. EMS called 11:24 AM.\nCompleted by: D. Mirza, Assistant Store Manager"
+        }
       ]
     }
   ]
