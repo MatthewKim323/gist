@@ -40,7 +40,7 @@ export function Injuries({ d }: { d: Digest }) {
         {d.injuries.map((inj, i) => (
           <li key={i} className="gd-injury">
             <span className="gd-injury__part">{inj.body_part ?? "Unspecified"}</span>
-            <span className="gd-injury__label">{inj.label}</span>
+            <span className="gd-injury__label" title={inj.label}>{inj.label}</span>
             <Cites cites={inj.cites} />
           </li>
         ))}

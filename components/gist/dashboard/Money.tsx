@@ -62,15 +62,15 @@ export default function Money({ d }: { d: Digest }) {
       <div className="gd-cov" role="img" aria-label={`Case value ${value ?? "unknown"}, coverage limit ${limit ?? "unknown"}`}>
         <div className="gd-cov__track">
           {limPct != null ? (
-            <motion.div className="gd-cov__covered" style={{ width: `${limPct}%` }} initial={{ scaleX: 0 }} whileInView={{ scaleX: 1 }} viewport={{ once: true }} transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }} />
+            <motion.div className="gd-cov__covered" style={{ width: `${limPct}%` }} initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }} />
           ) : null}
           {valPct != null && limPct != null && valPct > limPct ? (
             <motion.div
               className="gd-cov__short"
               style={{ left: `${limPct}%`, width: `${valPct - limPct}%` }}
               initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
+              animate={{ opacity: 1 }}
+             
               transition={{ delay: 0.9, duration: 0.6 }}
             >
               <span className="gd-cov__uw">Underwater</span>

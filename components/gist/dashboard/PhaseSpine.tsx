@@ -23,9 +23,9 @@ function GateRow({ g, i }: { g: GateItem; i: number }) {
     <motion.li
       className={`gd-gate gd-gate--${g.status}`}
       initial={{ opacity: 0, x: -6 }}
-      whileInView={{ opacity: 1, x: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: 0.04 * i, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+      animate={{ opacity: 1, x: 0 }}
+     
+      transition={{ delay: 0.25 + Math.min(i, 10) * 0.04, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
     >
       <span className="gd-gate__icon" title={STATUS_LABEL[g.status]}>
         <StatusIcon status={g.status} />
@@ -62,8 +62,11 @@ export default function PhaseSpine({ d }: { d: Digest }) {
   const cur = PHASES.indexOf(d.phase.current as (typeof PHASES)[number]);
   const gates = [...d.phase.gates].sort((a, b) => ORDER[a.status] - ORDER[b.status] || (b.days_outstanding ?? 0) - (a.days_outstanding ?? 0));
   const have = gates.filter((g) => g.status === "have").length;
-  const [showHave, setShowHave] = useState(false);
-  const visible = showHave ? gates : gates.filter((g) => g.status !== "have");
+  const [showAll, setShowAll] = useState(false);
+  const open = gates.filter((g) => g.status !== "have");
+  const LIMIT = 8;
+  const visible = showAll ? gates : open.slice(0, LIMIT);
+  const hidden = gates.length - visible.length;
   const owing = new Map<Owner, number>();
   for (const g of gates) if (g.status !== "have" && g.owed_by) owing.set(g.owed_by, (owing.get(g.owed_by) ?? 0) + 1);
   const pct = gates.length ? have / gates.length : 0;
@@ -108,7 +111,7 @@ export default function PhaseSpine({ d }: { d: Digest }) {
               <span className="gd-gates__title-sub"> requirements in hand</span>
             </h2>
             <div className="gd-meter">
-              <motion.div className="gd-meter__fill" initial={{ scaleX: 0 }} whileInView={{ scaleX: pct }} viewport={{ once: true }} transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }} />
+              <motion.div className="gd-meter__fill" initial={{ scaleX: 0 }} animate={{ scaleX: pct }} transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }} />
             </div>
           </div>
           {owing.size ? (
@@ -137,9 +140,11 @@ export default function PhaseSpine({ d }: { d: Digest }) {
             <GateRow key={g.requirement_key} g={g} i={i} />
           ))}
         </ul>
-        {have ? (
-          <button type="button" className="gd-linkbtn" onClick={() => setShowHave((v) => !v)}>
-            {showHave ? "Hide" : "Show"} {have} already in hand
+        {hidden > 0 || showAll ? (
+          <button type="button" className="gd-linkbtn" onClick={() => setShowAll((v) => !v)}>
+            {showAll
+              ? "Show only the most urgent"
+              : `Show all ${gates.length} requirements (${open.length - visible.length} more open, ${have} in hand)`}
           </button>
         ) : null}
       </div>

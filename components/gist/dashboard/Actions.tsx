@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type { ActionItem, Digest } from "@/lib/types";
 import { CiteChip, CitedValue } from "./cite";
 import { OwnerChip, Panel } from "./bits";
@@ -22,6 +23,8 @@ export default function Actions({ d }: { d: Digest }) {
   const lc = d.last_client_contact;
   const lcDays = lc ? daysBetween(lc.value) : null;
   const stale = lcDays != null && lcDays > 30;
+  const [all, setAll] = useState(false);
+  const CAP = 5;
   return (
     <Panel
       id="actions"
@@ -51,7 +54,7 @@ export default function Actions({ d }: { d: Digest }) {
               </div>
               {items.length ? (
                 <ul>
-                  {items.map((a) => (
+                  {(all ? items : items.slice(0, CAP)).map((a) => (
                     <li key={a.id} className="gd-action">
                       <div className="gd-action__label">
                         {a.label}
@@ -63,6 +66,13 @@ export default function Actions({ d }: { d: Digest }) {
                       </div>
                     </li>
                   ))}
+                  {items.length > CAP ? (
+                    <li>
+                      <button type="button" className="gd-linkbtn" onClick={() => setAll((v) => !v)}>
+                        {all ? "Show fewer" : `${items.length - CAP} more`}
+                      </button>
+                    </li>
+                  ) : null}
                 </ul>
               ) : (
                 <div className="gd-dim gd-small gd-bucket__empty">Nothing here</div>

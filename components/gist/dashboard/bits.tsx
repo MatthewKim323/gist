@@ -1,25 +1,23 @@
 "use client";
 
 import { useEffect, useRef, type ReactNode } from "react";
-import { animate, motion, useInView, useReducedMotion } from "motion/react";
+import { animate, motion, useReducedMotion } from "motion/react";
 import type { GateStatus, Owner } from "@/lib/types";
 
-/** Number that counts up once it scrolls into view. */
+/** Number that counts up from zero on mount. Renders the final value on the server and without motion. */
 export function CountUp({ value, format, duration = 1.1 }: { value: number; format: (n: number) => string; duration?: number }) {
   const el = useRef<HTMLSpanElement>(null);
-  const inView = useInView(el, { once: true, margin: "-40px" });
   const reduce = useReducedMotion();
   useEffect(() => {
     const node = el.current;
-    if (!node) return;
-    if (!inView || reduce) {
-      node.textContent = format(reduce || inView ? value : 0);
-      return;
-    }
-    const c = animate(0, value, { duration, ease: [0.16, 1, 0.3, 1], onUpdate: (v) => (node.textContent = format(v)) });
-    return () => c.stop();
-  }, [inView, value, format, duration, reduce]);
-  return <span ref={el} className="gd-num">{format(0)}</span>;
+    if (!node || reduce) return;
+    const c = animate(0, value, { duration, delay: 0.25, ease: [0.16, 1, 0.3, 1], onUpdate: (v) => (node.textContent = format(v)) });
+    return () => {
+      c.stop();
+      node.textContent = format(value);
+    };
+  }, [value, format, duration, reduce]);
+  return <span ref={el} className="gd-num">{format(value)}</span>;
 }
 
 export function Panel({ id, title, kicker, children, className, aside }: { id?: string; title: string; kicker?: ReactNode; children: ReactNode; className?: string; aside?: ReactNode }) {
@@ -28,8 +26,8 @@ export function Panel({ id, title, kicker, children, className, aside }: { id?: 
       id={id}
       className={`gd-panel ${className ?? ""}`}
       initial={{ opacity: 0, y: 14 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-40px" }}
+      animate={{ opacity: 1, y: 0 }}
+     
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
     >
       <header className="gd-panel__head">

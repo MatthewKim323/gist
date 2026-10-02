@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import type { Citation } from "@/lib/types";
-import { Cites } from "./cite";
+import { CiteChip, Cites } from "./cite";
 import { fixtureAnswer } from "./fixture";
 
 interface Answer {
@@ -23,6 +23,39 @@ function normalizeCites(raw: unknown): Citation[] {
       return null;
     })
     .filter((c): c is Citation => !!c);
+}
+
+const REF = /^[a-z_]+:\S+$/;
+
+/** Renders answer text, turning inline [ref, ref] markers into numbered cite chips. */
+function AnswerText({ text, cites }: { text: string; cites: Citation[] }) {
+  const byRef = new Map(cites.map((c) => [c.source_ref, c]));
+  const used = new Set<string>();
+  const out: ReactNode[] = [];
+  let last = 0;
+  const clean = text.replace(/\*\*(.+?)\*\*/g, "$1");
+  for (const m of clean.matchAll(/\s*\[([^\]]+)\]/g)) {
+    const refs = m[1]!.split(/[,;]\s*/).map((x) => x.trim());
+    if (!refs.length || !refs.every((r) => REF.test(r))) continue;
+    out.push(clean.slice(last, m.index));
+    out.push(
+      <span key={m.index} className="gd-cites">
+        {refs.map((r) => {
+          used.add(r);
+          return <CiteChip key={r} cite={byRef.get(r) ?? { source_ref: r }} />;
+        })}
+      </span>,
+    );
+    last = m.index! + m[0].length;
+  }
+  out.push(clean.slice(last));
+  const rest = cites.filter((c) => !used.has(c.source_ref));
+  return (
+    <p>
+      {out}
+      <Cites cites={rest} />
+    </p>
+  );
 }
 
 export default function AskPalette({ matterId, fixture }: { matterId: number | null; fixture: boolean }) {
@@ -68,7 +101,7 @@ export default function AskPalette({ matterId, fixture }: { matterId: number | n
         const j = (await r.json()) as Record<string, unknown>;
         a = {
           q: text,
-          answer: String(j.answer ?? j.text ?? ""),
+          answer: String(j.answer_markdown ?? j.answer ?? j.text ?? ""),
           cites: normalizeCites(j.cites ?? j.citations ?? j.sources),
         };
       }
@@ -125,10 +158,7 @@ export default function AskPalette({ matterId, fixture }: { matterId: number | n
                 {answers.map((a, i) => (
                   <motion.div key={a.q + i} className="gd-ask__a" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}>
                     <div className="gd-ask__q">{a.q}</div>
-                    <p>
-                      {a.answer}
-                      <Cites cites={a.cites} />
-                    </p>
+                    <AnswerText text={a.answer} cites={a.cites} />
                   </motion.div>
                 ))}
               </div>

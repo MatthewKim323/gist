@@ -29,29 +29,35 @@ export async function loadSource(ref: string, matterId: number | null, fixture: 
   if (matterId != null) {
     try {
       base = (await json(`/api/matter/${matterId}/source/${encodeURIComponent(ref)}`)) as Record<string, unknown>;
-      if (base && typeof base === "object" && "item" in base && base.item && typeof base.item === "object") {
-        base = { ...(base.item as Record<string, unknown>), ...base };
+      // fact:<id> resolves to the fact's own source
+      if (base.kind === "fact" && typeof base.source_ref === "string" && base.source_ref !== ref) {
+        return loadSource(base.source_ref, matterId, fixture);
       }
     } catch {
       if (!doc) throw new Error("Source unavailable");
     }
   }
+  const docBody = doc ? str(base.body) : null;
+  if (doc) delete base.body;
   const out: SourcePayload = {
     ref,
     kind: str(base.kind) ?? (doc ? "document" : ref.split(":")[0] ?? "source"),
-    title: str(base.title),
-    body_text: str(base.body_text) ?? str(base.text),
-    occurred_at: str(base.occurred_at),
+    title: str(base.title) ?? str(base.label),
+    body_text: str(base.body_text) ?? str(base.body) ?? str(base.text),
+    occurred_at: str(base.occurred_at) ?? str(base.date),
     clio_url: str(base.clio_url),
   };
   if (doc) {
     const given = (base.doc ?? {}) as Record<string, unknown>;
-    let pageText = str(given.page_text) ?? str(base.page_text);
+    let pageText = str(given.page_text) ?? str(base.page_text) ?? docBody;
+    let pageCount: number | null =
+      typeof given.pages_total === "number" ? given.pages_total : typeof base.page_count === "number" ? base.page_count : null;
     const page = (typeof given.page === "number" ? given.page : null) ?? doc.page ?? 1;
     if (!pageText) {
       try {
         const p = (await json(`/api/docs/${doc.id}/page/${page}`)) as Record<string, unknown>;
         pageText = str(p.text) ?? str(p.ocr_text) ?? str(p.page_text);
+        if (typeof p.page_count === "number") pageCount = p.page_count;
       } catch {
         pageText = null;
       }
@@ -60,9 +66,9 @@ export async function loadSource(ref: string, matterId: number | null, fixture: 
       id: doc.id,
       name: str(given.name) ?? str(base.name) ?? out.title,
       page,
-      pages_total: typeof given.pages_total === "number" ? given.pages_total : null,
+      pages_total: pageCount,
       page_text: pageText,
-      pdf_url: str(given.pdf_url) ?? `/api/docs/${doc.id}`,
+      pdf_url: str(given.pdf_url) ?? (str(base.file_url)?.split("#")[0] || `/api/docs/${doc.id}`),
     };
   }
   return out;

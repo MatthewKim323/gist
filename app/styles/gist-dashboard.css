@@ -47,7 +47,7 @@
 .gd-root *::after {
   box-sizing: border-box;
 }
-.gd-root button {
+:where(.gd-root) button {
   font: inherit;
   color: inherit;
   background: none;
@@ -55,27 +55,21 @@
   padding: 0;
   cursor: pointer;
 }
-.gd-root h1,
-.gd-root h2,
-.gd-root h3,
-.gd-root p,
-.gd-root ul,
-.gd-root ol,
-.gd-root dl,
-.gd-root dd,
-.gd-root blockquote {
+:where(.gd-root) :where(h1, h2, h3, p, ul, ol, dl, dd, blockquote) {
   margin: 0;
   padding: 0;
 }
-.gd-root ul,
-.gd-root ol {
+:where(.gd-root) :where(ul, ol) {
   list-style: none;
 }
 
-.gd-num,
-.gd-root .gd-num {
+.gd-num {
+  font-variant-numeric: lining-nums;
+}
+.gd-gate__days .gd-num,
+.gd-ledger dd,
+.gd-receipt dd {
   font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum" 1;
 }
 .gd-dim {
   color: var(--ink-3);
@@ -239,7 +233,8 @@
   justify-content: space-between;
   gap: 16px;
   margin: 0 calc(-1 * clamp(20px, 3.4vw, 48px)) 24px;
-  padding: 10px clamp(20px, 3.4vw, 48px);
+  min-height: 56px;
+  padding: 8px clamp(20px, 3.4vw, 48px);
   background: rgba(9, 13, 24, 0.82);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -305,12 +300,17 @@
 .gd-rail {
   position: sticky;
   top: 72px;
+  max-height: calc(100vh - 96px);
+  overflow-y: auto;
+  scrollbar-width: none;
+  border-radius: 10px;
   display: flex;
   flex-direction: column;
   gap: 24px;
 }
 .gd-duo {
   display: grid;
+  align-items: start;
   grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
   gap: 24px;
 }
@@ -874,8 +874,8 @@ button.gd-cite:focus-visible {
 }
 .gd-story p {
   font-family: var(--serif);
-  font-size: 18.5px;
-  line-height: 1.38;
+  font-size: 17px;
+  line-height: 1.4;
   color: var(--ink);
 }
 .gd-story .gd-cites {
@@ -1113,7 +1113,11 @@ button.gd-cite:focus-visible {
   color: var(--ink-3);
 }
 .gd-injury__label {
-  font-size: 14px;
+  font-size: 13.5px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 .gd-injury .gd-cites {
   margin-left: 0;
@@ -1644,6 +1648,7 @@ button.gd-cite:focus-visible {
   }
   .gd-rail {
     position: static;
+    max-height: none;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     order: -1;

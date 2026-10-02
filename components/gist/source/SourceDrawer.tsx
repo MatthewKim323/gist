@@ -42,6 +42,7 @@ export default function SourceDrawer({
   const [err, setErr] = useState<string | null>(null);
   const [page, setPage] = useState<number>(1);
   const [pages, setPages] = useState<number | null>(null);
+  const [otherText, setOtherText] = useState<{ page: number; text: string | null } | null>(null);
 
   useEffect(() => {
     if (!cite) return;
@@ -67,6 +68,20 @@ export default function SourceDrawer({
     window.addEventListener("keydown", k);
     return () => window.removeEventListener("keydown", k);
   }, [cite, onClose]);
+
+  // Paging away from the cited page loads that page's transcript too.
+  useEffect(() => {
+    const d = data?.doc;
+    if (!d || fixture || page === d.page) return setOtherText(null);
+    let live = true;
+    fetch(`/api/docs/${d.id}/page/${page}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j: { text?: string } | null) => live && setOtherText({ page, text: j?.text ?? null }))
+      .catch(() => live && setOtherText({ page, text: null }));
+    return () => {
+      live = false;
+    };
+  }, [data, page, fixture]);
 
   const isDoc = !!data?.doc;
   const onCitedPage = isDoc && page === (data?.doc?.page ?? 1);
@@ -158,13 +173,23 @@ export default function SourceDrawer({
                     )}
                   </div>
                   <div className="gs-split__ocr">
-                    <div className="gs-split__label">OCR transcript · p.{data.doc.page}</div>
-                    {data.doc.page_text ? (
+                    <div className="gs-split__label">Transcript · p.{onCitedPage ? data.doc.page : page}</div>
+                    {!onCitedPage ? (
+                      otherText?.page === page && otherText.text ? (
+                        <p className="gs-text">{otherText.text}</p>
+                      ) : (
+                        <div className="gs-empty">{otherText?.page === page ? "No transcript for this page." : "Loading transcript"}</div>
+                      )
+                    ) : data.doc.page_text ? (
                       <Highlighted text={data.doc.page_text} quote={cite.quote} />
                     ) : (
                       <div className="gs-empty">No transcript for this page yet.</div>
                     )}
-                    {!onCitedPage ? <div className="gs-dim gs-split__note">Viewing p.{page}, cite is on p.{data.doc.page}</div> : null}
+                    {!onCitedPage ? (
+                      <button type="button" className="gs-btn gs-split__note" onClick={() => setPage(data.doc!.page ?? 1)}>
+                        Back to cited p.{data.doc.page}
+                      </button>
+                    ) : null}
                   </div>
                 </div>
               ) : null}

@@ -9,7 +9,7 @@ import { fmtDate, fmtUsd, initials } from "./format";
 export default function Header({ d, fixture }: { d: Digest; fixture: boolean }) {
   const m = d.matter;
   const [photoOk, setPhotoOk] = useState(true);
-  const photo = m.photo_url ?? (fixture ? null : `/api/docs/photo/${m.id}`);
+  const photo = fixture ? null : m.photo_url;
   return (
     <motion.header
       className="gd-header"
