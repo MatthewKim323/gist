@@ -27,10 +27,25 @@ export default function CasePicker({ onPicked }: { onPicked: (p: Picked) => void
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
+    // /api/matter is Supabase-only and fast: render from it right away. /api/cases (which also checks the
+    // Clio connection) fills in run details when it arrives.
+    let full = false;
+    fetch("/api/matter", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((j: { matters?: (CaseRow & { digest?: { version: number } | null })[] }) => {
+        if (full) return;
+        const rows = (j.matters ?? []).map((m) => ({ ...m, last_run: null, digest: m.digest ?? null }));
+        rows.sort((a, b) => Number(a.is_demo) - Number(b.is_demo));
+        setCases(rows);
+      })
+      .catch(() => null);
     fetch("/api/cases", { cache: "no-store" })
       .then((r) => r.json())
-      .then((j: { matters?: CaseRow[] }) => setCases(j.matters ?? []))
-      .catch(() => setCases([]));
+      .then((j: { matters?: CaseRow[] }) => {
+        full = true;
+        if (j.matters?.length) setCases(j.matters);
+      })
+      .catch(() => setCases((c) => c ?? []));
   }, []);
 
   async function live(id: number): Promise<Picked> {
