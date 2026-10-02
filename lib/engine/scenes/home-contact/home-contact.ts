@@ -512,7 +512,8 @@ export class HomeContact {
       textAlign: 'center',
     });
     this.line1.position.y = this.line1.fontSize / 2 - 4e-4;
-    this.line1.sync();
+    // both lines must be laid out before the block is measured and drawn into textRT
+    const line1Ready = new Promise<void>((res) => this.line1.sync(() => res()));
     this.homeText.add(this.line1);
 
     this.line2 = new Text();
@@ -528,7 +529,8 @@ export class HomeContact {
       textAlign: 'center',
     });
     this.line2.position.y = -this.line1.fontSize / 2 - this.line2.fontSize / 2 + 8e-4;
-    this.line2.sync(() => {
+    const line2Ready = new Promise<void>((res) => this.line2.sync(() => res()));
+    Promise.all([line1Ready, line2Ready]).then(() => {
       this.homeText.bbox = new Box3().setFromObject(this.homeText);
       this.homeText.bbox.getSize(this.homeTextMesh.scale);
       this.homeTextMesh.scale.x *= 1.08;

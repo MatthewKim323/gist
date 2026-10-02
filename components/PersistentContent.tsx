@@ -97,7 +97,7 @@ export function PersistentContent() {
           </span>
         </a>
         {/* full page load into the role picker (firm or provider) */}
-        <a href="/signin" title="Sign in" data-router-disabled="" className="btn btn--regular btn--fill btn--light js-manager-ignore js-btn" data-btn="fill" data-cursor="hide">
+        <a href="/signin" title="Sign in" data-router-disabled="" style={{ marginLeft: "1.25rem" }} className="btn btn--regular btn--fill btn--light js-manager-ignore js-btn" data-btn="fill" data-cursor="hide">
           <span className="btn__inner js-btn-inner">
             <span className="btn__content js-btn-content">
               <span className="d-flex flex-row items-end">

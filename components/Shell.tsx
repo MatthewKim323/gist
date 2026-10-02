@@ -361,7 +361,7 @@ function Footer() {
         </a>
       </div>
       <a
-        href="/about"
+        href="/contact"
         className="btn btn--circle world-btn d-none z-50 js-world-btn"
         data-cursor="hide"
         data-audio-enter="audio.hover"
