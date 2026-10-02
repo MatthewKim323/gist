@@ -1,6 +1,7 @@
 "use client";
 
 import Button from "@/components/gist/ui/Button";
+import SessionChip from "@/components/gist/auth/SessionChip";
 import { useState } from "react";
 import { motion } from "motion/react";
 import type { Digest } from "@/lib/types";
@@ -90,6 +91,7 @@ export default function Header({ d, fixture }: { d: Digest; fixture: boolean }) 
           <span className="gd-num">{fmtUsd(d.cost.last_run_usd, { cents: true })}</span> to reopen
         </div>
         <div className="gd-readonly">Reads Clio, writes nothing</div>
+        <SessionChip />
       </div>
     </motion.header>
   );
