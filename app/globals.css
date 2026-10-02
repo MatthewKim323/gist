@@ -3888,3 +3888,30 @@ html.theme-dark .btn--fill.btn--light {
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+
+/* research links on the landing (components/Shell.tsx LandingLinks) */
+.landing-links {
+  position: fixed;
+  bottom: 2.4rem;
+  left: 50%;
+  z-index: 60;
+  display: none;
+  align-items: center;
+  gap: 1rem;
+  color: rgba(232, 235, 244, 0.45);
+  font-family: var(--font-hanken), "Neue Montreal", sans-serif;
+  font-size: 1.3rem;
+  letter-spacing: 0.01em;
+  transform: translateX(-50%);
+}
+body.home .landing-links {
+  display: flex;
+}
+.landing-links a {
+  color: rgba(232, 235, 244, 0.78);
+  text-decoration: none;
+  transition: color 0.25s;
+}
+.landing-links a:hover {
+  color: #fff;
+}

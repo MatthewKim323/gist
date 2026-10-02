@@ -400,7 +400,24 @@ export default function Shell() {
       <Menu />
       <Cursor />
       <Footer />
+      <LandingLinks />
     </>
+  );
+}
+
+// Research links, shown on the landing only (CSS keys on body.home). Full page loads: these are plain
+// Next routes, not engine views.
+function LandingLinks() {
+  return (
+    <nav className="landing-links" aria-label="Research">
+      <a href="/whitepaper" data-router-disabled="">White paper</a>
+      <span aria-hidden="true">·</span>
+      <a href="/evals" data-router-disabled="">Evals</a>
+      <span aria-hidden="true">·</span>
+      <a href="https://github.com/MatthewKim323/gist/blob/main/docs/MCP.md" target="_blank" rel="noreferrer">
+        MCP server
+      </a>
+    </nav>
   );
 }
 
