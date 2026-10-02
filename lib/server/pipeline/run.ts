@@ -45,10 +45,12 @@ export interface RunOpts {
 
 export async function countStats(matterId: number, runId: string) {
   const head = { count: "exact" as const, head: true };
-  const [entries, docs, facts, tasks] = await Promise.all([
+  const factCount = (status: string) =>
+    db().from("facts").select("id", head).eq("matter_id", matterId).is("superseded_at", null).eq("status", status).then((r) => r.count ?? 0);
+  const [entries, docs, verified, rejected, review, pending, tasks] = await Promise.all([
     db().from("source_items").select("id", head).eq("matter_id", matterId).is("deleted_at", null),
     db().from("documents").select("clio_id,version_id").eq("matter_id", matterId),
-    db().from("facts").select("status").eq("matter_id", matterId).is("superseded_at", null),
+    factCount("verified"), factCount("rejected"), factCount("needs_review"), factCount("pending"),
     db().from("agent_tasks").select("cost_usd").eq("run_id", runId),
   ]);
   let pages = 0;
@@ -57,13 +59,12 @@ export async function countStats(matterId: number, runId: string) {
     const r = await db().from("doc_pages").select("page", head).eq("doc_id", d.clio_id).eq("version_id", d.version_id);
     pages += r.count ?? 0;
   }
-  const by = (s: string) => (facts.data ?? []).filter((f) => f.status === s).length;
   return {
     entries: entries.count ?? 0,
     pages,
-    facts_verified: by("verified"),
-    facts_rejected: by("rejected"),
-    facts_review: by("needs_review") + by("pending"),
+    facts_verified: verified,
+    facts_rejected: rejected,
+    facts_review: review + pending,
     cost: Math.round((tasks.data ?? []).reduce((s, t) => s + Number(t.cost_usd ?? 0), 0) * 10000) / 10000,
   };
 }

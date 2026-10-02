@@ -241,6 +241,17 @@ export async function extractMatter(ctx: RunCtx, opts: { includeDocs?: boolean; 
       if (rows.length) {
         const ins = must(await db().from("facts").insert(rows).select("id,source_ref,summary,quote,status"), "facts insert") as
           { id: string; source_ref: string; summary: string; quote: string; status: string }[];
+        // Two runs racing on the same shard both insert. The batch holding the oldest row wins
+        // (same answer from both sides), the other deletes its copy.
+        const mine = new Set(ins.map((r) => r.id));
+        const first = await db().from("facts").select("id").eq("matter_id", ctx.matterId).eq("extraction_key", key)
+          .is("superseded_at", null).order("created_at").order("id").limit(1).maybeSingle();
+        if (first.data && !mine.has(first.data.id as string)) {
+          await db().from("facts").delete().in("id", [...mine]);
+          t.cached();
+          await t.event("duplicate of a concurrent run, dropped");
+          return;
+        }
         for (const r of ins) {
           if (r.status === "rejected") continue;
           const src = srcMap.get(r.source_ref);
