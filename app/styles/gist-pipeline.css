@@ -54,7 +54,10 @@
 }
 
 .gp-scroll {
-  inset: 0;
+  /* starts below the fixed site nav (~60px tall, z-80) so nothing ever scrolls under it */
+  inset: 92px 0 0;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 28px);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 28px);
   outline: none;
   overflow-x: hidden;
   overflow-y: auto;
@@ -71,7 +74,7 @@
 .gp-head {
   margin: 0 auto;
   max-width: 1170px;
-  padding: 18vh 5% 0;
+  padding: calc(18vh - 92px) 5% 0;
   text-align: center;
   width: 100%;
 }
@@ -143,7 +146,7 @@
   padding: 0 16px;
   pointer-events: none;
   position: sticky;
-  top: 4.5rem; /* clears the fixed site nav */
+  top: 0.75rem; /* the scroll box already starts below the nav */
   z-index: 5;
 }
 .gp-counter {
