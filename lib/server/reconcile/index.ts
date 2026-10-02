@@ -17,7 +17,7 @@ interface FactRow {
   id: string; source_ref: string; kind: string; event_key: string | null; summary: string; quote: string;
   event_date: string | null; importance: number | null;
 }
-interface F extends FactRow { vec: number[] | null }
+interface F extends FactRow { vec: number[] | null; written?: string | null }
 
 const SAME_EVENT_COS = 0.8;
 const DUP_COS = 0.92;
@@ -25,6 +25,7 @@ const KEY_MERGE_COS = 0.85;
 const WINDOW_DAYS = 30;
 const MAX_GROUP = 30;
 const JEV_MIN = 0.6;
+const JEV_MIN_BURIED = 0.7;
 
 function parseVec(v: unknown): number[] | null {
   if (!v) return null;
@@ -58,7 +59,13 @@ async function loadFacts(matterId: number, runId: string): Promise<F[]> {
     "fact chunks",
   );
   const vecs = new Map(vecRows.map((r) => [r.source_id, parseVec(r.embedding)]));
-  const out = facts.map((f) => ({ ...f, vec: vecs.get(f.id) ?? null }));
+  // When each source was written (not when the event happened): needed to judge "missing" claims.
+  const items = await fetchAll<{ id: string; occurred_at: string | null }>(
+    (a, b) => db().from("source_items").select("id,occurred_at").eq("matter_id", matterId).order("id").range(a, b),
+    "source_items dates",
+  );
+  const written = new Map(items.map((i) => [i.id, i.occurred_at ? i.occurred_at.slice(0, 10) : null]));
+  const out: F[] = facts.map((f) => ({ ...f, vec: vecs.get(f.id) ?? null, written: written.get(f.source_ref) ?? null }));
   // Facts not yet indexed: embed them here so clustering still works.
   const miss = out.filter((f) => !f.vec);
   if (miss.length) {
@@ -126,8 +133,33 @@ export function clusterFacts(facts: F[]): F[][] {
     groups.push({ key: "", fs: g });
   }
   groups = groups.filter((g) => g.fs.length > 0);
-  return groups.map((g) =>
-    [...g.fs].sort((a, b) => (b.importance ?? 3) - (a.importance ?? 3)).slice(0, MAX_GROUP));
+  return groups.map((g) => trimGroup(g.fs));
+}
+
+/** Cap a group at MAX_GROUP, spreading across sources (round-robin, most important first) so twenty
+ *  near-identical pages from one chart cannot crowd out the one note that disagrees. */
+function trimGroup(fs: F[]): F[] {
+  if (fs.length <= MAX_GROUP) return fs;
+  const bySrc = new Map<string, F[]>();
+  for (const f of [...fs].sort((a, b) => (b.importance ?? 3) - (a.importance ?? 3))) {
+    const k = baseSource(f.source_ref);
+    bySrc.set(k, [...(bySrc.get(k) ?? []), f]);
+  }
+  const out: F[] = [];
+  for (let round = 0; out.length < MAX_GROUP; round++) {
+    let added = false;
+    for (const list of bySrc.values()) {
+      if (list[round] && out.length < MAX_GROUP) { out.push(list[round]); added = true; }
+    }
+    if (!added) break;
+  }
+  return out;
+}
+
+function wordJaccard(a: string, b: string): number {
+  const A = new Set(a.toLowerCase().match(/[a-z0-9]+/g) ?? []), B = new Set(b.toLowerCase().match(/[a-z0-9]+/g) ?? []);
+  let i = 0; for (const w of A) if (B.has(w)) i++;
+  return A.size + B.size - i ? i / (A.size + B.size - i) : 0;
 }
 
 /** Near-identical facts about the same event collapse to one keeper; the rest point at it as corroboration. */
@@ -141,7 +173,10 @@ export function findDuplicates(group: F[]): Map<string, string> {
       const b = sorted[j];
       if (mergedInto.has(b.id) || !b.vec) continue;
       if ((a.event_key ?? "") !== (b.event_key ?? "")) continue;
-      if (cos(a.vec, b.vec) >= DUP_COS) mergedInto.set(b.id, a.id);
+      // Only true duplicates: same source, or different sources quoting near-identical text. Two sources
+      // paraphrasing the same event stay separate: they may be the two halves of a contradiction.
+      const sameSource = baseSource(a.source_ref) === baseSource(b.source_ref);
+      if (cos(a.vec, b.vec) >= DUP_COS && (sameSource || wordJaccard(a.quote, b.quote) >= 0.8)) mergedInto.set(b.id, a.id);
     }
   }
   return mergedInto;
@@ -149,7 +184,7 @@ export function findDuplicates(group: F[]): Map<string, string> {
 
 // A fact that says something is missing / unknown / not done. Buried items hide across event keys and
 // dates, so each such fact also gets a group of its nearest neighbours from other sources, ignoring keys.
-const ABSENCE = /\b(missing|unknown|not (yet )?(been )?(obtained|received|produced|located|found|contacted|investigated|requested|served|provided|in (the )?file)|never (been )?(obtained|received|produced|contacted|investigated|collected|requested)|no one|nobody|none (obtained|in file|on file)|searching for|search(ed)? for|trying to (locate|find|obtain)|outstanding|unanswered|still (need|waiting|not)|have not|has not|hasn't|haven't)\b/i;
+const ABSENCE = /\b(missing|unknown|not (yet )?(been )?(obtained|received|produced|located|found|contacted|investigated|requested|served|provided|in (the )?file)|never (been )?(obtained|received|produced|contacted|investigated|collected|requested)|no one|nobody|none (obtained|in file|on file)|searching for|search(ed)? for|trying to (locate|find|obtain)|outstanding|unanswered|still (need|waiting|not)|have not|has not|hasn't|haven't|denied|denies|deny|not applicable|no prior|none)\b/i;
 const ABSENCE_NEIGHBOURS = 8;
 const ABSENCE_MIN_COS = 0.55;
 
@@ -192,8 +227,8 @@ const Out = z.object({ findings: z.array(Finding) });
 const SYSTEM = `You review verified facts pulled from one personal injury case file. All facts in a request are about the same topic but come from different sources (notes, emails, call logs, documents, forms).
 Find two kinds of problems, and only real ones:
 1. contradiction: two or more sources give incompatible accounts of the same thing (different mechanism, sequence, date, location, who was involved, whether something exists or was received, whether a prior condition existed, etc.). Differences in detail level or wording are NOT contradictions. Facts from different times that are both true (e.g. a status that later changed) are NOT contradictions unless a source asserts the earlier state after the change.
-2. buried: one source says something is unknown, missing, not yet obtained, being searched for, or not investigated, while another source in the set already contains it.
-For each finding: a short neutral title (under 12 words), why_it_matters written for the trial lawyer handling the case (e.g. impeachment risk at deposition, credibility with the jury, a defense argument it enables, wasted effort chasing something already in the file), severity (high = could change liability, damages or credibility; medium = needs a fix before discovery or a demand; low = housekeeping), and claims: the fact numbers involved, each with a one-sentence paraphrase of what that source says.
+2. buried: one source says a specific item or answer is unknown, missing, not obtained, being searched for, never done, or denies it exists, while another source in the set already contains that same specific item or answer (the document itself, the name, the value, the record). It only counts when the providing source existed when the "missing" statement was written (compare the written dates), or is a document now in the file. It does NOT count when: the thing is a future event that simply has not happened yet (e.g. a surgery not yet scheduled), the other source only repeats that it is pending, the other source is merely about a related topic, or the item was produced after the statement was written.
+Prefer fewer, stronger findings. For each finding: a short neutral title (under 12 words), why_it_matters written for the trial lawyer handling the case (e.g. impeachment risk at deposition, credibility with the jury, a defense argument it enables, wasted effort chasing something already in the file), severity (high = could change liability, damages or credibility; medium = needs a fix before discovery or a demand; low = housekeeping), and claims: the fact numbers involved, each with a one-sentence paraphrase of what that source says.
 Each finding must cite at least two facts from different sources. Return an empty list when nothing conflicts. Never invent facts.`;
 
 interface Finding_ { type: "contradiction" | "buried"; title: string; why_it_matters: string; severity: "low" | "medium" | "high"; claims: { fact: F; says: string }[] }
@@ -201,7 +236,7 @@ interface Finding_ { type: "contradiction" | "buried"; title: string; why_it_mat
 async function reviewGroup(ctx: RunCtx, g: F[], label: string): Promise<Finding_[]> {
   return ctx.task("reconcile", label, async (t) => {
     const listing = g.map((f, i) =>
-      `#${i} | source ${f.source_ref} | date ${f.event_date ?? "n/a"} | ${f.kind}${f.event_key ? ` ${f.event_key}` : ""}\n   summary: ${f.summary}\n   quote: "${f.quote}"`,
+      `#${i} | source ${f.source_ref} | written ${f.written ?? "n/a"} | event date ${f.event_date ?? "n/a"} | ${f.kind}${f.event_key ? ` ${f.event_key}` : ""}\n   summary: ${f.summary}\n   quote: "${f.quote}"`,
     ).join("\n");
     const { data, usage } = await structured({
       model: env.swarmModel(),
@@ -218,6 +253,7 @@ async function reviewGroup(ctx: RunCtx, g: F[], label: string): Promise<Finding_
       const uniq = new Map(claims.map((c) => [c.fact.id, c]));
       const list = [...uniq.values()];
       if (new Set(list.map((c) => baseSource(c.fact.source_ref))).size < 2) continue;
+      if (fd.type === "buried" && fd.severity === "low") continue;
       found.push({ ...fd, claims: list });
     }
 
@@ -225,18 +261,18 @@ async function reviewGroup(ctx: RunCtx, g: F[], label: string): Promise<Finding_
     if (found.length && jevAvailable()) {
       try {
         const state = found.map((fd, i) =>
-          `Finding ${i}:\n` + fd.claims.map((c) => `- Source ${c.fact.source_ref} (${c.fact.event_date ?? "undated"}): "${c.fact.quote}"`).join("\n"),
+          `Finding ${i}:\n` + fd.claims.map((c) => `- Source ${c.fact.source_ref} (written ${c.fact.written ?? "unknown"}): "${c.fact.quote}"`).join("\n"),
         ).join("\n\n");
         const qs = Object.fromEntries(found.map((fd, i) => [`f${i}`, {
           type: "noul" as const,
           instructions: fd.type === "contradiction"
             ? `In Finding ${i}, these passages describe the same event or fact inconsistently.`
-            : `In Finding ${i}, one passage treats something as unknown, missing or not yet obtained while another passage already provides it.`,
+            : `In Finding ${i}, one passage says a specific item is missing, unknown or not obtained, while another passage shows that same item was already in hand.`,
         }]));
         const ans = await jev(state, qs, { purpose: "reconcile.jev", matterId: ctx.matterId, runId: ctx.runId });
         const kept = found.filter((_, i) => {
           const a = ans[`f${i}`];
-          return !a || a.type !== "noul" || a.noul >= JEV_MIN;
+          return !a || a.type !== "noul" || a.noul >= (found[i].type === "buried" ? JEV_MIN_BURIED : JEV_MIN);
         });
         await t.event(`${kept.length}/${found.length} confirmed`);
         t.facts(kept.length);
