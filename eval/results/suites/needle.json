@@ -1,0 +1,60 @@
+{
+  "id": "needle",
+  "name": "Long-document needle retrieval",
+  "origin": "Needle-in-a-Haystack (Kamradt, 2023) and RULER (Hsieh et al., 2024, arXiv:2404.06654); here on real pages, nothing planted",
+  "adaptation": "Longest document in the matter (04-medical-records__created__advanced-rockland-chiropractic-records-2023-04-26.pdf, 131 pages). Up to 4 pages per depth bucket chosen systematically; gpt-5.4-mini writes one question per page from a page-specific detail (questions committed in eval/results/suites/needle.questions.json). Retrieval = gist hybrid search (k=10, no expansion, with dedup). Page hit = the exact page in top 10. Caveat: daily treatment notes are repetitive, so near-duplicate pages make page-level hits harder and doc-level hits easier.",
+  "n": 20,
+  "metrics": {
+    "page_recall_at_10": 0.15,
+    "doc_recall_at_10": 0.95,
+    "doc_pages": 131
+  },
+  "tables": [
+    {
+      "title": "Recall by page depth",
+      "columns": [
+        "pages",
+        "n",
+        "page hit@10",
+        "doc hit@10"
+      ],
+      "rows": [
+        [
+          "1-25",
+          4,
+          0.25,
+          1
+        ],
+        [
+          "26-50",
+          4,
+          0,
+          0.75
+        ],
+        [
+          "51-75",
+          4,
+          0,
+          1
+        ],
+        [
+          "76-100",
+          4,
+          0.25,
+          1
+        ],
+        [
+          "101-131",
+          4,
+          0.25,
+          1
+        ]
+      ]
+    }
+  ],
+  "cost_usd": 0.0060958,
+  "secs": 61.929,
+  "matter_id": 1811206208,
+  "matter_label": "Justin Sapini (00001-Sapini)",
+  "generated_at": "2026-10-02T21:20:50.113Z"
+}

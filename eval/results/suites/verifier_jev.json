@@ -1,0 +1,120 @@
+{
+  "id": "verifier_jev",
+  "name": "Verifier and Jev audit behavior",
+  "origin": "Internal (no published benchmark); rejection precision framed like a selective-prediction audit",
+  "adaptation": "Status and reason counts over all current facts from the DB. Precision of rejection = share of a systematic sample of rejected facts that an LLM judge (gpt-5.4-mini) also finds unsupported by the cited source. Same for needs_review.",
+  "n": "1303 facts; judged 14 rejected + 15 needs_review",
+  "metrics": {
+    "total": 1303,
+    "verified": 1141,
+    "needs_review": 148,
+    "rejected": 14,
+    "pending": 0,
+    "rejection_precision": 0.643,
+    "needs_review_unsupported_rate": 0.467
+  },
+  "tables": [
+    {
+      "title": "Status x reason",
+      "columns": [
+        "status | reason",
+        "count"
+      ],
+      "rows": [
+        [
+          "verified | (none)",
+          1141
+        ],
+        [
+          "needs_review | event_date not found in source",
+          58
+        ],
+        [
+          "needs_review | jev: supports",
+          55
+        ],
+        [
+          "needs_review | jev: unsupported",
+          28
+        ],
+        [
+          "rejected | quote not found in source",
+          14
+        ],
+        [
+          "needs_review | jev: contradicts",
+          5
+        ],
+        [
+          "needs_review | amount not found in source",
+          2
+        ]
+      ]
+    },
+    {
+      "title": "Jev verdicts",
+      "columns": [
+        "jev_support",
+        "count"
+      ],
+      "rows": [
+        [
+          "supports",
+          1254
+        ],
+        [
+          "unsupported",
+          30
+        ],
+        [
+          "(not audited)",
+          14
+        ],
+        [
+          "contradicts",
+          5
+        ]
+      ]
+    },
+    {
+      "title": "Rejected but judged supported (possible false rejections)",
+      "columns": [
+        "source_ref",
+        "summary",
+        "reason stored"
+      ],
+      "rows": [
+        [
+          "doc:21122771228#p1",
+          "Defendants allege the plaintiff failed to use brakes, signals, and the horn properly.",
+          "quote not found in source (overlap 0.83)"
+        ],
+        [
+          "doc:21122792168#p5",
+          "A May 24, 2023 right shoulder MRI showed an infraspinatus tendon tear and posterior inferior labral tear.",
+          "quote not found in source (overlap 0.61)"
+        ],
+        [
+          "doc:21122773658#p4",
+          "The accident report cover sheet also lists the accident date as 4/23/2023.",
+          "quote not found in source (overlap 0.50)"
+        ],
+        [
+          "doc:21122791073#p22",
+          "The CV lists a 2013 presentation on using mirror therapy to treat phantom limb pain at the Design of Medical Devices Conference.",
+          "quote not found in source (overlap 0.42)"
+        ],
+        [
+          "doc:21122779133#p1",
+          "The EMG report found left sensory radial peripheral neuropathy in the upper extremities study.",
+          "quote not found in source (overlap 0.83)"
+        ]
+      ]
+    }
+  ],
+  "cost_usd": 0.016801,
+  "secs": 15.953,
+  "matter_id": 1811206208,
+  "matter_label": "Justin Sapini (00001-Sapini)",
+  "generated_at": "2026-10-02T21:21:58.723Z"
+}

@@ -1,0 +1,241 @@
+{
+  "id": "contradictions",
+  "name": "Contradiction detection",
+  "origin": "Internal; hit rate against the 21 contradictions in the answer key (section 1.8), LLM-matched",
+  "adaptation": "Surfaced = contradictions table + gate items with status 'conflicting'. Hit rate: share of key contradictions an LLM judge matches to a surfaced item. Validity: LLM judge on each surfaced contradiction's quoted claims.",
+  "n": "21 key contradictions; 12 surfaced contradictions (+2 conflicting gates); 12 judged for validity",
+  "metrics": {
+    "hit_rate": 0.381,
+    "hits": 8,
+    "key_total": 21,
+    "surfaced": 14,
+    "surfaced_valid_rate": 0.667
+  },
+  "tables": [
+    {
+      "title": "Key contradictions",
+      "columns": [
+        "id",
+        "contradiction",
+        "matched",
+        "surfaced match"
+      ],
+      "rows": [
+        [
+          "k01",
+          "Accident accounts: client has given several inconsistent accounts of the crash mechanism (Metro-North merged into him vs his car struck theirs vs sideswiped by a truck and hit the sidewalk), plus Ferrara's own account on a different road",
+          "yes",
+          "Different vehicles described: The file gives incompatible accounts of whether the striking vehicle was a Metro-North utility vehicle or a tr"
+        ],
+        [
+          "k02",
+          "Prior injuries: client said none at intake and 'not applicable' under oath, but his own records show a 2011 left ankle fracture",
+          "yes",
+          "Prior ankle fracture versus denial: This creates impeachment risk and supports a defense argument that the client minimized or concealed pri"
+        ],
+        [
+          "k03",
+          "Scope of employment said to be never investigated, while the incident report marks Ferrara On-Duty heading to the jobsite",
+          "no",
+          ""
+        ],
+        [
+          "k04",
+          "Notes say Kyle Pullano was never contacted, but the firm subpoenaed him for an EBT",
+          "no",
+          ""
+        ],
+        [
+          "k05",
+          "Incident report described as missing / not produced, but it is annexed to defendants' response",
+          "yes",
+          "Incident report was already in file: This creates wasted effort and a credibility problem if counsel keeps claiming the incident report is m"
+        ],
+        [
+          "k06",
+          "Notes say no police report obtained, but the sworn discovery response says a police accident report is annexed",
+          "yes",
+          "Police report said missing despite annexed copy: This creates a wasted-effort and credibility issue: if the police accident report was alrea"
+        ],
+        [
+          "k07",
+          "Notes say no scene photos, but the sworn response says plaintiff has 22 photographs",
+          "yes",
+          "Scene photos already in file: This creates a wasted-effort and credibility problem: the file already contains sources saying the client has "
+        ],
+        [
+          "k08",
+          "Coverage: Metro-North self-insured / no limit vs $100k/$300k confirmed vs Travelers policy on the incident report cover sheet",
+          "no",
+          ""
+        ],
+        [
+          "k09",
+          "Index number mismatch (150940/2024 vs 160000/2024) and statute of limitations / another action pending exposure",
+          "no",
+          ""
+        ],
+        [
+          "k10",
+          "IME dates in Clio (Sept 2026) conflict with the dates inside the IME reports (March 2026)",
+          "no",
+          ""
+        ],
+        [
+          "k11",
+          "IME watchdog: conflicting accounts of which exam the watchdog attended and how long each exam lasted",
+          "no",
+          ""
+        ],
+        [
+          "k12",
+          "Note says expert reports were served before the service emails were sent",
+          "no",
+          ""
+        ],
+        [
+          "k13",
+          "Who is holding up the second surgery: client deferring vs surgeon vs scheduling vs re-evaluation",
+          "no",
+          ""
+        ],
+        [
+          "k14",
+          "Document dates in Clio do not match the filing dates printed in the documents",
+          "no",
+          ""
+        ],
+        [
+          "k15",
+          "Calendar shows a compliance conference held 2025-04-15, but the letter to the judge says no preliminary conference was set",
+          "no",
+          ""
+        ],
+        [
+          "k16",
+          "Client lives in Texas but claims weekly PT and chiropractic in New York",
+          "no",
+          ""
+        ],
+        [
+          "k17",
+          "Client claims total disability vs IME says he can return to work without restrictions",
+          "yes",
+          "Work capacity changed by 2026: This creates an impeachment issue if the case is presented as ongoing total disability; the defense can use t"
+        ],
+        [
+          "k18",
+          "PT frequency stated as weekly in some items and twice a week in others; PT discharged in 2023 but notes continue",
+          "yes",
+          "Hospital discharge conflicts: This creates an impeachment issue on whether the client was ever discharged from care, which can affect treatm"
+        ],
+        [
+          "k19",
+          "Request counts in task/calendar text (third, fourth request) do not match the actual number of approaches",
+          "no",
+          ""
+        ],
+        [
+          "k20",
+          "Medical causation: clean CT the day after vs TBI on DTI months later; glenoid hypoplasia; defense experts say no trauma / resolved",
+          "yes",
+          "MRI interpreted opposite ways: This creates a direct impeachment issue over whether the MRI supports a traumatic brain injury claim, and it "
+        ],
+        [
+          "k21",
+          "Duplicate items: identical email bodies, repeated no-fault exhaustion notices, Medicaid lien dates out of order",
+          "no",
+          ""
+        ]
+      ]
+    },
+    {
+      "title": "Surfaced contradictions judged",
+      "columns": [
+        "title",
+        "severity",
+        "valid",
+        "reason"
+      ],
+      "rows": [
+        [
+          "MRI interpretation disagrees on knee tears",
+          "high",
+          "yes",
+          "The claims are genuinely inconsistent: one source reports objective MRI findings of horizontal tears in both knees, while another source interpreting the same MRIs says there was no recent traumatic injury or internal derangement. A meniscal tear is a form of internal derangement, so these are not merely different phrasings or compatible observations; they present a real dispute about what the MRIs showed."
+        ],
+        [
+          "Different vehicles described",
+          "high",
+          "no",
+          "The quoted statements are not a clear factual conflict. A \"truck\" can be a lay description of a Metro-North utility vehicle, so the doctor’s note is compatible with the intake/field-note descriptions rather than truly contradictory."
+        ],
+        [
+          "MRI interpreted opposite ways",
+          "high",
+          "yes",
+          "The claims present a real conflict: one source describes the 2023-08-08 MRI/DTI as abnormal and supportive of traumatic brain injury, while another says the same study shows no traumatic injury and is within normal limits. Those are directly incompatible interpretations of the same imaging, so this is a genuine contradiction worth flagging."
+        ],
+        [
+          "Mechanism described two ways",
+          "high",
+          "yes",
+          "The cited descriptions are materially inconsistent about the crash mechanism: one version says the Metro-North vehicle merged into the client’s lane and struck him, while another says the client’s own vehicle struck the other vehicle as both merged. Those are not compatible ways of describing the same impact direction, so this is a real contradiction worth flagging."
+        ],
+        [
+          "Prior ankle fracture versus denial",
+          "high",
+          "yes",
+          "The claims are genuinely inconsistent: the intake paperwork says the plaintiff denied prior work-related injuries and prior injury history, while the file also contains a 2011 left ankle/foot X-ray showing an avulsion fracture of the anterior talus. Those are not compatible facts, and the X-ray is direct evidence of a prior ankle injury that could contradict the denial."
+        ],
+        [
+          "Work capacity changed by 2026",
+          "high",
+          "yes",
+          "The quoted statements are directly inconsistent on work capacity: the 2024 record says he was \"totally disabled from his usual occupation,\" while the 2026 opinion says he is \"able to work and perform activities of daily living without restrictions.\" A lawyer would likely treat this as a real impeachment issue because it reflects a materially different assessment of disability and employability."
+        ],
+        [
+          "Hospital discharge conflicts",
+          "high",
+          "yes",
+          "These claims directly conflict: one source says the client \"has not been discharged by anyone,\" while the emergency department record says the client was \"Discharged home the same day\" on 04/24/2023. A lawyer would likely view this as a real impeachment issue about discharge status and timing."
+        ],
+        [
+          "Scene photos already in file",
+          "medium",
+          "no",
+          "The cited items are not a clean contradiction. One note says the 22 scene photos had not yet been obtained; a later email says the sender had 22 photos on his phone and could send them, which is a compatible later update rather than a direct conflict. The separate document about plaintiff possessing 22 color-copied photos is also not necessarily the same thing as the scene photos referenced in the note."
+        ],
+        [
+          "Incident report was already in file",
+          "medium",
+          "yes",
+          "The claims directly conflict: one source says the Metro-North Railroad Incident Report was annexed to the discovery response, while a later email says the incident report had still not been produced and did not appear in the response. These are not compatible facts or a mere paraphrase, so this is a real contradiction."
+        ],
+        [
+          "Coverage already in file",
+          "medium",
+          "no",
+          "The statements are not a real conflict. The first says coverage information would be provided separately, and the later email actually provides the bodily injury limits. That is a later update/fulfillment, not an inconsistent statement."
+        ],
+        [
+          "Police report said missing despite annexed copy",
+          "medium",
+          "yes",
+          "The claims are in real tension: one source says a copy of the Police Accident Report was annexed, while the later note says there is no police accident report in the file. A lawyer could view that as a genuine inconsistency about whether the report was present in the file/discovery materials, not merely a paraphrase or compatible detail."
+        ],
+        [
+          "Earlier note says no report obtained",
+          "medium",
+          "no",
+          "The statements are not necessarily contradictory: the 2023-05-23 note says no police accident report had been obtained at that time, while the discovery response says a copy of the report was annexed, which could have happened later. Without proof the report was already available when the note was written, this is a chronological update rather than a real conflict."
+        ]
+      ]
+    }
+  ],
+  "cost_usd": 0.08643200000000001,
+  "secs": 60.624,
+  "matter_id": 1811206208,
+  "matter_label": "Justin Sapini (00001-Sapini)",
+  "generated_at": "2026-10-02T21:21:38.319Z"
+}

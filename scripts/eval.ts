@@ -29,8 +29,18 @@ const pct = (a: number, b: number) => (b ? r3(a / b) : null);
 const mean = (xs: number[]) => (xs.length ? xs.reduce((s, x) => s + x, 0) / xs.length : 0);
 
 let evalCost = 0;
+// The org shares a 200k TPM limit on gpt-5.4-mini with the live app, so back off on 429 instead of failing a suite.
+async function retry429<T>(fn: () => Promise<T>, tries = 12): Promise<T> {
+  for (let i = 0; ; i++) {
+    try { return await fn(); } catch (e) {
+      const msg = String((e as Error)?.message ?? e);
+      if (i >= tries || !/rate limit|429|fetch failed|ECONNRESET/i.test(msg)) throw e;
+      await new Promise((r) => setTimeout(r, 1500 * (i + 1) + Math.random() * 1000));
+    }
+  }
+}
 async function judge<T extends z.ZodTypeAny>(system: string, input: string, schema: T, name: string): Promise<z.infer<T>> {
-  const { data, usage } = await structured({ model: JUDGE_MODEL, system, input, schema, schemaName: name, meta: { purpose: `eval.${name}`, matterId: null }, reasoning: "low" });
+  const { data, usage } = await retry429(() => structured({ model: JUDGE_MODEL, system, input, schema, schemaName: name, meta: { purpose: `eval.${name}`, matterId: null }, reasoning: "low" }));
   evalCost += usage.cost;
   return data;
 }
@@ -130,9 +140,9 @@ async function gistOutputs(m: number) {
 async function suiteFactRecall(m: number): Promise<Suite> {
   const { items } = readJson<{ items: { id: string; category: string; description: string }[] }>("checklist.json");
   const out = await gistOutputs(m);
-  const lim = pLimit(8);
+  const lim = pLimit(4);
   const res = await Promise.all(items.map((it) => lim(async () => {
-    const hits = await search(m, it.description, { k: 8, kinds: ["fact"], expand: false });
+    const hits = await retry429(() => search(m, it.description, { k: 8, kinds: ["fact"], expand: false }));
     const input = `Expected finding: ${it.description}\n\n## Verified facts retrieved (hybrid search over gist facts, top 8)\n${hits.map((h) => `[${h.cite}] ${h.body.slice(0, 600)}`).join("\n")}\n\n## Contradictions surfaced\n${out.conTxt || "(none)"}\n\n## Phase gate items\n${out.gateTxt.slice(0, 6000)}\n\n## Digest JSON (truncated to 40k chars)\n${out.dg.slice(0, 40000)}`;
     const j = await judge(JUDGE_RECALL, input, RecallOut, "recall_judge");
     return { ...it, ...j };
@@ -181,7 +191,7 @@ async function suiteCitation(m: number): Promise<Suite> {
   const all = await facts(m);
   const ver = all.filter((f) => f.status === "verified");
   let exact = 0, overlap = 0, missingSrc = 0, withDate = 0, dateOk = 0, withAmt = 0, amtOk = 0, srcDated = 0;
-  const lim = pLimit(12);
+  const lim = pLimit(4);
   await Promise.all(ver.map((f) => lim(() => sourceText(m, f.source_ref))));
   for (const f of ver) {
     const t = srcCache.get(f.source_ref);
@@ -237,7 +247,7 @@ async function suiteVerifier(m: number): Promise<Suite> {
   const rev = all.filter((f) => f.status === "needs_review");
   const pick = <T,>(xs: T[], n: number) => { const s = Math.max(1, Math.floor(xs.length / n)); return xs.filter((_, i) => i % s === 0).slice(0, n); };
   const sample = [...pick(rej, 25).map((f) => ({ f, set: "rejected" })), ...pick(rev, 15).map((f) => ({ f, set: "needs_review" }))];
-  const lim = pLimit(10);
+  const lim = pLimit(4);
   const judged = await Promise.all(sample.map((s) => lim(async () => {
     const t = (await sourceText(m, s.f.source_ref)) ?? "(source text not found)";
     const j = await judge(JUDGE_SUPPORT, `Summary: ${s.f.summary}\nDate: ${s.f.event_date ?? "none"}\nAmount: ${s.f.amount_usd ?? "none"}\nQuoted span: "${s.f.quote}"\n\nSource ${s.f.source_ref}:\n${t.slice(0, 12000)}`, SupportOut, "reject_judge");
@@ -280,7 +290,7 @@ async function suiteContradictions(m: number): Promise<Suite> {
   const gates = ((await db().from("gate_items").select("label,note,status").eq("matter_id", m)).data ?? []).filter((g) => g.status === "conflicting");
   const surfaced = [...con.map((c) => `${c.title}: ${c.why_it_matters ?? ""}`), ...gates.map((g) => `[gate conflicting] ${g.label}: ${g.note ?? ""}`)];
   const list = surfaced.map((s, i) => `${i}. ${s}`).join("\n");
-  const lim = pLimit(8);
+  const lim = pLimit(4);
   const matches = await Promise.all(key.map((k) => lim(async () => ({ k, j: await judge(JUDGE_CON_MATCH, `Known contradiction: ${k.title}\n\nSurfaced:\n${list || "(none)"}`, ConMatch, "con_match") }))));
   const valid = await Promise.all(con.slice(0, 20).map((c) => lim(async () => ({ c, j: await judge(JUDGE_CON_VALID, `Title: ${c.title}\nWhy: ${c.why_it_matters}\nClaims: ${JSON.stringify(c.claims).slice(0, 6000)}`, ConValid, "con_valid") }))));
   const hit = matches.filter((x) => x.j.matched).length;
@@ -329,11 +339,11 @@ function recallAt(cites: string[], gold: string[], k: number) {
 
 async function suiteRag(m: number): Promise<Suite[]> {
   const qa = readJson<{ items: QA[] }>("qa.json").items;
-  const lim = pLimit(5);
+  const lim = pLimit(4);
   const t0 = Date.now();
   const res = await Promise.all(qa.map((q) => lim(async () => {
     const s = Date.now();
-    const a = await ask(m, q.question);
+    const a = await retry429(() => ask(m, q.question));
     const latency = Date.now() - s;
     const ctx = a.hits.slice(0, 10);
     const j = await judge(JUDGE_RAGAS, `Question: ${q.question}\n\nSystem answer:\n${a.answer_markdown}\n\nRetrieved contexts:\n${ctx.map((h, i) => `[${i}] (${h.cite}) ${h.body.slice(0, 1500)}`).join("\n\n")}\n\nGold answer: ${q.gold_answer}`, RagasOut, "ragas_judge");
@@ -415,7 +425,7 @@ async function suiteNeedle(m: number): Promise<Suite> {
     const step = Math.max(1, Math.floor(inB.length / 4));
     for (let i = 0; i < inB.length && picks.filter((p) => p.bucket === `${lo}-${hi}`).length < 4; i += step) picks.push({ page: inB[i].page, text: inB[i].text!, bucket: `${lo}-${hi}` });
   }
-  const lim = pLimit(8);
+  const lim = pLimit(4);
   const res = await Promise.all(picks.map((p) => lim(async () => {
     const g = await judge(GEN_NEEDLE, `Document: ${d.name}, page ${p.page}\n\n${p.text.slice(0, 6000)}`, NeedleGen, "needle_gen");
     if (!g.usable) return null;
@@ -471,12 +481,12 @@ async function suiteAgent(m: number): Promise<Suite> {
   const profile = `eval-agent-${Date.now()}`;
   const trials = 2;
   const runs: { task: AgentTask; trial: number; pass: boolean; checks: Record<string, boolean>; steps: number; latency: number; cost: number; invented: string[] }[] = [];
-  const lim = pLimit(5);
+  const lim = pLimit(4);
   try {
     await Promise.all(AGENT_TASKS.flatMap((task) => Array.from({ length: trials }, (_, trial) => lim(async () => {
       const ev: AssistantEvent[] = [];
       const s = Date.now();
-      await runTurn({ matterId: m, profileId: `${profile}-${task.id}-${trial}`, viewer: null, message: task.message, tab: null }, (e) => ev.push(e));
+      await retry429(() => { ev.length = 0; return runTurn({ matterId: m, profileId: `${profile}-${task.id}-${trial}`, viewer: null, message: task.message, tab: null }, (e) => ev.push(e)); }, 6);
       const latency = Date.now() - s;
       const done = ev.find((e) => e.type === "done") as Extract<AssistantEvent, { type: "done" }> | undefined;
       const tools = ev.filter((e) => e.type === "tool").map((e) => (e as { name: string }).name);
@@ -527,7 +537,7 @@ async function suiteMemory(m: number): Promise<Suite> {
   const profile = `eval-mem-${Date.now()}`;
   const say = async (message: string) => {
     const ev: AssistantEvent[] = [];
-    await runTurn({ matterId: m, profileId: profile, viewer: null, message, tab: null }, (e) => ev.push(e));
+    await retry429(() => { ev.length = 0; return runTurn({ matterId: m, profileId: profile, viewer: null, message, tab: null }, (e) => ev.push(e)); }, 6);
     const done = ev.find((e) => e.type === "done") as Extract<AssistantEvent, { type: "done" }> | undefined;
     return { text: done?.text ?? "", cost: done?.costUsd ?? 0, recalled: (ev.find((e) => e.type === "recalled") as { items?: string[] } | undefined)?.items ?? [] };
   };
@@ -647,20 +657,30 @@ async function suiteBaseline(m: number, qaOnly = false): Promise<Suite> {
   let included = 0;
   const all = [...items.map((i) => `<item ref="${i.ref}" date="${i.date ?? ""}">\n${i.text}\n</item>`), ...pages.map((p) => `<page ref="${p.ref}">\n${p.text}\n</page>`)];
   for (const s of all) { if (body.length + s.length > MAX_CHARS) break; body += s + "\n"; included++; }
-  const t0 = Date.now();
   const Out = z.object({ digest: z.string(), answers: z.array(z.object({ id: z.string(), answer: z.string() })) });
-  const res = await openai().responses.parse({
-    model: BASELINE_MODEL, instructions: BASELINE_SYSTEM,
-    input: `${body}\n\n## Questions\n${qa.map((q) => `${q.id}. ${q.question}`).join("\n")}`,
-    text: { format: (await import("openai/helpers/zod")).zodTextFormat(Out, "baseline") }, reasoning: { effort: "low" },
-  });
-  const secs = (Date.now() - t0) / 1000;
-  const u = res.usage;
-  const cost = costOf(BASELINE_MODEL, u?.input_tokens ?? 0, u?.output_tokens ?? 0, u?.input_tokens_details?.cached_tokens ?? 0);
-  evalCost += cost;
-  const out = res.output_parsed!;
-  fs.writeFileSync(path.join(SUITE_DIR, "baseline.output.json"), JSON.stringify(out, null, 2));
-  const lim = pLimit(8);
+  // One run only: if the baseline output is already saved (a judge step failed after the expensive call), reuse it.
+  const saved = path.join(SUITE_DIR, "baseline.output.json");
+  let out: z.infer<typeof Out>;
+  let meta: { input_tokens: number; output_tokens: number; cost: number; secs: number };
+  if (fs.existsSync(saved)) {
+    const j = JSON.parse(fs.readFileSync(saved, "utf8"));
+    out = { digest: j.digest, answers: j.answers };
+    meta = j.meta;
+  } else {
+    const t0 = Date.now();
+    const res = await openai().responses.parse({
+      model: BASELINE_MODEL, instructions: BASELINE_SYSTEM,
+      input: `${body}\n\n## Questions\n${qa.map((q) => `${q.id}. ${q.question}`).join("\n")}`,
+      text: { format: (await import("openai/helpers/zod")).zodTextFormat(Out, "baseline") }, reasoning: { effort: "low" },
+    });
+    const u = res.usage;
+    meta = { input_tokens: u?.input_tokens ?? 0, output_tokens: u?.output_tokens ?? 0, cost: costOf(BASELINE_MODEL, u?.input_tokens ?? 0, u?.output_tokens ?? 0, u?.input_tokens_details?.cached_tokens ?? 0), secs: (Date.now() - t0) / 1000 };
+    out = res.output_parsed!;
+    fs.writeFileSync(saved, JSON.stringify({ ...out, meta }, null, 2));
+  }
+  evalCost += meta.cost;
+  const cost = meta.cost, secs = meta.secs;
+  const lim = pLimit(4);
   const rec = await Promise.all(chk.map((it) => lim(async () => ({ it, j: await judge(JUDGE_RECALL, `Expected finding: ${it.description}\n\n## System output (single-shot digest)\n${out.digest}`, RecallOut, "recall_judge_baseline") }))));
   const cor = await Promise.all(qa.map((q) => lim(async () => {
     const a = out.answers.find((x) => x.id === q.id)?.answer ?? "";
@@ -674,7 +694,7 @@ async function suiteBaseline(m: number, qaOnly = false): Promise<Suite> {
     n: `${chk.length} checklist items, ${qa.length} questions; ${included}/${all.length} source blocks fit`,
     metrics: {
       checklist_recall: pct(rec.filter((r) => r.j.found).length, chk.length), qa_answer_correctness: r3(mean(cor)),
-      input_tokens: u?.input_tokens ?? 0, output_tokens: u?.output_tokens ?? 0, cost_usd: r3(cost * 1000) / 1000, latency_s: r3(secs),
+      input_tokens: meta.input_tokens, output_tokens: meta.output_tokens, cost_usd: r3(cost * 1000) / 1000, latency_s: r3(secs),
       blocks_included: included, blocks_total: all.length,
     },
     tables: [

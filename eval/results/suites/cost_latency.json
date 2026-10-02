@@ -1,0 +1,819 @@
+{
+  "id": "cost_latency",
+  "name": "Cost and latency per case",
+  "origin": "Internal (from agent_runs, agent_tasks and llm_calls)",
+  "adaptation": "Cold run = the completed full pipeline run (extract + synth present) with the highest logged cost; warm run = latest completed full run whose extraction tasks were all cache hits. Costs are tokens x the hardcoded price table in lib/server/llm.ts (Jev cost is estimated from characters / 4). No fresh rerun was done for this eval to avoid mutating the live matter; timings are from logged runs.",
+  "n": "44 logged runs; 13 complete full runs; 4835 logged LLM calls",
+  "metrics": {
+    "cold_run_cost_usd": 0.155734,
+    "cold_run_secs": 250.586,
+    "cold_run_id": "5175ab63-9663-430f-a251-67409a99fc76",
+    "warm_run_cost_usd": 0.022753,
+    "warm_run_secs": 296.161,
+    "warm_run_id": "44a3fe08-ffe0-46e9-92ab-2b97beaf1116",
+    "all_logged_llm_cost_usd": 3.313672,
+    "all_runs_cost_usd": 1.700873
+  },
+  "tables": [
+    {
+      "title": "Cold run by stage",
+      "columns": [
+        "stage",
+        "tasks",
+        "cached",
+        "cost $",
+        "tokens in",
+        "wall s"
+      ],
+      "rows": [
+        [
+          "embed",
+          1,
+          0,
+          0.011264,
+          86645,
+          50.605
+        ],
+        [
+          "extract",
+          69,
+          69,
+          0,
+          0,
+          9.512
+        ],
+        [
+          "gate",
+          48,
+          6,
+          0.049046,
+          179726,
+          51.27
+        ],
+        [
+          "jev",
+          53,
+          0,
+          0.015867,
+          377778,
+          6.254
+        ],
+        [
+          "ocr",
+          30,
+          30,
+          0,
+          0,
+          0.83
+        ],
+        [
+          "reconcile",
+          112,
+          0,
+          0.079558,
+          134592,
+          65.009
+        ],
+        [
+          "sync",
+          10,
+          1,
+          0,
+          0,
+          22.782
+        ],
+        [
+          "synth",
+          1,
+          1,
+          0,
+          0,
+          0.285
+        ]
+      ]
+    },
+    {
+      "title": "Warm (cached) run by stage",
+      "columns": [
+        "stage",
+        "tasks",
+        "cached",
+        "cost $",
+        "tokens in",
+        "wall s"
+      ],
+      "rows": [
+        [
+          "reconcile",
+          112,
+          107,
+          0.0032229999999999997,
+          8583,
+          26.013
+        ],
+        [
+          "ocr",
+          30,
+          30,
+          0,
+          0,
+          2.069
+        ],
+        [
+          "extract",
+          69,
+          69,
+          0,
+          0,
+          5.736
+        ],
+        [
+          "sync",
+          10,
+          1,
+          0,
+          0,
+          24.464
+        ],
+        [
+          "synth",
+          1,
+          0,
+          0.017414000000000002,
+          8016,
+          17.596
+        ],
+        [
+          "embed",
+          1,
+          1,
+          0,
+          0,
+          0.706
+        ],
+        [
+          "gate",
+          48,
+          45,
+          0.002117,
+          11696,
+          39.131
+        ]
+      ]
+    },
+    {
+      "title": "All logged LLM calls for this matter by purpose",
+      "columns": [
+        "purpose | model",
+        "calls",
+        "cost $",
+        "tokens in",
+        "tokens out"
+      ],
+      "rows": [
+        [
+          "ask | gpt-5.5",
+          15,
+          0.917029,
+          700119,
+          4188
+        ],
+        [
+          "gate | gpt-5.4-mini",
+          687,
+          0.611246,
+          2392888,
+          124909
+        ],
+        [
+          "reconcile | gpt-5.4-mini",
+          771,
+          0.513347,
+          897923,
+          153073
+        ],
+        [
+          "synth.story | gpt-5.5",
+          12,
+          0.331788,
+          92931,
+          25220
+        ],
+        [
+          "gate.jev | jev-1.13.0",
+          830,
+          0.14710800000000002,
+          3502565,
+          36062
+        ],
+        [
+          "embed | text-embedding-3-large",
+          85,
+          0.111622,
+          858628,
+          0
+        ],
+        [
+          "audit | jev-1.13.0",
+          213,
+          0.08569700000000001,
+          2040399,
+          264817
+        ],
+        [
+          "extract:08-experts__doc-55__expert-exchange-neur p1-10 | gpt-5.4-mini",
+          3,
+          0.044558999999999994,
+          25320,
+          21044
+        ],
+        [
+          "extract:08-experts__doc-56__ime-orthopedic-hosti p1-10 | gpt-5.4-mini",
+          3,
+          0.037447,
+          31110,
+          17081
+        ],
+        [
+          "voice | gpt-realtime-mini",
+          1,
+          0.030768,
+          1647,
+          808
+        ],
+        [
+          "ocr | gpt-5.4-mini",
+          17,
+          0.023592,
+          43254,
+          6591
+        ],
+        [
+          "assistant.turn | gpt-5.4-mini",
+          15,
+          0.017122,
+          58260,
+          3352
+        ],
+        [
+          "agent_action | gpt-5.4-mini",
+          24,
+          0.016272,
+          13400,
+          6461
+        ],
+        [
+          "extract:04-medical-records__created__advanced-ro p1-10 | gpt-5.4-mini",
+          1,
+          0.015962999999999998,
+          5757,
+          7262
+        ],
+        [
+          "extract:04-medical-records__created__advanced-ro p91-100 | gpt-5.4-mini",
+          1,
+          0.013758,
+          5686,
+          6168
+        ],
+        [
+          "extract:04-medical-records__created__mcculloch-o p1-8 | gpt-5.4-mini",
+          1,
+          0.012361,
+          5580,
+          5483
+        ],
+        [
+          "extract:05-medical-bills__created__advanced-rock p11-15 | gpt-5.4-mini",
+          1,
+          0.011904,
+          3816,
+          5475
+        ],
+        [
+          "extract:05-medical-bills__created__sportscare-ph p1-3 | gpt-5.4-mini",
+          2,
+          0.011885,
+          5740,
+          5225
+        ],
+        [
+          "extract:02-pleadings__doc-05__verified-answer-de p11-20 | gpt-5.4-mini",
+          1,
+          0.011173,
+          8902,
+          4618
+        ],
+        [
+          "extract:notes 4/5 | gpt-5.4-mini",
+          1,
+          0.011079,
+          3445,
+          5253
+        ],
+        [
+          "extract:notes 2/5 | gpt-5.4-mini",
+          1,
+          0.010751,
+          3252,
+          5113
+        ],
+        [
+          "extract:02-pleadings__doc-07__bill-of-particular p1-10 | gpt-5.4-mini",
+          1,
+          0.010322,
+          6174,
+          4533
+        ],
+        [
+          "reconcile.jev | jev-1.13.0",
+          498,
+          0.010247,
+          243973,
+          14181
+        ],
+        [
+          "extract:04-medical-records__created__sportscare- p21-26 | gpt-5.4-mini",
+          1,
+          0.009092000000000001,
+          3865,
+          4063
+        ],
+        [
+          "extract:02-pleadings__doc-05__verified-answer-de p1-10 | gpt-5.4-mini",
+          1,
+          0.008452,
+          7712,
+          3262
+        ],
+        [
+          "extract:05-medical-bills__created__advanced-rock p1-10 | gpt-5.4-mini",
+          1,
+          0.008426,
+          6319,
+          3423
+        ],
+        [
+          "extract:tasks+calendar+fields 1/3 | gpt-5.4-mini",
+          1,
+          0.008196,
+          3470,
+          3664
+        ],
+        [
+          "extract:08-experts__doc-56__ime-orthopedic-hosti p11-15 | gpt-5.4-mini",
+          2,
+          0.007665,
+          9666,
+          3114
+        ],
+        [
+          "extract:notes 1/5 | gpt-5.4-mini",
+          1,
+          0.007547,
+          3419,
+          3346
+        ],
+        [
+          "extract:08-experts__doc-47__radiology-review-kat p1-10 | gpt-5.4-mini",
+          1,
+          0.007364,
+          9104,
+          2544
+        ],
+        [
+          "extract:notes 3/5 | gpt-5.4-mini",
+          1,
+          0.007329,
+          2669,
+          3475
+        ],
+        [
+          "extract:08-experts__doc-55__expert-exchange-neur p21-30 | gpt-5.4-mini",
+          1,
+          0.007206000000000001,
+          11617,
+          2151
+        ],
+        [
+          "extract:tasks+calendar+fields 2/3 | gpt-5.4-mini",
+          1,
+          0.007135,
+          4940,
+          2950
+        ],
+        [
+          "extract:04-medical-records__created__peter-kwan- p1-4 | gpt-5.4-mini",
+          1,
+          0.007111,
+          3237,
+          3151
+        ],
+        [
+          "extract:04-medical-records__created__advanced-ro p51-60 | gpt-5.4-mini",
+          1,
+          0.00666,
+          5623,
+          2627
+        ],
+        [
+          "extract:04-medical-records__created__advanced-ro p111-120 | gpt-5.4-mini",
+          1,
+          0.006647999999999999,
+          5617,
+          2622
+        ],
+        [
+          "extract:04-medical-records__created__advanced-ro p41-50 | gpt-5.4-mini",
+          1,
+          0.006626,
+          5623,
+          2610
+        ],
+        [
+          "reconcile.embed | text-embedding-3-large",
+          5,
+          0.0065060000000000005,
+          50046,
+          0
+        ],
+        [
+          "extract:emails+calls 1/5 | gpt-5.4-mini",
+          1,
+          0.006485,
+          3131,
+          2851
+        ],
+        [
+          "extract:08-experts__doc-55__expert-exchange-neur p11-20 | gpt-5.4-mini",
+          1,
+          0.006482,
+          9007,
+          2115
+        ],
+        [
+          "extract:04-medical-records__created__advanced-ro p21-30 | gpt-5.4-mini",
+          1,
+          0.006314,
+          5623,
+          2454
+        ],
+        [
+          "extract:emails+calls 3/5 | gpt-5.4-mini",
+          1,
+          0.006143,
+          3053,
+          2690
+        ],
+        [
+          "search.expand | gpt-5.4-mini",
+          27,
+          0.006082,
+          4288,
+          2505
+        ],
+        [
+          "extract:emails+calls 4/5 | gpt-5.4-mini",
+          1,
+          0.006036,
+          3007,
+          2786
+        ],
+        [
+          "extract:emails+calls 2/5 | gpt-5.4-mini",
+          1,
+          0.006008,
+          3008,
+          2628
+        ],
+        [
+          "extract:02-pleadings__doc-01__summons-complaint. p1-8 | gpt-5.4-mini",
+          1,
+          0.005932000000000001,
+          5998,
+          2216
+        ],
+        [
+          "extract:04-medical-records__created__advanced-ro p11-20 | gpt-5.4-mini",
+          1,
+          0.0058920000000000005,
+          5623,
+          2243
+        ],
+        [
+          "extract:04-medical-records__created__advanced-ro p61-70 | gpt-5.4-mini",
+          1,
+          0.005812,
+          5623,
+          2203
+        ],
+        [
+          "extract:03-discovery__doc-08__response-discovery p1-10 | gpt-5.4-mini",
+          1,
+          0.00566,
+          5824,
+          2102
+        ],
+        [
+          "extract:04-medical-records__created__sportscare- p11-20 | gpt-5.4-mini",
+          1,
+          0.005639,
+          5683,
+          2109
+        ],
+        [
+          "extract:08-experts__doc-55__expert-exchange-neur p31-40 | gpt-5.4-mini",
+          1,
+          0.005418999999999999,
+          19107,
+          321
+        ],
+        [
+          "extract:04-medical-records__created__hudson-vall p1-7 | gpt-5.4-mini",
+          1,
+          0.005313,
+          4346,
+          2257
+        ],
+        [
+          "extract:04-medical-records__created__interventio p1-2 | gpt-5.4-mini",
+          1,
+          0.0051790000000000004,
+          2381,
+          2436
+        ],
+        [
+          "extract:04-medical-records__created__sportscare- p1-10 | gpt-5.4-mini",
+          1,
+          0.004940000000000001,
+          5722,
+          1755
+        ],
+        [
+          "extract:04-medical-records__created__advanced-ro p81-90 | gpt-5.4-mini",
+          1,
+          0.004888,
+          5641,
+          1739
+        ],
+        [
+          "share.redaction_gate | jev-1.13.0",
+          260,
+          0.004856,
+          115621,
+          18460
+        ],
+        [
+          "extract:04-medical-records__created__advanced-ro p121-130 | gpt-5.4-mini",
+          1,
+          0.004730000000000001,
+          5616,
+          1663
+        ],
+        [
+          "extract:04-medical-records__created__advanced-ro p31-40 | gpt-5.4-mini",
+          1,
+          0.004525,
+          5693,
+          1551
+        ],
+        [
+          "extract:03-discovery__doc-40__defendants-respons p1-10 | gpt-5.4-mini",
+          1,
+          0.0042380000000000004,
+          5800,
+          1394
+        ],
+        [
+          "extract:tasks+calendar+fields 3/3 | gpt-5.4-mini",
+          1,
+          0.004203999999999999,
+          2711,
+          1763
+        ],
+        [
+          "extract:contacts 1/1 | gpt-5.4-mini",
+          1,
+          0.004171,
+          4005,
+          1585
+        ],
+        [
+          "extract:05-medical-bills__created__mcculloch-ort p1-1 | gpt-5.4-mini",
+          1,
+          0.004006999999999999,
+          1996,
+          1898
+        ],
+        [
+          "extract:02-pleadings__doc-05__verified-answer-de p21-27 | gpt-5.4-mini",
+          1,
+          0.003959,
+          4285,
+          1444
+        ],
+        [
+          "extract:04-medical-records__created__advanced-ro p101-110 | gpt-5.4-mini",
+          1,
+          0.003953,
+          5603,
+          1276
+        ],
+        [
+          "extract:08-experts__doc-55__expert-exchange-neur p41-47 | gpt-5.4-mini",
+          1,
+          0.003864,
+          12168,
+          411
+        ],
+        [
+          "extract:04-medical-records__created__advanced-ro p71-80 | gpt-5.4-mini",
+          1,
+          0.0037280000000000004,
+          5623,
+          1161
+        ],
+        [
+          "extract:04-medical-records__created__montefiore- p1-3 | gpt-5.4-mini",
+          1,
+          0.003521,
+          2788,
+          1412
+        ],
+        [
+          "extract:02-pleadings__doc-41__bop-affirmative-de p1-3 | gpt-5.4-mini",
+          1,
+          0.003285,
+          2925,
+          1277
+        ],
+        [
+          "share.redaction_gate.fallback | gpt-5.4-mini",
+          9,
+          0.0032,
+          2238,
+          1320
+        ],
+        [
+          "extract:04-medical-records__created__new-horizon p1-3 | gpt-5.4-mini",
+          1,
+          0.003099,
+          2820,
+          1197
+        ],
+        [
+          "extract:emails+calls 5/5 | gpt-5.4-mini",
+          1,
+          0.003023,
+          2404,
+          1211
+        ],
+        [
+          "extract:05-medical-bills__created__hudson-valley p1-1 | gpt-5.4-mini",
+          1,
+          0.002898,
+          1913,
+          1210
+        ],
+        [
+          "extract:04-medical-records__created__advanced-ro p131-131 | gpt-5.4-mini",
+          1,
+          0.002699,
+          1765,
+          1129
+        ],
+        [
+          "extract:05-medical-bills__created__interventiona p1-1 | gpt-5.4-mini",
+          1,
+          0.002679,
+          1834,
+          1110
+        ],
+        [
+          "extract:01-intake__created__hipaa-authorization. p1-1 | gpt-5.4-mini",
+          1,
+          0.002644,
+          2041,
+          1067
+        ],
+        [
+          "extract:02-pleadings__doc-07__bill-of-particular p11-14 | gpt-5.4-mini",
+          1,
+          0.002427,
+          2980,
+          985
+        ],
+        [
+          "extract:05-medical-bills__created__montefiore-ny p1-1 | gpt-5.4-mini",
+          1,
+          0.002254,
+          1847,
+          1040
+        ],
+        [
+          "extract:04-medical-records__created__melinda-mil p1-2 | gpt-5.4-mini",
+          1,
+          0.002198,
+          2256,
+          817
+        ],
+        [
+          "extract:05-medical-bills__created__peter-kwan-ne p1-1 | gpt-5.4-mini",
+          1,
+          0.002186,
+          1857,
+          1005
+        ],
+        [
+          "extract:05-medical-bills__created__melinda-mille p1-1 | gpt-5.4-mini",
+          1,
+          0.002183,
+          1826,
+          1007
+        ],
+        [
+          "extract:05-medical-bills__created__new-horizon-s p1-1 | gpt-5.4-mini",
+          1,
+          0.002008,
+          1879,
+          913
+        ],
+        [
+          "assistant.extract | gpt-5.4-mini",
+          6,
+          0.001975,
+          3213,
+          586
+        ],
+        [
+          "extract:notes 5/5 | gpt-5.4-mini",
+          1,
+          0.001838,
+          1750,
+          844
+        ],
+        [
+          "extract:06-correspondence__doc-12__letter-to-jud p1-1 | gpt-5.4-mini",
+          1,
+          0.0013759999999999998,
+          1906,
+          594
+        ],
+        [
+          "search.embed | text-embedding-3-large",
+          1211,
+          0.001262,
+          9704,
+          0
+        ],
+        [
+          "extract:03-discovery__doc-43__subpoena-kyle-pull p1-2 | gpt-5.4-mini",
+          1,
+          0.0011220000000000002,
+          2431,
+          401
+        ],
+        [
+          "agent_action_leak | jev-1.13.0",
+          56,
+          0.0010409999999999998,
+          24780,
+          1176
+        ],
+        [
+          "client_photo | gpt-5.4-mini",
+          1,
+          0.000815,
+          3029,
+          29
+        ],
+        [
+          "extract:03-discovery__doc-40__defendants-respons p11-11 | gpt-5.4-mini",
+          1,
+          0.00045,
+          1576,
+          28
+        ],
+        [
+          "assistant.recall | text-embedding-3-large",
+          11,
+          0.000017999999999999997,
+          140,
+          0
+        ],
+        [
+          "assistant.memory | text-embedding-3-large",
+          6,
+          0.000014,
+          106,
+          0
+        ]
+      ]
+    }
+  ],
+  "cost_usd": 0,
+  "secs": 112.968,
+  "matter_id": 1811206208,
+  "matter_label": "Justin Sapini (00001-Sapini)",
+  "generated_at": "2026-10-02T21:21:42.769Z"
+}

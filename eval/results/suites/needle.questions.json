@@ -1,0 +1,142 @@
+[
+  {
+    "page": 1,
+    "bucket": "1-25",
+    "question": "On the April 26, 2023 initial narrative report, what were Justin W. Sapini’s measured cervical rotation limits to the left and right?",
+    "page_hit": 1,
+    "rank": 2
+  },
+  {
+    "page": 7,
+    "bucket": "1-25",
+    "question": "On the May 10, 2023 visit, what was the patient’s work status according to the chiropractic note?",
+    "page_hit": 0,
+    "rank": 0
+  },
+  {
+    "page": 13,
+    "bucket": "1-25",
+    "question": "On the May 24, 2023 visit, what was the patient’s work status according to the chiropractic note?",
+    "page_hit": 0,
+    "rank": 0
+  },
+  {
+    "page": 19,
+    "bucket": "1-25",
+    "question": "On the June 7, 2023 chiropractic visit, what was the patient's work status noted in the record?",
+    "page_hit": 0,
+    "rank": 0
+  },
+  {
+    "page": 26,
+    "bucket": "26-50",
+    "question": "On the June 23, 2023 visit, what was the patient’s work status according to the chiropractic note?",
+    "page_hit": 0,
+    "rank": 0
+  },
+  {
+    "page": 32,
+    "bucket": "26-50",
+    "question": "On the July 7, 2023 chiropractic note, what was the patient’s work status recorded as?",
+    "page_hit": 0,
+    "rank": 0
+  },
+  {
+    "page": 38,
+    "bucket": "26-50",
+    "question": "On the July 21, 2023 chiropractic daily SOAP note, what symptoms or complaints were documented as ongoing?",
+    "page_hit": 0,
+    "rank": 0
+  },
+  {
+    "page": 44,
+    "bucket": "26-50",
+    "question": "On the August 4, 2023 chiropractic daily note, what was the patient’s work status?",
+    "page_hit": 0,
+    "rank": 0
+  },
+  {
+    "page": 51,
+    "bucket": "51-75",
+    "question": "On the chiropractic SOAP note dated August 21, 2023, what was the patient's work status as recorded by the clinician?",
+    "page_hit": 0,
+    "rank": 0
+  },
+  {
+    "page": 57,
+    "bucket": "51-75",
+    "question": "On the September 4, 2023 visit, what work status did the chiropractor record for Justin W. Sapini?",
+    "page_hit": 0,
+    "rank": 0
+  },
+  {
+    "page": 63,
+    "bucket": "51-75",
+    "question": "On the September 18, 2023 visit, what work-status restriction did the chiropractic note assign to Justin W. Sapini?",
+    "page_hit": 0,
+    "rank": 0
+  },
+  {
+    "page": 69,
+    "bucket": "51-75",
+    "question": "On the October 2, 2023 chiropractic visit, what was the patient’s work status as recorded on this page?",
+    "page_hit": 0,
+    "rank": 0
+  },
+  {
+    "page": 76,
+    "bucket": "76-100",
+    "question": "On the chiropractic daily SOAP note page dated 10/18/2023, what was the patient’s work status?",
+    "page_hit": 0,
+    "rank": 0
+  },
+  {
+    "page": 82,
+    "bucket": "76-100",
+    "question": "On the November 1, 2023 chiropractic visit, what work status was recorded for Justin W. Sapini?",
+    "page_hit": 0,
+    "rank": 0
+  },
+  {
+    "page": 88,
+    "bucket": "76-100",
+    "question": "On the 11/15/2023 visit note, what work status was documented for Justin W. Sapini?",
+    "page_hit": 0,
+    "rank": 0
+  },
+  {
+    "page": 94,
+    "bucket": "76-100",
+    "question": "On the 12/14/2023 chiropractic visit note, what work status was recorded for Justin W. Sapini?",
+    "page_hit": 1,
+    "rank": 2
+  },
+  {
+    "page": 101,
+    "bucket": "101-131",
+    "question": "On the 01/25/2024 visit note, what was the patient's work status according to the chiropractor?",
+    "page_hit": 0,
+    "rank": 0
+  },
+  {
+    "page": 108,
+    "bucket": "101-131",
+    "question": "On the March 14, 2024 chiropractic SOAP note, what work status was recorded for Justin W. Sapini?",
+    "page_hit": 0,
+    "rank": 0
+  },
+  {
+    "page": 115,
+    "bucket": "101-131",
+    "question": "On the May 2, 2024 weekly SOAP note, what cervical rotation measurements were recorded, and was there discomfort at end range?",
+    "page_hit": 1,
+    "rank": 2
+  },
+  {
+    "page": 122,
+    "bucket": "101-131",
+    "question": "On the June 20, 2024 chiropractic note, what was the patient's work status regarding his usual occupation?",
+    "page_hit": 0,
+    "rank": 0
+  }
+]

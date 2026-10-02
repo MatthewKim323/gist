@@ -1,0 +1,40 @@
+{
+  "id": "citation_precision",
+  "name": "Citation precision",
+  "origin": "ALCE (Gao et al., 2023, arXiv:2305.14627): citation precision, i.e. does the cited passage support the statement",
+  "adaptation": "All verified facts re-checked deterministically against the stored source text (fresh normalization, independent of the stored verifier score); plus an LLM judge (gpt-5.4-mini) on a 50-fact systematic sample asking whether the source supports the summary, date and amount.",
+  "n": "1141 verified facts (deterministic), 50 judged",
+  "metrics": {
+    "quote_exact_precision": 0.99,
+    "quote_overlap_precision": 1,
+    "source_missing": 0,
+    "date_present_rate": 0.993,
+    "facts_with_date": 912,
+    "date_matched_via_item_date": 21,
+    "amount_present_rate": 1,
+    "facts_with_amount": 91,
+    "judged_support_precision": 0.98
+  },
+  "tables": [
+    {
+      "title": "Judged unsupported (sample)",
+      "columns": [
+        "source_ref",
+        "summary",
+        "judge reason"
+      ],
+      "rows": [
+        [
+          "doc:21122791073#p4",
+          "Dr. Tsao's available records included the independent orthopedic examination report from Dr. Richard Semble dated September 13, 2023.",
+          "The source lists an \"Independent orthopedic examination report, from Dr. Richard Semble, dated 9/13/23\" among the available records, but it does not mention Dr. Tsao. The summary adds a detail not stated in the source."
+        ]
+      ]
+    }
+  ],
+  "cost_usd": 0.0159465,
+  "secs": 37.588,
+  "matter_id": 1811206208,
+  "matter_label": "Justin Sapini (00001-Sapini)",
+  "generated_at": "2026-10-02T21:22:36.311Z"
+}
