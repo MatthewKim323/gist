@@ -231,7 +231,7 @@ export async function proposeActions(matterId: number): Promise<ProposeResult> {
     if (m && !(await leaks(m.body, g.kind, matterId))) { out = { ...m, rationale: out.rationale }; source = "model"; }
     tally[source]++;
     return {
-      ...(prev ? { id: prev.id } : {}),
+      id: prev?.id ?? crypto.randomUUID(), // always set: a bulk upsert fills a missing id with null
       matter_id: matterId, requirement_key: prev?.requirement_key ?? g.key, kind: g.kind,
       recipient_name: g.name, recipient_contact_id: g.contact_id,
       recipient_email: g.contact_id != null ? ctx.contacts.get(g.contact_id)?.email ?? null : null,
