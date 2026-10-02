@@ -42,11 +42,16 @@ function bullets(d: DraftInput): string {
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 function priorLine(d: DraftInput): string {
-  const n = d.prior_requests.length;
-  if (!n) return "";
-  const dates = d.prior_requests.length > 3 ? `${d.prior_requests.slice(0, 2).join(", ")} and most recently ${d.prior_requests[n - 1]}` : d.prior_requests.join(", ");
-  return `We first wrote about this on ${d.prior_requests[0]}${n > 1 ? ` and have followed up ${n - 1} time${n > 2 ? "s" : ""} since (${dates})` : ""}, and have not yet received what we need. `;
+  const [first, ...rest] = d.prior_requests;
+  if (!first) return "";
+  if (!rest.length) return `We first wrote about this on ${first} and have not yet received what we need. `;
+  const times = rest.length === 1 ? "once" : rest.length === 2 ? "twice" : `${rest.length} times`;
+  const when = rest.length > 3 ? `most recently on ${rest[rest.length - 1]}` : `on ${rest.join(", ").replace(/, ([^,]*)$/, " and $1")}`;
+  return `We first wrote about this on ${first} and followed up ${times}, ${when}, and have not yet received what we need. `;
 }
+
+const ORG_RE = /\b(llc|pllc|p\.?c\.?|inc|corp|center|centre|hospital|therapy|offices?|group|medical|clinic|associates|imaging|radiology|services|health)\b/i;
+const providerSalutation = (name: string) => (ORG_RE.test(name) ? `Dear ${name} records department,` : `Dear ${name},`);
 
 function signoff(d: DraftInput): string {
   return `Thank you,\n${d.attorney ?? "[Attorney name]"}`;
@@ -63,7 +68,7 @@ export function templateDraft(d: DraftInput): { subject: string; body: string; c
         channel: "email",
         subject: `${d.prior_requests.length ? "Follow-up: " : ""}Records request for ${d.client_name}`,
         body: [
-          `Dear ${d.recipient_name} records department,`,
+          providerSalutation(d.recipient_name),
           re,
           `This office represents ${d.client_name}, your patient. ${priorLine(d)}Please send the following ${dos}:`,
           bullets(d),

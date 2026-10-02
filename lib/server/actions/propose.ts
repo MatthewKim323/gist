@@ -15,7 +15,7 @@ import { KIND_FOR_OWNER, type ActionKind, type AgentAction } from "./types";
 // they owe. The attorney approves, edits or dismisses. Nothing is sent and nothing is written to Clio.
 // Hook for the pipeline / autopilot: `await proposeActions(matterId)` after buildDigest.
 
-const PROMPT_VERSION = "actions-v1";
+const PROMPT_VERSION = "actions-v2";
 const RESPOND_DAYS = 14;
 const BLOCKING = new Set(["missing", "partial", "conflicting"]);
 
@@ -97,6 +97,7 @@ function pickGroups(digest: Digest, ctx: Awaited<ReturnType<typeof loadContext>>
   for (const gi of gates) {
     const g = groupFor(gi.owed_by!, gi.owed_by_contact_id, gi.owed_by_name, gi.requirement_key);
     if (!g) continue;
+    if (/authority/i.test(gi.requirement_key)) continue; // a conversation with the client, not a document request
     g.items.push({ label: gi.label, due_date: gi.due_date, days_outstanding: gi.days_outstanding, phase: String(gi.phase), note: gi.note });
     g.covers.push(gi.requirement_key);
     g.days = Math.max(g.days, gi.days_outstanding ?? 0);
@@ -134,7 +135,7 @@ function draftInput(g: Group, digest: Digest, ctx: Awaited<ReturnType<typeof loa
     incident_date: prettyDay(digest.matter.incident_date?.value ?? null),
     items: g.items.map(({ label, due_date, days_outstanding }) => ({ label, due_date, days_outstanding })),
     service_from: prettyDay(lane?.services_from ?? lane?.first_visit ?? null),
-    service_to: prettyDay(lane?.services_to ?? lane?.last_visit ?? null),
+    service_to: (lane?.services_to ?? lane?.last_visit ?? null) !== (lane?.services_from ?? lane?.first_visit ?? null) ? prettyDay(lane?.services_to ?? lane?.last_visit ?? null) : null,
     prior_requests: prior.map((p) => prettyDay(p.date)!),
     last_heard: prettyDay(last),
     respond_by: prettyDay(addDays(today, RESPOND_DAYS))!,
@@ -151,7 +152,7 @@ function rationaleFor(g: Group, d: DraftInput, digest: Digest): string {
   return `${gate}: ${what}${more}${age}${asks}.`;
 }
 
-const DraftSchema = z.object({ subject: z.string(), body: z.string(), rationale: z.string() });
+const DraftSchema = z.object({ subject: z.string(), body: z.string() });
 
 const SYSTEM = `You draft one outgoing message for a New York personal-injury attorney to review. It is never sent automatically.
 Write as the attorney. Plain, specific, courteous; no filler. Never use em dashes or en dashes.
@@ -161,19 +162,20 @@ defense_demand (to defense counsel: good-faith letter under 22 NYCRR 202.7 and 2
 carrier_followup (to an insurer or lienholder: confirm amounts or status in writing).
 New York law only. Never mention California law.
 Never disclose case value, coverage limits, settlement position, authority, strategy, weaknesses, or anything from internal_notes to a third party. internal_notes are context only; do not quote them.
-Use only the dates and counts given. Ask for a reply by respond_by. Sign with the attorney name given.
-rationale: one line on why this matters for moving the case to the next phase.`;
+Ask the recipient only for what they themselves owe; never ask a provider, carrier or defendant for the firm's own work.
+Use only the dates and counts given. If prior_requests is empty, do not mention prior requests. Ask for a reply by respond_by. Sign with the attorney name given.
+Settlement authority is never asked for in writing; leave it out.`;
 
-async function modelDraft(d: DraftInput, notes: string[], matterId: number): Promise<{ subject: string; body: string; rationale: string } | null> {
-  if (Date.now() < modelDownUntil || !process.env.OPENAI_API_KEY) return null;
+async function modelDraft(d: DraftInput, notes: string[], matterId: number): Promise<{ subject: string; body: string } | null> {
+  if (Date.now() < modelDownUntil || !process.env.OPENAI_API_KEY || process.env.ACTIONS_TEMPLATE_ONLY === "1") return null;
   const model = env.swarmModel();
-  const payload = JSON.stringify({ ...d, internal_notes: notes });
+  const payload = JSON.stringify({ ...d, items: d.items.map((i) => i.label), internal_notes: notes });
   const key = `action:${createHash("sha256").update(`${payload}|${PROMPT_VERSION}|${model}`).digest("hex")}`;
   const hit = await db().from("extraction_cache").select("output").eq("cache_key", key).maybeSingle();
-  if (hit.data?.output) return hit.data.output as { subject: string; body: string; rationale: string };
+  if (hit.data?.output) return hit.data.output as { subject: string; body: string };
   try {
     const { data } = await structured({ model, system: SYSTEM, input: payload, schema: DraftSchema, schemaName: "draft", meta: { purpose: "agent_action", matterId }, reasoning: "low" });
-    const clean = { subject: noDash(data.subject), body: noDash(data.body), rationale: noDash(data.rationale) };
+    const clean = { subject: noDash(data.subject), body: noDash(data.body) };
     await db().from("extraction_cache").upsert({ cache_key: key, output: clean });
     return clean;
   } catch (e) {
@@ -226,7 +228,7 @@ export async function proposeActions(matterId: number): Promise<ProposeResult> {
     let out = { subject: tpl.subject, body: tpl.body, rationale: rationaleFor(g, d, digest) };
     let source: "model" | "template" = "template";
     const m = await modelDraft(d, g.items.map((i) => i.note).filter((n): n is string => !!n), matterId);
-    if (m && !(await leaks(m.body, g.kind, matterId))) { out = m; source = "model"; }
+    if (m && !(await leaks(m.body, g.kind, matterId))) { out = { ...m, rationale: out.rationale }; source = "model"; }
     tally[source]++;
     return {
       ...(prev ? { id: prev.id } : {}),
