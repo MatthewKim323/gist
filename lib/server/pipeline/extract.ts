@@ -141,6 +141,8 @@ async function callWithBackoff<T>(fn: () => Promise<T>): Promise<T> {
       return await fn();
     } catch (e) {
       const status = (e as { status?: number }).status;
+      const code = (e as { code?: string }).code;
+      if (code === "insufficient_quota" || code === "credit_balance_exhausted") throw e;
       if ((status === 429 || (status ?? 0) >= 500) && attempt < 5) {
         await new Promise((r) => setTimeout(r, 1000 * 2 ** attempt + Math.random() * 500));
         continue;
@@ -166,7 +168,7 @@ async function providerIndex(matterId: number): Promise<(name: string | null) =>
 }
 
 export interface ExtractStats {
-  shards: number; cached: number; facts_new: number; facts_kept: number;
+  shards: number; cached: number; failed: number; facts_new: number; facts_kept: number;
   verified: number; rejected: number; review: number; cost: number;
 }
 
@@ -175,14 +177,16 @@ export async function extractMatter(ctx: RunCtx, opts: { includeDocs?: boolean; 
   const shards = await buildShards(ctx.matterId, opts);
   const providerId = await providerIndex(ctx.matterId);
   const limit = pLimit(opts.concurrency ?? 10);
-  const stats: ExtractStats = { shards: shards.length, cached: 0, facts_new: 0, facts_kept: 0, verified: 0, rejected: 0, review: 0, cost: 0 };
+  const stats: ExtractStats = { shards: shards.length, cached: 0, failed: 0, facts_new: 0, facts_kept: 0, verified: 0, rejected: 0, review: 0, cost: 0 };
   const liveKeys = new Set<string>();
   const toAudit: AuditInput[] = [];
+  let lastError = "";
 
   await Promise.all(shards.map((shard) => limit(async () => {
     const key = cacheKey(shard.content, model);
     liveKeys.add(key);
-    await ctx.task("extract", shard.label, async (t) => {
+    // One failed shard must not sink the run: its task tile shows failed, the rest carry on.
+    try { await ctx.task("extract", shard.label, async (t) => {
       // Facts for this exact shard content already exist: nothing to do, and they keep their audit status.
       const existing = await db().from("facts").select("id", { count: "exact", head: true })
         .eq("matter_id", ctx.matterId).eq("extraction_key", key).is("superseded_at", null);
@@ -240,8 +244,12 @@ export async function extractMatter(ctx: RunCtx, opts: { includeDocs?: boolean; 
       stats.facts_new += rows.length;
       t.facts(rows.length);
       await t.event(`${rows.length} facts, ${rej} rejected`);
-    });
+    }); } catch (e) {
+      stats.failed++;
+      lastError = String((e as Error).message ?? e);
+    }
   })));
+  if (stats.failed === shards.length && shards.length) throw new Error(`all ${shards.length} extract shards failed: ${lastError.slice(0, 200)}`);
 
   // Anything not produced by a current shard (deleted items, resharding) is stale.
   const active = await pageAll<{ id: string; extraction_key: string }>(
