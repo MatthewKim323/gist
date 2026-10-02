@@ -4,17 +4,15 @@
 
 | time | screen | say |
 |---|---|---|
-| 0:00 | Landing, click Sign in, pick the firm profile | "A doctor's office calls: is this case even alive? Today that means someone reads three years of file. This is gist OS." |
-| 0:08 | Seam wipe into the live timeline, the mascot working each stage | "It reads the whole matter live from Clio, read only. Sixty-nine extractors read every note, email and all 360 scanned pages. Every fact is checked against its source, then audited by Jev." |
-| 0:22 | Dashboard, Phase & gates tab | "What a lawyer actually needs: where the case is, and what it takes to reach the next phase. Two of twenty-six in hand, and who owes each one." |
-| 0:32 | Click the police report row (Conflicting), then the cite chip, which opens the PDF page | "The notes say there's no police report. The defense's own discovery response annexed it on page five. Every number and date opens its source." |
-| 0:42 | Money tab | "$375,000 case, $100,000 behind it. Underwater, cited to the fields." |
-| 0:48 | Red flags tab | "Five accounts of the accident. A prior ankle fracture the client denied under oath." |
-| 0:54 | Agent drafts tab, open the SportsCare draft | "For every blocker the agent drafts the next move. SportsCare: 858 days, four unanswered requests. The lawyer approves; gist never sends and never writes to Clio." |
-| 1:02 | Share with provider, toggles, live preview, Publish, phone opens the QR, toast | "The other half: each doctor gets a deposition-safe slice. Status, what we need from them. No strategy, no value. We see when they open it." |
-| 1:14 | Provider page, Respond, upload, then firm inbox and the gate badge flips | "They answer right there. The checklist asks, the doctor responds, the case moves." |
-| 1:22 | /cases: radar, autopilot, "Ask gist OS" one question | "Autopilot watches Clio, the radar ranks every case, and you can just ask." |
-| 1:28 | Cost badge | "About a dollar to digest a case. Zero to reopen." |
+| 0:00 | Landing, Sign in, pick the firm profile | "Clio is good software, but getting up to speed still means walking tab by tab. A doctor's office calls: is this case even alive? This is gist OS." |
+| 0:07 | Seam wipe, live timeline, mascot working each stage | "It reads the whole matter live from Clio, read only. Sixty-nine agents read every note, email and all 360 scanned pages. Every fact is checked against its source and audited by Jev." |
+| 0:20 | Overview: one screen, no tabs | "One screen. Where the case is, what it's worth against the coverage, what's blocking trial, who owes what. Ninety seconds, no tab walking." |
+| 0:30 | Next moves: card 1 "Chase SportsCare's records", click Open draft, Approve and copy | "And it tells you what to do next. SportsCare: 858 days, four unanswered requests. The agent drafted the letter; I approve it. gist never sends and never writes to Clio." |
+| 0:42 | Card 2 "Share case status with McCulloch", Share opens composer preselected, Publish, phone opens QR, toast | "Goal two: the doctors. Each one gets a deposition-safe slice: is the case alive, what we need from them. No strategy, no value. We see when they open it." |
+| 0:55 | Provider page: Respond, upload; firm inbox, gate badge flips | "They answer right there. The checklist asks, the doctor responds, the case moves." |
+| 1:05 | Police report row "Conflicting", cite chip opens the PDF page | "Every fact cites its source. The notes say no police report; the defense annexed it on page five." |
+| 1:13 | Ask gist OS: "yo what do I do next?" returns action cards | "Or just ask." |
+| 1:20 | /cases: radar + autopilot, cost badge | "Autopilot watches Clio, the radar ranks every case. About eighty cents to digest a case the first time, zero to reopen." |
 
 ## Form answers
 
