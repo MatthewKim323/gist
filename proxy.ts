@@ -25,6 +25,8 @@ const FIRM_APIS = [
   /^\/api\/cron(\/|$)/,
   // Agent drafts (propose, list, approve/dismiss) are firm-only.
   /^\/api\/actions(\/|$)/,
+  // Ask gist reads the whole case file and the user's memory.
+  /^\/api\/assistant(\/|$)/,
 ];
 
 export async function proxy(req: NextRequest) {
