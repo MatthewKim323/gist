@@ -982,3 +982,38 @@
     align-items: flex-end;
   }
 }
+
+/* skip the presentation pacing (Esc does the same) */
+.gp-skip {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  z-index: 61;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px 8px 16px;
+  border: 1px solid var(--gp-hair);
+  border-radius: 999px;
+  background: rgba(10, 15, 27, 0.72);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: var(--gp-ink-2);
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+  transform: translateX(-50%);
+  transition: color 0.2s, border-color 0.2s;
+}
+.gp-skip:hover {
+  border-color: rgba(228, 231, 241, 0.3);
+  color: var(--gp-ink);
+}
+.gp-skip kbd {
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: rgba(228, 231, 241, 0.08);
+  color: var(--gp-ink-3);
+  font: inherit;
+  font-size: 11px;
+}

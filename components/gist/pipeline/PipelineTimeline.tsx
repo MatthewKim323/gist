@@ -63,6 +63,24 @@ export default function PipelineTimeline({
   const runOver = run?.status === "done" || run?.status === "failed";
   const allCached = counters.tasks > 0 && counters.cachedTasks === counters.tasks;
 
+  // ---- presentation pacing: a floor on how long each stage holds the screen, so the pilot can perch,
+  // scan and react on every stage even when a cached run lands all at once. It only paces the REVEAL of
+  // real rows (tiles, counters, costs are always what agent_tasks says); on a cold run slower than the floor
+  // it adds nothing. ?pace=<ms> or NEXT_PUBLIC_TIMELINE_MIN_STAGE_MS tunes it, 0 turns it off; Esc / Skip
+  // jumps to the end.
+  const [paceMs, setPaceMs] = useState(() => {
+    const env = Number(process.env.NEXT_PUBLIC_TIMELINE_MIN_STAGE_MS);
+    return Number.isFinite(env) && process.env.NEXT_PUBLIC_TIMELINE_MIN_STAGE_MS ? env : 2800;
+  });
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search).get("pace");
+    if (q !== null && Number.isFinite(Number(q))) setPaceMs(Math.max(0, Number(q)));
+  }, []);
+  const [skipped, setSkipped] = useState(false);
+  const pace = skipped ? 0 : paceMs;
+  const lastRevealAt = useRef(0);
+  const [dwellRole, setDwellRole] = useState<AgentRole | null>(null);
+
   // ---- staggered reveal: a stage's node appears once it has a row, one at a time ----
   const [revealed, setRevealed] = useState<AgentRole[]>([]);
   const mountedAt = useRef(0);
@@ -76,14 +94,33 @@ export default function PipelineTimeline({
     if (!nextRole) return;
     const sinceMount = performance.now() - mountedAt.current;
     // faster cadence when a whole cached run lands at once, so the demo moment stays snappy
-    const gap = revealed.length === 0 ? Math.max(0, FIRST_REVEAL_MS - sinceMount) : allCached ? 180 : REVEAL_GAP_MS;
-    const t = setTimeout(() => setRevealed((r) => (r.includes(nextRole) ? r : [...r, nextRole])), gap);
+    const base = revealed.length === 0 ? Math.max(0, FIRST_REVEAL_MS - sinceMount) : allCached ? 180 : REVEAL_GAP_MS;
+    const floor = revealed.length === 0 ? 0 : pace - (performance.now() - lastRevealAt.current);
+    const t = setTimeout(() => {
+      lastRevealAt.current = performance.now();
+      setRevealed((r) => (r.includes(nextRole) ? r : [...r, nextRole]));
+      setDwellRole(pace > 0 ? nextRole : null);
+    }, Math.max(base, floor));
     return () => clearTimeout(t);
-  }, [nextRole, revealed.length, allCached]);
+  }, [nextRole, revealed.length, allCached, pace]);
+  // the newest stage holds the screen for its dwell; the pilot reads it during that time
+  useEffect(() => {
+    if (!dwellRole) return;
+    const left = pace - (performance.now() - lastRevealAt.current);
+    if (left <= 0) return setDwellRole(null);
+    const t = setTimeout(() => setDwellRole(null), left);
+    return () => clearTimeout(t);
+  }, [dwellRole, pace]);
   const allRevealed = stages.length > 0 && pendingRoles.length === 0;
+  useEffect(() => {
+    if (runOver && allRevealed) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setSkipped(true);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [runOver, allRevealed]);
 
   // ---- completion beat ----
-  const digested = run?.status === "done" && allRevealed && state.loaded;
+  const digested = run?.status === "done" && allRevealed && state.loaded && !dwellRole;
   const failed = run?.status === "failed";
   const [finalShown, setFinalShown] = useState(false);
   const completeRef = useRef(onComplete);
@@ -99,12 +136,12 @@ export default function PipelineTimeline({
       if (firedRef.current === runId) return;
       firedRef.current = runId;
       completeRef.current();
-    }, REVEAL_GAP_MS + doneBeatMs);
+    }, REVEAL_GAP_MS + (skipped ? 700 : doneBeatMs));
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
     };
-  }, [digested, runId, doneBeatMs]);
+  }, [digested, runId, doneBeatMs, skipped]);
   useEffect(() => {
     if (failed && run && allRevealed && firedRef.current !== runId) {
       firedRef.current = runId;
@@ -238,6 +275,11 @@ export default function PipelineTimeline({
               : "Every agent, live. We read every page, we don't sample."}
           </p>
         </header>
+        {pace > 0 && !digested && !failed && stages.length > 0 ? (
+          <button type="button" className="gp-skip" onClick={() => setSkipped(true)}>
+            Skip to the case <kbd>Esc</kbd>
+          </button>
+        ) : null}
         <div className="gp-counters-wrap">
           <Counters c={counters} cached={allCached} />
         </div>
@@ -255,6 +297,7 @@ export default function PipelineTimeline({
                 key={s.def.role}
                 stage={s}
                 on={revealed.includes(s.def.role)}
+                dwell={dwellRole === s.def.role}
                 now={now}
                 side={i % 2 === 0 ? "right" : "left"}
               />
@@ -317,7 +360,7 @@ function Counters({ c, cached }: { c: RunCounters; cached: boolean }) {
 
 const STATE_LABEL: Record<StageView["state"], string> = { working: "working", done: "done", cached: "cached", failed: "failed", skipped: "skipped" };
 
-const StageNode = memo(function StageNode({ stage, on, now, side }: { stage: StageView; on: boolean; now: number; side: "left" | "right" }) {
+const StageNode = memo(function StageNode({ stage, on, dwell, now, side }: { stage: StageView; on: boolean; dwell?: boolean; now: number; side: "left" | "right" }) {
   const { def, counts, tasks } = stage;
   const dense = tasks.length > DENSE_AT;
   const finished = counts.done + counts.cached + counts.failed;
@@ -343,7 +386,7 @@ const StageNode = memo(function StageNode({ stage, on, now, side }: { stage: Sta
 
   return (
     <VerticalTimelineElement
-      className={`gp-node gp-node--${def.role} gp-node--${stage.state} ${on ? "is-on" : "is-off"}`}
+      className={`gp-node gp-node--${def.role} gp-node--${stage.state} ${on ? "is-on" : "is-off"}${dwell ? " is-dwell" : ""}`}
       visible={on}
       position={side}
       date={

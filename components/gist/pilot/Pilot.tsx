@@ -89,7 +89,7 @@ function readTarget(root: HTMLElement): Target | null {
     ? cls.includes("gp-node--failed")
       ? "failed"
       : "final"
-    : cls.includes("gp-node--working")
+    : cls.includes("gp-node--working") || cls.includes("is-dwell")
       ? "scanning"
       : cls.includes("gp-node--cached")
         ? "cached"

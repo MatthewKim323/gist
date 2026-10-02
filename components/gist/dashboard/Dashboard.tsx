@@ -338,7 +338,7 @@ function Sidebar({ d, fixture, tab, go }: { d: Digest; fixture: boolean; tab: Ta
           window.location.assign("/");
         }}
       >
-        gist.
+        gistOS.
       </a>
       <CaseSwitcher d={d} photo={photo && photoOk ? photo : null} onPhotoError={() => setPhotoOk(false)} />
       <nav className="gd-side__nav" aria-label="Case sections">
