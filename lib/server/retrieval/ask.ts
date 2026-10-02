@@ -56,6 +56,25 @@ const AskOut = z.object({
   cites: z.array(z.string()),
 });
 
+const STOP = new Set("the a an and or of to in on for with was were is are be he she it his her they at by from as that this what who did does".split(" "));
+const terms = (s: string) => new Set((s.toLowerCase().match(/[a-z0-9]{3,}/g) ?? []).filter((w) => !STOP.has(w)));
+
+/** The ~280-char window of a passage that best overlaps the text (skips letterhead boilerplate). */
+export function bestSnippet(body: string, text: string, len = 280): string {
+  const want = terms(text);
+  const lines = body.split(/\n+/).map((l) => l.trim()).filter(Boolean);
+  let best = 0, bestScore = -1;
+  for (let i = 0; i < lines.length; i++) {
+    let win = "", score = 0;
+    for (let j = i; j < lines.length && win.length < len; j++) {
+      win += (win ? " " : "") + lines[j];
+      for (const w of terms(lines[j])) if (want.has(w)) score++;
+    }
+    if (score > bestScore) { bestScore = score; best = i; }
+  }
+  return lines.slice(best).join(" ").slice(0, len);
+}
+
 export interface AskResult {
   answer_markdown: string;
   cites: Citation[];
@@ -79,7 +98,7 @@ export async function ask(matterId: number, q: string, opts: { audiences?: strin
     return `[${f.source_ref}] ${f.event_date ?? "undated"} ${f.kind}: ${f.summary}`;
   });
   const hitBlocks = hits.map((h) => {
-    if (!quoteByRef.has(h.cite)) quoteByRef.set(h.cite, h.body.slice(0, 280));
+    if (!quoteByRef.has(h.cite)) quoteByRef.set(h.cite, bestSnippet(h.body, q));
     return `[${h.cite}] ${h.header}\n${h.body.slice(0, 2500)}`;
   });
   const allowed = new Set([...usable.map((f) => f.source_ref), ...hits.map((h) => h.cite)]);
