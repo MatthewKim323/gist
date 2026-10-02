@@ -69,7 +69,8 @@ export async function extractMemories(profileId: string, matterId: number, caseL
       "You maintain a small memory about a lawyer or case manager who uses a case assistant. From the latest exchange, extract 0 to 2 DURABLE notes " +
       "about the USER (not the case facts): what they are focused on or prioritizing, how they like answers, people or providers they keep tracking, " +
       "their role or habits. Write each as a short third-person line, e.g. 'Prioritizes getting SportsCare records before the demand' or " +
-      "'Prefers bullet answers with deadlines first'. Skip anything already known, anything generic ('asked a question'), and one-off curiosity. " +
+      "'Prefers bullet answers with deadlines first'. Skip anything already known, anything generic ('asked a question'), one-off curiosity, and instructions about how to answer a single question " +
+      "(e.g. 'wants the assistant to search X'). A good memory would still be useful on a different day or a different case. " +
       "Most turns yield nothing: return an empty list unless it would clearly help next time. importance 1-5. case_specific true if it only matters for this case.",
     input: `Case: ${caseLabel}\nAlready known:\n${known.map((m) => `- ${m.text}`).join("\n") || "(nothing)"}\n\nUser: ${userMsg.slice(0, 1500)}\n\nAssistant answer (abridged): ${answer.slice(0, 1200)}`,
     schema: Extract,
