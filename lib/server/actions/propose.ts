@@ -15,7 +15,7 @@ import { KIND_FOR_OWNER, type ActionKind, type AgentAction } from "./types";
 // they owe. The attorney approves, edits or dismisses. Nothing is sent and nothing is written to Clio.
 // Hook for the pipeline / autopilot: `await proposeActions(matterId)` after buildDigest.
 
-const PROMPT_VERSION = "actions-v2";
+const PROMPT_VERSION = "actions-v3";
 const RESPOND_DAYS = 14;
 const BLOCKING = new Set(["missing", "partial", "conflicting"]);
 
@@ -163,7 +163,7 @@ carrier_followup (to an insurer or lienholder: confirm amounts or status in writ
 New York law only. Never mention California law.
 Never disclose case value, coverage limits, settlement position, authority, strategy, weaknesses, or anything from internal_notes to a third party. internal_notes are context only; do not quote them.
 Ask the recipient only for what they themselves owe; never ask a provider, carrier or defendant for the firm's own work.
-Use only the dates and counts given. If prior_requests is empty, do not mention prior requests. Ask for a reply by respond_by. Sign with the attorney name given.
+Use only the dates and counts given. Never invent identifiers (index number, docket, DOB, claim number); matter_ref is our internal file number, not a court index number. Never say a field is missing or not provided. If prior_requests is empty, do not mention prior requests. Ask for a reply by respond_by. Sign with the attorney name given.
 Settlement authority is never asked for in writing; leave it out.`;
 
 async function modelDraft(d: DraftInput, notes: string[], matterId: number): Promise<{ subject: string; body: string } | null> {

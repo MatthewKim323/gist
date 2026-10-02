@@ -8,6 +8,7 @@ import { CiteChip, useCites } from "./cite";
 import { OwnerChip, StatusIcon } from "./bits";
 import { fmtDate, fmtShort } from "./format";
 import GateBadge from "@/components/gist/submissions/GateBadge";
+import DraftChip from "@/components/gist/actions/DraftChip";
 
 const ORDER: Record<GateStatus, number> = { conflicting: 0, missing: 1, partial: 2, have: 3 };
 const STATUS_LABEL: Record<GateStatus, string> = { have: "Have", partial: "Partial", missing: "Missing", conflicting: "Conflicting" };
@@ -39,6 +40,7 @@ function GateRow({ g, i }: { g: GateItem; i: number }) {
           <span className={`gd-gate__status gd-gate__status--${g.status}`}>{STATUS_LABEL[g.status]}</span>
         </div>
         {g.note ? <div className="gd-gate__note">{g.note}</div> : null}
+        {g.status !== "have" ? <DraftChip matterId={matterId} requirementKey={g.requirement_key} fixture={fixture} /> : null}
         {g.owed_by === "provider" ? <GateBadge matterId={matterId} requirementKey={g.requirement_key} fixture={fixture} /> : null}
         {g.owed_by === "provider" && g.status !== "have" && g.owed_by_name ? (
           <div className="gd-gate__hint">
