@@ -693,6 +693,8 @@ export class HomeContact {
     // Guard (not in source): the shell markup may be absent; the source assumes both templates exist.
     if (!this.dom.viewProjectsBtn || !this.dom.contactContent) return;
     this.viewProjectsBtn = new SvgButton(f('.js-btn', this.dom.viewProjectsBtn));
+    // any further buttons in the hero row (Sign in) get the same fill hover
+    p('.js-btn', this.dom.viewProjectsBtn).slice(1).forEach((e) => new SvgButton(e));
     p('.js-btn', this.dom.contactContent).forEach((e) => {
       this.contactBtns.push(new SvgButton(e));
     });

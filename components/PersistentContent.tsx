@@ -81,7 +81,7 @@ export function PersistentContent() {
         ))}
       </div>
       
-      <div className="js-view-projects-btn" style={{ visibility: "hidden" }}>
+      <div className="js-view-projects-btn" style={{ visibility: "hidden", display: "flex", gap: "1.6rem", justifyContent: "center" }}>
         <a href="/matter" title="Open the case" className="btn btn--regular btn--fill btn--light js-manager-ignore js-btn" data-btn="fill" data-cursor="hide">
           <span className="btn__inner js-btn-inner">
             <span className="btn__content js-btn-content">
@@ -89,6 +89,19 @@ export function PersistentContent() {
                 <span className="btn__text">
                   Open the case
                 </span>
+                <svg className="btn__icon d-inline-block js-btn-icon">
+                  <use href="#arrow"></use>
+                </svg>
+              </span>
+            </span>
+          </span>
+        </a>
+        {/* full page load into the role picker (firm or provider) */}
+        <a href="/signin" title="Sign in" data-router-disabled="" className="btn btn--regular btn--fill btn--light js-manager-ignore js-btn" data-btn="fill" data-cursor="hide">
+          <span className="btn__inner js-btn-inner">
+            <span className="btn__content js-btn-content">
+              <span className="d-flex flex-row items-end">
+                <span className="btn__text">Sign in</span>
                 <svg className="btn__icon d-inline-block js-btn-icon">
                   <use href="#arrow"></use>
                 </svg>
