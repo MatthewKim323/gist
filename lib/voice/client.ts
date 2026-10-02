@@ -36,6 +36,9 @@ class P extends AudioWorkletProcessor{constructor(){super();this.r=new R(sampleR
 registerProcessor('gist-voice-pcm',P);
 `;
 
+/** Captions never show long dashes. */
+const clean = (t: string) => t.replace(/\s*[\u2014\u2013]\s*/g, ", ").trim();
+
 export class VoiceSession {
   private ws: WebSocket | null = null;
   private ctx: AudioContext | null = null;
@@ -182,7 +185,7 @@ export class VoiceSession {
       case "ConversationText": {
         const role = msg.role === "user" ? "user" : "assistant";
         const text = String(msg.content ?? "").trim();
-        if (text) this.cb.onCaption({ id: ++this.captionId, role, text });
+        if (text) this.cb.onCaption({ id: ++this.captionId, role, text: clean(text) });
         if (role === "user") this.set("thinking");
         break;
       }
@@ -279,7 +282,7 @@ export class VoiceSession {
         break;
       case "conversation.item.input_audio_transcription.completed": {
         const text = String(m.transcript ?? "").trim();
-        if (text) this.cb.onCaption({ id: ++this.captionId, role: "user", text });
+        if (text) this.cb.onCaption({ id: ++this.captionId, role: "user", text: clean(text) });
         break;
       }
       case "response.output_audio_transcript.delta":
@@ -289,7 +292,7 @@ export class VoiceSession {
       case "response.output_audio_transcript.done": {
         const text = String(m.transcript ?? this.partial).trim();
         this.partial = "";
-        if (text) this.cb.onCaption({ id: ++this.captionId, role: "assistant", text });
+        if (text) this.cb.onCaption({ id: ++this.captionId, role: "assistant", text: clean(text) });
         break;
       }
       case "output_audio_buffer.started":
