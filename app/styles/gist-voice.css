@@ -120,3 +120,4 @@
 @media (prefers-reduced-motion: reduce) {
   .gv-panel, .gv-orb { animation: none !important; transition: none; }
 }
+.gv-brief { display: flex; justify-content: flex-end; margin-bottom: 8px; }

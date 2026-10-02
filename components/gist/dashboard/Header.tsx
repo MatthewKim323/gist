@@ -78,11 +78,15 @@ export default function Header({ d, fixture }: { d: Digest; fixture: boolean }) 
         </div>
       </div>
       <div className="gd-header__side">
+        {fixture ? null : (
+          <div className="gv-brief">
+            <VoiceButton mode="firm" matterId={m.id} label="Brief me" onOpenSource={open} variant="fill" size="sm" />
+          </div>
+        )}
         <div className="gd-header__btns">
         <Button onClick={() => share()} arrow className="gd-sharecta">
           {providerAsks ? `Share with provider · ${providerAsks} asks` : "Share with provider"}
         </Button>
-        {fixture ? null : <VoiceButton mode="firm" matterId={m.id} label="Brief me" onOpenSource={open} />}
         <Button href={m.clio_url} external arrow variant="border">
           Open in Clio
         </Button>

@@ -38,7 +38,7 @@ export async function proxy(req: NextRequest) {
   // Voice: providers may mint a token and fetch provider-mode context only.
   if (/^\/api\/voice\/context(\/|$)/.test(pathname) && req.nextUrl.searchParams.get("mode") !== "provider")
     return NextResponse.json({ error: "Forbidden: provider accounts cannot access firm data" }, { status: 403 });
-  if (/^\/api\/voice(\/|$)/.test(pathname) && !/^\/api\/voice\/(token|context)$/.test(pathname))
+  if (/^\/api\/voice(\/|$)/.test(pathname) && !/^\/api\/voice\/(token|context|usage)$/.test(pathname))
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   if (FIRM_APIS.some((re) => re.test(pathname)))
     return NextResponse.json({ error: "Forbidden: provider accounts cannot access firm data" }, { status: 403 });

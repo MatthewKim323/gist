@@ -48,7 +48,7 @@ export default function VoiceButton({ mode, matterId, token, label, onOpenSource
   // Probe once so an unconfigured server shows a calm disabled state instead of a failing button.
   useEffect(() => {
     let live = true;
-    fetch("/api/voice/token", { method: "POST" })
+    fetch("/api/voice/token?probe=1", { method: "POST" })
       .then((r) => live && setConfigured(r.status !== 503))
       .catch(() => live && setConfigured(false));
     return () => {

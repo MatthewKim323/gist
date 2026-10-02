@@ -1,7 +1,8 @@
-// Browser side of the voice agent, ported from hyper's voice stack. The browser talks to Deepgram's
-// Voice Agent socket directly with a 60s token minted by /api/voice/token. Deepgram runs listen
-// (flux), think (its managed gpt-4o-mini, billed by Deepgram) and speak (aura-2). Function calls are
-// answered here from the code-built context, so no model ever computes a number.
+// Browser side of the voice agent, ported from hyper's voice stack. The browser talks to the voice
+// provider directly with a short-lived credential minted by /api/voice/token:
+//   openai (default): Realtime over WebRTC, mic track up, agent audio down, events on "oai-events".
+//   deepgram: the Voice Agent socket (flux listen, Deepgram-managed gpt-4o-mini think, aura-2 speak).
+// Function calls are answered here from the code-built context, so no model ever computes a number.
 "use client";
 
 import type { Citation } from "@/lib/types";
@@ -66,21 +67,25 @@ export class VoiceSession {
       // Mic permission inside the click gesture, alongside the AudioContext.
       this.ctx = new AudioContext();
       const [tokRes, ctxRes, mic] = await Promise.all([
-        fetch("/api/voice/token", { method: "POST" }),
+        fetch(`/api/voice/token?${this.query}`, { method: "POST" }),
         fetch(`/api/voice/context?${this.query}`),
         navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } }),
       ]);
       this.mic = mic;
       if (tokRes.status === 503) return this.fail("Voice is not configured on this server.", "off");
-      if (!tokRes.ok) return this.fail("Voice service is unavailable right now.");
+      if (!tokRes.ok) {
+        const e = (await tokRes.json().catch(() => ({}))) as { error?: string };
+        return this.fail(tokRes.status === 502 ? "Voice service is unavailable right now." : (e.error ?? "Voice could not start."));
+      }
       if (!ctxRes.ok) {
         const e = (await ctxRes.json().catch(() => ({}))) as { error?: string };
         return this.fail(e.error ?? "Case context is unavailable.");
       }
-      const { token } = (await tokRes.json()) as { token: string };
+      const tok = (await tokRes.json()) as { provider: "openai" | "deepgram"; token: string; model?: string; matterId?: number };
       const context = (await ctxRes.json()) as VoiceContext;
       if (this.closed) return this.stop();
-      this.open(token, context);
+      if (tok.provider === "openai") await this.openRealtime(tok.token, context, tok.model ?? "realtime", tok.matterId);
+      else this.open(tok.token, context);
     } catch (e) {
       const msg = e instanceof DOMException && e.name === "NotAllowedError" ? "Microphone permission was denied." : "Voice could not start.";
       this.fail(msg);
@@ -186,20 +191,7 @@ export class VoiceSession {
         for (const f of fns) {
           if (f.client_side === false) continue;
           this.set("researching", f.name);
-          let content: unknown;
-          if (f.name === "open_source") {
-            let key = "";
-            try {
-              key = String((JSON.parse(f.arguments || "{}") as { source?: string }).source ?? "");
-            } catch {}
-            const cite = context.sources?.[key];
-            const opened = !!cite && !!this.cb.onOpenSource?.(cite);
-            content = opened ? { opened: true } : { opened: false, reason: "That source is not available to open here." };
-          } else if (f.name in context.answers) {
-            content = context.answers[f.name];
-          } else {
-            content = { error: "Unknown function. Only the listed functions exist." };
-          }
+          const content = this.answer(f.name, f.arguments ?? "{}", context);
           this.ws?.send(JSON.stringify({ type: "FunctionCallResponse", id: f.id, name: f.name, content: JSON.stringify(content) }));
         }
         break;
@@ -208,6 +200,157 @@ export class VoiceSession {
         this.fail(typeof msg.description === "string" ? `Voice error: ${msg.description}` : "The voice agent reported an error.");
         break;
     }
+  }
+
+
+  // ---------------- OpenAI Realtime over WebRTC (default provider) ----------------
+  private pc: RTCPeerConnection | null = null;
+  private dc: RTCDataChannel | null = null;
+  private audioEl: HTMLAudioElement | null = null;
+  private usage = { input_tokens: 0, output_tokens: 0, cached_tokens: 0 };
+  private usageMeta: { model: string; matterId?: number; started: number } | null = null;
+  private partial = "";
+
+  private async openRealtime(secret: string, context: VoiceContext, model: string, matterId?: number) {
+    const pc = new RTCPeerConnection();
+    this.pc = pc;
+    this.usageMeta = { model, matterId, started: Date.now() };
+    const el = document.createElement("audio");
+    el.autoplay = true;
+    this.audioEl = el;
+    pc.ontrack = (e) => {
+      const stream = e.streams[0];
+      el.srcObject = stream;
+      // Tap the remote stream for the orb glow (not routed to speakers; the audio element plays it).
+      const ctx = this.ctx;
+      if (ctx && stream) {
+        void ctx.resume();
+        this.analyser = ctx.createAnalyser();
+        this.analyser.fftSize = 256;
+        ctx.createMediaStreamSource(stream).connect(this.analyser);
+      }
+    };
+    for (const t of this.mic!.getAudioTracks()) pc.addTrack(t, this.mic!);
+    const dc = pc.createDataChannel("oai-events");
+    this.dc = dc;
+    dc.onopen = () => {
+      this.set("listening");
+      // Open with the greeting so the call feels answered.
+      this.rt({
+        type: "response.create",
+        response: { instructions: `Greet the caller by saying exactly this, then stop and wait: "${context.greeting}"` },
+      });
+    };
+    dc.onmessage = (ev) => {
+      let m: Record<string, unknown>;
+      try {
+        m = JSON.parse(String(ev.data));
+      } catch {
+        return;
+      }
+      this.handleRealtime(m, context);
+    };
+    pc.onconnectionstatechange = () => {
+      if (pc.connectionState === "failed") this.fail("Voice connection dropped.");
+    };
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    const res = await fetch("https://api.openai.com/v1/realtime/calls", {
+      method: "POST",
+      body: offer.sdp,
+      headers: { Authorization: `Bearer ${secret}`, "Content-Type": "application/sdp" },
+    });
+    if (!res.ok) return this.fail("Voice service is unavailable right now.");
+    if (this.closed) return;
+    await pc.setRemoteDescription({ type: "answer", sdp: await res.text() });
+  }
+
+  private rt(event: unknown) {
+    if (this.dc?.readyState === "open") this.dc.send(JSON.stringify(event));
+  }
+
+  private handleRealtime(m: Record<string, unknown>, context: VoiceContext) {
+    switch (m.type) {
+      case "input_audio_buffer.speech_started":
+        this.set("listening");
+        break;
+      case "input_audio_buffer.speech_stopped":
+        this.set("thinking");
+        break;
+      case "conversation.item.input_audio_transcription.completed": {
+        const text = String(m.transcript ?? "").trim();
+        if (text) this.cb.onCaption({ id: ++this.captionId, role: "user", text });
+        break;
+      }
+      case "response.output_audio_transcript.delta":
+        this.partial += String(m.delta ?? "");
+        if (this.state !== "speaking") this.set("speaking");
+        break;
+      case "response.output_audio_transcript.done": {
+        const text = String(m.transcript ?? this.partial).trim();
+        this.partial = "";
+        if (text) this.cb.onCaption({ id: ++this.captionId, role: "assistant", text });
+        break;
+      }
+      case "output_audio_buffer.started":
+        this.set("speaking");
+        break;
+      case "output_audio_buffer.stopped":
+        if (this.state === "speaking") this.set("listening");
+        break;
+      case "response.function_call_arguments.done": {
+        const name = String(m.name ?? "");
+        this.set("researching", name);
+        const content = this.answer(name, String(m.arguments ?? "{}"), context);
+        this.rt({ type: "conversation.item.create", item: { type: "function_call_output", call_id: m.call_id, output: JSON.stringify(content) } });
+        this.rt({ type: "response.create" });
+        break;
+      }
+      case "response.done": {
+        const u = ((m.response as Record<string, unknown> | undefined)?.usage ?? null) as {
+          input_tokens?: number;
+          output_tokens?: number;
+          input_token_details?: { cached_tokens?: number };
+        } | null;
+        if (u) {
+          this.usage.input_tokens += u.input_tokens ?? 0;
+          this.usage.output_tokens += u.output_tokens ?? 0;
+          this.usage.cached_tokens += u.input_token_details?.cached_tokens ?? 0;
+        }
+        break;
+      }
+      case "error": {
+        const e = m.error as { message?: string } | undefined;
+        console.warn("[voice] realtime error", e?.message);
+        break;
+      }
+    }
+  }
+
+  /** Answer a function call from the code-built context. Never calls a model. */
+  private answer(name: string, args: string, context: VoiceContext): unknown {
+    if (name === "open_source") {
+      let key = "";
+      try {
+        key = String((JSON.parse(args || "{}") as { source?: string }).source ?? "");
+      } catch {}
+      const cite = context.sources?.[key];
+      const opened = !!cite && !!this.cb.onOpenSource?.(cite);
+      return opened ? { opened: true } : { opened: false, reason: "That source is not available to open here." };
+    }
+    if (name in context.answers) return context.answers[name];
+    return { error: "Unknown function. Only the listed functions exist." };
+  }
+
+  private flushUsage() {
+    const meta = this.usageMeta;
+    this.usageMeta = null;
+    if (!meta || (!this.usage.input_tokens && !this.usage.output_tokens)) return;
+    const body = JSON.stringify({ ...this.usage, model: meta.model, matterId: meta.matterId, duration_ms: Date.now() - meta.started });
+    try {
+      if (!navigator.sendBeacon?.("/api/voice/usage", new Blob([body], { type: "application/json" })))
+        void fetch("/api/voice/usage", { method: "POST", body, keepalive: true });
+    } catch {}
   }
 
   private play(buf: ArrayBuffer) {
@@ -259,6 +402,16 @@ export class VoiceSession {
 
   private teardown() {
     this.closed = true;
+    this.flushUsage();
+    try {
+      this.dc?.close();
+      this.pc?.getSenders().forEach((x) => x.track?.stop());
+      this.pc?.close();
+    } catch {}
+    this.dc = null;
+    this.pc = null;
+    if (this.audioEl) this.audioEl.srcObject = null;
+    this.audioEl = null;
     if (this.keepalive) clearInterval(this.keepalive);
     this.keepalive = null;
     this.flush();
