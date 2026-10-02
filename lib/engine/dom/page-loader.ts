@@ -71,7 +71,8 @@ export class PageLoader {
       .timeline()
       .fromTo(mark, { scale: 1.8 }, { scale: 1, duration: 1.68, ease: EASE_SETTLE }, 0.78)
       .add(
-        letters.map((l, i) =>
+        // "gist" flies in letter by letter; the period gets its own beat below
+        letters.slice(0, LETTER_OFFSETS.length).map((l, i) =>
           gsap.to(l, {
             opacity: 1,
             x: 0,
@@ -84,6 +85,13 @@ export class PageLoader {
           }),
         ),
         0,
+      )
+      // the period drops in last and lands with a small bounce, like a full stop being typed
+      .fromTo(
+        letters.slice(LETTER_OFFSETS.length),
+        { opacity: 0, x: 0, y: -90, rotateX: 0, skewX: 0, skewY: 0, scale: 0.4 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.7, ease: "back.out(2.6)" },
+        0.58 + LETTER_OFFSETS[LETTER_OFFSETS.length - 1] + 0.42,
       )
       .fromTo(sup, { opacity: 0, x: 28, scale: 0.74 }, { opacity: 1, x: 0, scale: 1, duration: 0.56, ease: EASE_OUT }, 1.3)
       .fromTo(line, { scale: 1.8 }, { scale: 1, duration: 0.9, ease: EASE_SETTLE }, 1.2)
