@@ -13,8 +13,14 @@ service key) and enforced on the server by `proxy.ts` and `requireRole()`.
 | `/`, `/s/<token>` | always public |
 | no session | reaches everything (keeps the judge/demo flow working) |
 
-API: `GET /api/auth/session` (who am I), `POST {role:"firm"}` or `{role:"provider", providerContactId}`,
-`DELETE` (sign out).
+Profiles (table `profiles`, migration 0005): sign-in picks a recent profile ("Continue as") or creates one.
+The cookie carries `profileId`. `/profile` views and edits it; the chip menu has Profile, Your cases, Switch account, Sign out.
+
+API: `GET /api/auth/session` (session + profile), `POST {profileId}` (continue as),
+`POST {role:"firm", display_name, email?, title?, firm_name?}`, `POST {role:"provider", providerContactId, display_name, email?, title?}`,
+`DELETE` (sign out). `GET/PATCH /api/profile` (own profile; role and office are read-only).
+
+Firm name shown to providers: `withFirmName(view, share.created_by)` in `lib/server/share/firm.ts` (sharing profile, then latest firm profile, then `GIST_FIRM_NAME`).
 
 ## Session chip
 
