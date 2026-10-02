@@ -4,6 +4,7 @@
 import type { Metadata } from "next";
 import ProviderViewCard from "@/components/gist/share/ProviderViewCard";
 import SessionChip from "@/components/gist/auth/SessionChip";
+import VoiceButton from "@/components/gist/voice/VoiceButton";
 import "@/components/gist/auth/auth.css";
 import { requireRole } from "@/lib/server/auth/session";
 import { findOffice } from "@/lib/server/auth/offices";
@@ -90,6 +91,11 @@ export default async function ProviderPortal({ searchParams }: { searchParams: P
           ))}
         </nav>
       )}
+      {gated ? (
+        <div className="gv-provider-cta">
+          <VoiceButton mode="provider" matterId={current.matter_id} />
+        </div>
+      ) : null}
       {gated ? (
         <ProviderViewCard view={gated.view} mode="live" caseMoves={moves} respond={{ matterId: current.matter_id, submissions: mine }} />
       ) : (

@@ -3,6 +3,7 @@
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import ProviderViewCard from "@/components/gist/share/ProviderViewCard";
+import VoiceButton from "@/components/gist/voice/VoiceButton";
 import { cachedGatedView, logView, lookupShare, stageNotice } from "@/lib/server/share";
 import { normalizeConfig } from "@/lib/server/share/plain";
 import { listForProvider } from "@/lib/server/submissions";
@@ -68,6 +69,9 @@ export default async function SharePage({ params }: { params: Promise<{ token: s
   const [gated, notice, mine, moves] = loaded;
   return (
     <Shell>
+      <div className="gv-provider-cta">
+        <VoiceButton mode="provider" token={token} />
+      </div>
       <ProviderViewCard view={gated.view} mode="live" stageNotice={notice} caseMoves={moves} respond={{ token, submissions: mine }} />
     </Shell>
   );

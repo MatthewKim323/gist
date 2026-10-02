@@ -35,6 +35,11 @@ export async function proxy(req: NextRequest) {
   // Providers may only POST a response (the route checks the office is on the matter); the inbox is firm-only.
   if (/^\/api\/submissions(\/|$)/.test(pathname) && req.method !== "POST")
     return NextResponse.json({ error: "Forbidden: provider accounts cannot access firm data" }, { status: 403 });
+  // Voice: providers may mint a token and fetch provider-mode context only.
+  if (/^\/api\/voice\/context(\/|$)/.test(pathname) && req.nextUrl.searchParams.get("mode") !== "provider")
+    return NextResponse.json({ error: "Forbidden: provider accounts cannot access firm data" }, { status: 403 });
+  if (/^\/api\/voice(\/|$)/.test(pathname) && !/^\/api\/voice\/(token|context)$/.test(pathname))
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   if (FIRM_APIS.some((re) => re.test(pathname)))
     return NextResponse.json({ error: "Forbidden: provider accounts cannot access firm data" }, { status: 403 });
   if (FIRM_PAGES.some((re) => re.test(pathname))) return NextResponse.redirect(new URL("/provider", req.url));

@@ -2,6 +2,7 @@
 
 import Button from "@/components/gist/ui/Button";
 import SessionChip from "@/components/gist/auth/SessionChip";
+import VoiceButton from "@/components/gist/voice/VoiceButton";
 import { useState } from "react";
 import { motion } from "motion/react";
 import type { Digest } from "@/lib/types";
@@ -13,7 +14,7 @@ export default function Header({ d, fixture }: { d: Digest; fixture: boolean }) 
   const m = d.matter;
   const [photoOk, setPhotoOk] = useState(true);
   const sol = extras(d).matter?.sol;
-  const { share } = useCites();
+  const { share, open } = useCites();
   const providerAsks = d.phase.gates.filter((g) => g.owed_by === "provider" && g.status !== "have").length;
   const photo = fixture ? null : m.photo_url;
   return (
@@ -81,6 +82,7 @@ export default function Header({ d, fixture }: { d: Digest; fixture: boolean }) 
         <Button onClick={() => share()} arrow className="gd-sharecta">
           {providerAsks ? `Share with provider · ${providerAsks} asks` : "Share with provider"}
         </Button>
+        {fixture ? null : <VoiceButton mode="firm" matterId={m.id} label="Brief me" onOpenSource={open} />}
         <Button href={m.clio_url} external arrow variant="border">
           Open in Clio
         </Button>
