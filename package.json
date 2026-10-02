@@ -3,11 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 3777",
+    "dev": "env -u OPENAI_API_KEY next dev -p 3777",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "job": "tsx --conditions=react-server --env-file=.env.local",
+    "job": "env -u OPENAI_API_KEY tsx --conditions=react-server --env-file=.env.local",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
