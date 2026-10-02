@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { ShareSheet } from "@/components/gist/share";
 import type { Citation, Digest } from "@/lib/types";
 import SourceDrawer from "@/components/gist/source/SourceDrawer";
 import { CiteProvider, numberRefs } from "./cite";
@@ -12,6 +14,7 @@ import { RedFlags, Story } from "./Narrative";
 import Actions from "./Actions";
 import { Completeness, Injuries, ProviderLanes, SinceRail } from "./Detail";
 import AskPalette from "./AskPalette";
+import ShareLog from "./ShareLog";
 
 type Load =
   | { state: "loading" }
@@ -57,12 +60,21 @@ const NAV = [
   ["flags", "Red flags"],
   ["actions", "Action"],
   ["providers", "Treatment"],
+  ["shares", "Shares"],
   ["receipt", "Receipt"],
 ] as const;
 
 export default function Dashboard({ matterId: givenId, fixture: givenFixture }: { matterId?: number; fixture?: boolean }) {
   const [load, setLoad] = useState<Load>({ state: "loading" });
   const [cite, setCite] = useState<Citation | null>(null);
+  const [share, setShare] = useState<{ providerId?: number } | null>(null);
+  const [shareKey, setShareKey] = useState(0);
+  const openShare = useCallback((providerId?: number | null) => {
+    setCite(null);
+    setShare({ providerId: providerId ?? undefined });
+    setShareKey((k) => k + 1);
+  }, []);
+  const closeShare = useCallback(() => setShare(null), []);
   const scroller = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -113,7 +125,7 @@ export default function Dashboard({ matterId: givenId, fixture: givenFixture }: 
     [refNums],
   );
   const close = useCallback(() => setCite(null), []);
-  const ctx = useMemo(() => ({ matterId: digest?.matter.id ?? null, fixture, numberOf, open: setCite }), [digest, fixture, numberOf]);
+  const ctx = useMemo(() => ({ matterId: digest?.matter.id ?? null, fixture, numberOf, open: setCite, share: openShare }), [digest, fixture, numberOf, openShare]);
 
   const rejected = useMemo(() => {
     if (!digest) return [];
@@ -162,6 +174,7 @@ export default function Dashboard({ matterId: givenId, fixture: givenFixture }: 
                 <RedFlags d={digest} />
                 <Actions d={digest} />
                 <ProviderLanes d={digest} />
+                <ShareLog matterId={digest.matter.id} fixture={fixture} />
                 <Completeness d={digest} rejected={rejected} />
               </div>
               <div className="gd-rail">
@@ -172,6 +185,12 @@ export default function Dashboard({ matterId: givenId, fixture: givenFixture }: 
             <footer className="gd-foot">Drafted for attorney review · Reads Clio, writes nothing · Every figure links to its source</footer>
           </div>
           <SourceDrawer cite={cite} matterId={digest.matter.id} fixture={fixture} onClose={close} />
+          {share && !fixture
+            ? createPortal(
+                <ShareSheet key={shareKey} matterId={digest.matter.id} open onClose={closeShare} initialProviderId={share.providerId} />,
+                document.body,
+              )
+            : null}
         </CiteProvider>
       ) : null}
     </div>

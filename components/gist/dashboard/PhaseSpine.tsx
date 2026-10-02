@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "motion/react";
 import { PHASES, type Digest, type GateItem, type GateStatus, type Owner } from "@/lib/types";
-import { Cites } from "./cite";
+import { CiteChip, useCites } from "./cite";
 import { OwnerChip, StatusIcon } from "./bits";
 import { fmtDate, fmtShort } from "./format";
 
@@ -18,6 +18,7 @@ function durationLabel(days: number | null): string {
 }
 
 function GateRow({ g, i }: { g: GateItem; i: number }) {
+  const { share } = useCites();
   const overdue = g.due_date && new Date(g.due_date) < new Date() && g.status !== "have";
   return (
     <motion.li
@@ -37,10 +38,16 @@ function GateRow({ g, i }: { g: GateItem; i: number }) {
         </div>
         {g.note ? <div className="gd-gate__note">{g.note}</div> : null}
         {g.owed_by === "provider" && g.status !== "have" && g.owed_by_name ? (
-          <div className="gd-gate__hint">
+          <button
+            type="button"
+            className="gd-gate__hint"
+            onClick={() => share(g.owed_by_contact_id)}
+            title={`Open ${g.owed_by_name}'s share link with this ask on it`}
+          >
             <svg viewBox="0 0 12 12" width="10" height="10"><path d="M5 7l2-2M4.2 5.6L3 6.8a1.6 1.6 0 0 0 2.2 2.2l1.2-1.2M7.8 6.4L9 5.2A1.6 1.6 0 0 0 6.8 3L5.6 4.2" stroke="currentColor" strokeWidth="1" fill="none" strokeLinecap="round" /></svg>
             On {g.owed_by_name}&rsquo;s share link
-          </div>
+            <span className="gd-gate__hint-go">Share</span>
+          </button>
         ) : null}
       </div>
       <div className="gd-gate__owner">{g.status !== "have" ? <OwnerChip owner={g.owed_by} name={g.owed_by_name} /> : null}</div>
@@ -53,7 +60,23 @@ function GateRow({ g, i }: { g: GateItem; i: number }) {
           <span className="gd-dim">&nbsp;</span>
         )}
       </div>
-      <div className="gd-gate__cites">{g.evidence.length ? <Cites cites={g.evidence} /> : <span className="gd-dim gd-small">no source</span>}</div>
+      <div className="gd-gate__cites">
+        {g.evidence.length ? (
+          <span className="gd-cites">
+            {g.evidence.map((c, j) => {
+              const pg = c.source_ref.match(/#p(\d+)$/);
+              return (
+                <span key={`${c.source_ref}-${j}`} className={pg ? "gd-pagecite" : undefined}>
+                  <CiteChip cite={c} />
+                  {pg ? <span className="gd-pagecite__p">p.{pg[1]}</span> : null}
+                </span>
+              );
+            })}
+          </span>
+        ) : (
+          <span className="gd-dim gd-small">no source</span>
+        )}
+      </div>
     </motion.li>
   );
 }

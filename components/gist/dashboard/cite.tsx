@@ -11,9 +11,11 @@ interface CiteCtx {
   fixture: boolean;
   numberOf: (ref: string) => number;
   open: (cite: Citation) => void;
+  /** Opens the provider share sheet, optionally preselecting a provider (Clio contact id). */
+  share: (providerId?: number | null) => void;
 }
 
-const Ctx = createContext<CiteCtx>({ matterId: null, fixture: false, numberOf: () => 0, open: () => {} });
+const Ctx = createContext<CiteCtx>({ matterId: null, fixture: false, numberOf: () => 0, open: () => {}, share: () => {} });
 export const CiteProvider = Ctx.Provider;
 export const useCites = () => useContext(Ctx);
 

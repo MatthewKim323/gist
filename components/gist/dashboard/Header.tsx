@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "motion/react";
 import type { Digest } from "@/lib/types";
-import { CitedValue } from "./cite";
+import { CitedValue, useCites } from "./cite";
 import { fmtDate, fmtUsd, initials } from "./format";
 import { extras } from "./ext";
 
@@ -11,6 +11,8 @@ export default function Header({ d, fixture }: { d: Digest; fixture: boolean }) 
   const m = d.matter;
   const [photoOk, setPhotoOk] = useState(true);
   const sol = extras(d).matter?.sol;
+  const { share } = useCites();
+  const providerAsks = d.phase.gates.filter((g) => g.owed_by === "provider" && g.status !== "have").length;
   const photo = fixture ? null : m.photo_url;
   return (
     <motion.header
@@ -73,10 +75,17 @@ export default function Header({ d, fixture }: { d: Digest; fixture: boolean }) 
         </div>
       </div>
       <div className="gd-header__side">
+        <div className="gd-header__btns">
+        <button type="button" className="gd-sharebtn" onClick={() => share()}>
+          <svg viewBox="0 0 16 16" width="13" height="13"><path d="M6.5 9.5l3-3M5.3 7.8L3.6 9.5a2.3 2.3 0 0 0 3.2 3.2l1.7-1.7M10.7 8.2l1.7-1.7a2.3 2.3 0 0 0-3.2-3.2L7.5 5" stroke="currentColor" strokeWidth="1.3" fill="none" strokeLinecap="round" /></svg>
+          Share with provider
+          {providerAsks ? <span className="gd-sharebtn__n">{providerAsks} asks</span> : null}
+        </button>
         <a className="gd-btn" href={m.clio_url} target="_blank" rel="noreferrer" data-router-disabled>
           Open in Clio
           <svg viewBox="0 0 12 12" width="10" height="10"><path d="M3.5 2.5h6v6M9.5 2.5l-7 7" stroke="currentColor" strokeWidth="1.2" fill="none" /></svg>
         </a>
+        </div>
         <div className="gd-cost" title={d.cost.models.join(" · ")}>
           <span className="gd-num">{fmtUsd(d.cost.cold_usd, { cents: true })}</span> to digest
           <span className="gd-sep" />

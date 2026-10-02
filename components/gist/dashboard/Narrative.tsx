@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type { Digest } from "@/lib/types";
 import { CiteChip, Cites } from "./cite";
 import { Panel } from "./bits";
@@ -24,14 +25,33 @@ export function Story({ d }: { d: Digest }) {
   );
 }
 
+const SEV = ["high", "medium", "low"];
+
 export function RedFlags({ d }: { d: Digest }) {
+  const [all, setAll] = useState(false);
   if (!d.red_flags.length) return null;
+  const sorted = [...d.red_flags].sort((a, b) => SEV.indexOf(a.severity) - SEV.indexOf(b.severity));
+  const highs = sorted.filter((f) => f.severity === "high").length;
+  const first = Math.min(sorted.length, Math.max(3, Math.min(highs, 4)));
+  const shown = all ? sorted : sorted.slice(0, first);
+  const counts = SEV.map((s) => [s, sorted.filter((f) => f.severity === s).length] as const).filter(([, n]) => n);
   return (
-    <Panel id="flags" title="Red flags" kicker={`${d.red_flags.length} contradiction${d.red_flags.length === 1 ? "" : "s"} across sources`}>
+    <Panel
+      id="flags"
+      title="Red flags"
+      kicker={`${d.red_flags.length} contradiction${d.red_flags.length === 1 ? "" : "s"} across sources`}
+      aside={
+        <span className="gd-sevcounts">
+          {counts.map(([s, n]) => (
+            <span key={s} className={`gd-sev gd-sev--${s}`}>
+              {n} {s}
+            </span>
+          ))}
+        </span>
+      }
+    >
       <div className="gd-flags">
-        {[...d.red_flags]
-          .sort((a, b) => ["high", "medium", "low"].indexOf(a.severity) - ["high", "medium", "low"].indexOf(b.severity))
-          .map((f) => (
+        {shown.map((f) => (
             <article key={f.id} className={`gd-flag gd-flag--${f.severity}`}>
               <header className="gd-flag__head">
                 <span className={`gd-sev gd-sev--${f.severity}`}>{f.severity}</span>
@@ -57,6 +77,11 @@ export function RedFlags({ d }: { d: Digest }) {
             </article>
           ))}
       </div>
+      {sorted.length > first ? (
+        <button type="button" className="gd-linkbtn gd-flags__more" onClick={() => setAll((v) => !v)}>
+          {all ? "Show only the top flags" : `Show all ${sorted.length} red flags (${sorted.length - first} more)`}
+        </button>
+      ) : null}
     </Panel>
   );
 }
