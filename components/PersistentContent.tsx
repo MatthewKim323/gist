@@ -10,10 +10,8 @@ const CONTACT_TABS = [
 
 const SOCIALS = [{ label: "GitHub", href: "https://github.com/MatthewKim323/gist" }];
 
-const HOME_SOCIALS = [
-  { label: "github", icon: "github", href: "https://github.com/MatthewKim323/gist" },
-  { label: "email us", icon: "mail", href: "mailto:" + EMAIL },
-];
+// The home scene still mounts this container into its CSS3D layer, so it stays, just empty.
+const HOME_SOCIALS: { label: string; icon: string; href: string }[] = [];
 
 function SocialIcon({ name }: { name: string }) {
   const stroke = { fill: "none", stroke: "currentColor", strokeWidth: 1.9 };

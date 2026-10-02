@@ -90,7 +90,8 @@ function Header() {
         </a>
       </div>
       <div className="d-flex justify-end items-center w-1/1 w-auto@sm js-navigation">
-        <nav className="overflow-hidden d-block js-nav-inner" data-cursor="navWrapper">
+        {/* text nav is hidden: the markup stays because the Navigation module binds to it */}
+        <nav className="overflow-hidden d-block js-nav-inner" data-cursor="navWrapper" style={{ display: "none" }}>
           <div className="d-none d-flex@sm align-center justify-end">
             {NAV.map((n) => (
               <a
