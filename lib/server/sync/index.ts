@@ -202,7 +202,7 @@ async function syncCursored(matterId: number, spec: CursorSpec, t: TaskHandle, f
   let newCursor = cursor;
   for (const r of raws) newCursor = maxTs(newCursor, r.updated_at);
   await setState(matterId, spec.resource, newCursor, liveCount);
-  await t.event(`${liveCount} items, ${changed} changed${deleted ? `, ${deleted} deleted` : ""}${cursor ? " (incremental)" : ""}`);
+  await t.event(`${liveCount} entries, ${changed} changed${deleted ? `, ${deleted} deleted` : ""}${cursor ? " (incremental)" : ""}`);
   return { items: raws, changed };
 }
 
@@ -229,7 +229,7 @@ async function syncFields(matterId: number, matter: Raw, t: TaskHandle): Promise
   const changed = await upsertItems(matterId, items);
   const deleted = await tombstone(matterId, ["field"], new Set(items.map((i) => sourceId(i.kind, i.clio_id))));
   await setState(matterId, "custom_fields", null, items.length);
-  await t.event(`${items.length} items, ${changed} changed${deleted ? `, ${deleted} deleted` : ""}`);
+  await t.event(`${items.length} entries, ${changed} changed${deleted ? `, ${deleted} deleted` : ""}`);
   return changed;
 }
 
@@ -267,7 +267,7 @@ async function syncPeople(matterId: number, matter: Raw, t: TaskHandle): Promise
   const deleted = await tombstone(matterId, ["relationship", "contact"], live);
   await setState(matterId, "relationships", null, rels.length);
   await setState(matterId, "contacts", null, contactItems.length);
-  await t.event(`${rels.length} relationships, ${contactItems.length} contacts, ${changed} changed${deleted ? `, ${deleted} deleted` : ""}`);
+  await t.event(`${rels.length + contactItems.length} entries (${rels.length} relationships, ${contactItems.length} contacts), ${changed} changed${deleted ? `, ${deleted} deleted` : ""}`);
   return changed;
 }
 
