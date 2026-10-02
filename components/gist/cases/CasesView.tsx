@@ -5,6 +5,10 @@ import Button from "@/components/gist/ui/Button";
 import SessionChip from "@/components/gist/auth/SessionChip";
 import AutopilotCard from "@/components/gist/autopilot/AutopilotCard";
 import Radar from "@/components/gist/radar/Radar";
+import DemoBanner from "@/components/gist/demo-mode/DemoBanner";
+import { DEMO_MODE } from "@/lib/demo-mode-client";
+
+const DEMO_SYNC = "Demo mode: live Clio sync is off on the public demo";
 
 interface Clio {
   connected: boolean;
@@ -87,9 +91,10 @@ export default function CasesView({ session }: { session: { role: string; name: 
     let live = true;
     const p = new URLSearchParams(window.location.search);
     if (p.get("connected") === "1") setNotice("Clio connected. Pull your matters with Refresh from Clio.");
-    if (p.get("clio_error")) setNotice(`Clio did not connect: ${p.get("clio_error")}`);
+    if (p.get("clio_error")) setNotice(p.get("demo") ? p.get("clio_error") : `Clio did not connect: ${p.get("clio_error")}`);
     if (p.has("connected") || p.has("clio_error")) {
       const url = new URL(window.location.href);
+      url.searchParams.delete("demo");
       url.searchParams.delete("connected");
       url.searchParams.delete("clio_error");
       window.history.replaceState(window.history.state, "", url);
@@ -103,6 +108,7 @@ export default function CasesView({ session }: { session: { role: string; name: 
   }, [fetchCases]);
 
   const refresh = async () => {
+    if (DEMO_MODE) return setNotice(DEMO_SYNC);
     setRefreshing(true);
     setNotice(null);
     try {
@@ -146,6 +152,8 @@ export default function CasesView({ session }: { session: { role: string; name: 
         <SessionChip initial={session ? { role: session.role as "firm", name: session.name } : null} />
       </header>
 
+      <DemoBanner />
+
       <section className="gc-hero">
         <div className="gc-eyebrow">Firm workspace</div>
         <h1 className="gc-title">Your cases</h1>
@@ -176,7 +184,7 @@ export default function CasesView({ session }: { session: { role: string; name: 
           </p>
           {clio.error && <p className="gc-error">Last attempt: {clio.error}</p>}
           <div className="gc-actions">
-            <Button href="/api/clio/connect" onClick={go("/api/clio/connect")} arrow>
+            <Button href="/api/clio/connect" onClick={DEMO_MODE ? (e: MouseEvent) => { e.preventDefault(); setNotice(DEMO_SYNC); } : go("/api/clio/connect")} arrow>
               Connect Clio
             </Button>
           </div>
@@ -203,7 +211,7 @@ export default function CasesView({ session }: { session: { role: string; name: 
             <Button onClick={refresh} disabled={refreshing} size="sm">
               {refreshing ? "Refreshing" : "Refresh from Clio"}
             </Button>
-            <Button href="/api/clio/connect" onClick={go("/api/clio/connect")} variant="border" size="sm">
+            <Button href="/api/clio/connect" onClick={DEMO_MODE ? (e: MouseEvent) => { e.preventDefault(); setNotice(DEMO_SYNC); } : go("/api/clio/connect")} variant="border" size="sm">
               Reconnect Clio
             </Button>
           </div>

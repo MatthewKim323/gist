@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { exchangeCode } from "@/lib/server/clio/client";
+import { DEMO_SYNC_MESSAGE, isDemoMode } from "@/lib/server/demo-mode";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +16,7 @@ export async function GET(req: NextRequest) {
     res.cookies.delete("clio_oauth_state");
     return res;
   };
+  if (isDemoMode()) return back(`demo=1&clio_error=${encodeURIComponent(DEMO_SYNC_MESSAGE)}`);
   const err = url.searchParams.get("error");
   if (err) return back(`clio_error=${encodeURIComponent(err)}`);
   if (!code) return back("clio_error=missing_code");

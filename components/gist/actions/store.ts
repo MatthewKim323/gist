@@ -33,8 +33,10 @@ export async function propose(matterId: number) {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ matterId }),
     });
-    const j = (await r.json()) as { actions?: AgentAction[]; error?: string };
+    const j = (await r.json()) as { actions?: AgentAction[]; error?: string; demo?: boolean; message?: string };
     if (!r.ok) throw new Error(j.error ?? `HTTP ${r.status}`);
+    // Public demo: nothing was drafted, keep the recorded drafts and show why.
+    if (j.demo) return set(matterId, { busy: false, error: j.message ?? "Demo mode: drafting is off on the public demo" });
     set(matterId, { rows: j.actions ?? [], busy: false });
   } catch (e) {
     set(matterId, { busy: false, error: (e as Error).message });

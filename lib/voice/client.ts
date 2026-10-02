@@ -75,7 +75,10 @@ export class VoiceSession {
         navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } }),
       ]);
       this.mic = mic;
-      if (tokRes.status === 503) return this.fail("Voice is not configured on this server.", "off");
+      if (tokRes.status === 503) {
+        const b = (await tokRes.json().catch(() => ({}))) as { demo?: boolean };
+        return this.fail(b.demo ? "Voice is off in the public demo." : "Voice is not configured on this server.", "off");
+      }
       if (!tokRes.ok) {
         const e = (await tokRes.json().catch(() => ({}))) as { error?: string };
         return this.fail(tokRes.status === 502 ? "Voice service is unavailable right now." : (e.error ?? "Voice could not start."));

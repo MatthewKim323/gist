@@ -1,6 +1,8 @@
 import { NextResponse, after } from "next/server";
 import { db } from "@/lib/server/db";
 import { createRun, runPipeline, type StageName } from "@/lib/server/pipeline/run";
+import { isDemoMode } from "@/lib/server/demo-mode";
+import { latestCompletedRun } from "@/lib/server/demo/replay";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -10,6 +12,12 @@ export async function POST(req: Request) {
   const body = (await req.json().catch(() => ({}))) as { matterId?: number | string; only?: StageName[]; skip?: StageName[] };
   const matterId = Number(body.matterId);
   if (!Number.isFinite(matterId) || matterId <= 0) return NextResponse.json({ error: "matterId required" }, { status: 400 });
+  if (isDemoMode()) {
+    // Public demo: never start a run. Replay the latest recorded one (the timeline paces it), then the dashboard.
+    const r = await latestCompletedRun(matterId);
+    if (!r) return NextResponse.json({ demo: true, error: "Demo mode: no recorded run for this case" }, { status: 404 });
+    return NextResponse.json({ runId: r.runId, replay: true, demo: true });
+  }
   // One live run per matter: a reload or a second tab joins the run in flight instead of paying for another.
   // Only join a run that is still making progress; an orphaned "running" row must not trap the UI.
   const live = await db().from("agent_runs").select("id").eq("matter_id", matterId).eq("status", "running")

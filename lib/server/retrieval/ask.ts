@@ -1,4 +1,5 @@
 import "server-only";
+import { DEMO_AI_LINE, isDemoMode } from "../demo-mode";
 import { z } from "zod";
 import { db } from "../db";
 import { structured } from "../llm";
@@ -103,6 +104,17 @@ export async function ask(matterId: number, q: string, opts: { audiences?: strin
   });
   const allowed = new Set([...usable.map((f) => f.source_ref), ...hits.map((h) => h.cite)]);
 
+  if (isDemoMode()) {
+    // Public demo: no model. Return the top keyword matches as the answer, with their cites.
+    const top = hits.slice(0, 3);
+    const labels = await labelRefs(matterId, top.map((h) => h.cite)).catch(() => ({} as Record<string, string>));
+    const lines = top.map((h) => `- ${h.header || labels[h.cite] || h.cite}: ${bestSnippet(h.body, q, 220)} [${h.cite}]`);
+    return {
+      answer_markdown: `${lines.length ? `Closest matches in the file:\n${lines.join("\n")}` : "Nothing in the file matched that question."}\n\n_${DEMO_AI_LINE}_`,
+      cites: top.map((h) => ({ source_ref: h.cite, label: labels[h.cite] ?? h.header, quote: quoteByRef.get(h.cite) })),
+      hits,
+    };
+  }
   const input =
     `Question: ${q}\n\n## Verified facts (source ref in brackets)\n${factLines.join("\n") || "(none)"}\n\n` +
     `## Retrieved passages\n${hitBlocks.join("\n\n") || "(none)"}`;

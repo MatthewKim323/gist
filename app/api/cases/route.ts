@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/server/db";
 import { get, getTokens } from "@/lib/server/clio/client";
 import { discoverMatters } from "@/lib/server/sync";
+import { DEMO_SYNC_MESSAGE, isDemoMode } from "@/lib/server/demo-mode";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -34,6 +35,10 @@ async function clioStatus() {
     token_expires_at: null as string | null,
     error: null as string | null,
   };
+  if (isDemoMode()) {
+    // Public demo: a read-only snapshot, so report "connected" without touching Clio.
+    return { ...out, connected: true, name: "Public demo snapshot", demo: true };
+  }
   let tok;
   try {
     tok = await getTokens();
@@ -107,7 +112,8 @@ async function matterSummary(m: Record<string, unknown>) {
 export async function GET(req: Request) {
   const refresh = new URL(req.url).searchParams.get("refresh") === "1";
   let refreshError: string | null = null;
-  if (refresh) {
+  if (refresh && isDemoMode()) refreshError = DEMO_SYNC_MESSAGE;
+  else if (refresh) {
     try {
       await discoverMatters();
     } catch (e) {

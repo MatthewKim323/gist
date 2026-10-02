@@ -104,8 +104,12 @@ export default function AutopilotCard({ onChanged }: { onChanged?: () => void })
       }
       try {
         const r = await fetch(`/api/autopilot/tick${ifDue ? "?ifDue=1" : ""}`, { method: "POST" });
-        const j = (await r.json().catch(() => ({}))) as { ran?: boolean; reason?: string; events?: Ev[]; watched?: number; error?: string };
+        const j = (await r.json().catch(() => ({}))) as { ran?: boolean; reason?: string; events?: Ev[]; watched?: number; error?: string; demo?: boolean; message?: string };
         if (!r.ok) throw new Error(j.error ?? `tick ${r.status}`);
+        if (j.demo) {
+          if (!ifDue) setMsg(j.message ?? "Demo mode: live Clio sync is off on the public demo");
+          return;
+        }
         if (!ifDue) {
           const moved = (j.events ?? []).filter((e) => e.kind !== "no_change").length;
           setMsg(

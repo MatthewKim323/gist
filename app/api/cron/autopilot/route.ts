@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { demoBody, isDemoMode } from "@/lib/server/demo-mode";
 import { autopilotTick, getState, isDue } from "@/lib/server/autopilot/tick";
 
 export const runtime = "nodejs";
@@ -11,6 +12,7 @@ export async function GET(req: Request) {
   if (secret && req.headers.get("authorization") !== `Bearer ${secret}`) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
+  if (isDemoMode()) return NextResponse.json(demoBody(undefined, { ran: false, reason: "demo" }));
   const state = await getState();
   if (!state.enabled) return NextResponse.json({ ran: false, reason: "autopilot is off" });
   if (!isDue(state)) return NextResponse.json({ ran: false, reason: "not due", next_tick_at: state.next_tick_at });

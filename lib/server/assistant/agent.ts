@@ -10,6 +10,8 @@ import type { Citation } from "@/lib/types";
 import type { Move } from "../moves/types";
 import { TOOLS, TAB_INFO, runTool, type ToolCtx } from "./tools";
 import { extractMemories, recallMemories, type Memory } from "./memory";
+import { isDemoMode } from "../demo-mode";
+import { demoAnswer } from "./demo";
 
 export type AssistantEvent =
   | { type: "thread"; threadId: string }
@@ -114,8 +116,10 @@ export async function runTurn(o: TurnOpts, emit: (e: AssistantEvent) => void): P
   let text = "";
   let cost = 0;
 
+  const demo = isDemoMode();
   try {
-  for (let step = 0; step < MAX_STEPS; step++) {
+  if (demo) text = await demoAnswer(ctx, o.message, emit);
+  for (let step = 0; !demo && step < MAX_STEPS; step++) {
     const t0 = Date.now();
     const stream = openai().responses.stream({
       model,
@@ -182,6 +186,7 @@ export async function runTurn(o: TurnOpts, emit: (e: AssistantEvent) => void): P
   await db().from("assistant_messages").insert({ thread_id: threadId, role: "assistant", content: v.text, cites, tab: o.tab });
 
   // memory: explicit saves from the remember tool, plus 0-2 extracted
+  if (demo) return;
   try {
     const saved = await extractMemories(o.profileId, o.matterId, caseLabel, o.message, v.text, [...memories]);
     const all = [...ctx.remembered, ...saved];

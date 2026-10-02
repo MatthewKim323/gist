@@ -7,6 +7,7 @@
 // Missing or rejected key: 503 "voice not configured" and the UI shows a disabled state.
 import { NextResponse, type NextRequest } from "next/server";
 import { loadVoiceContext } from "@/lib/voice/server";
+import { isDemoMode } from "@/lib/server/demo-mode";
 
 export const dynamic = "force-dynamic";
 
@@ -79,6 +80,7 @@ async function openai(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  if (isDemoMode()) return NextResponse.json({ demo: true, error: "Voice is off in the public demo" }, { status: 503, headers: H });
   try {
     if (provider() === "deepgram") {
       if (req.nextUrl.searchParams.get("probe")) {

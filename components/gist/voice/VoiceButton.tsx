@@ -9,6 +9,7 @@ import Button from "@/components/gist/ui/Button";
 import type { Citation } from "@/lib/types";
 import { VoiceSession, type Caption, type VoiceState } from "@/lib/voice/client";
 import "@/app/styles/gist-voice.css";
+import { DEMO_MODE, DEMO_VOICE_OFF } from "@/lib/demo-mode-client";
 
 export interface VoiceButtonProps {
   mode: "firm" | "provider";
@@ -28,7 +29,7 @@ const STATE_LABEL: Record<VoiceState, string> = {
   researching: "Checking the file",
   speaking: "Speaking",
   error: "Unavailable",
-  off: "Voice not configured",
+  off: DEMO_MODE ? DEMO_VOICE_OFF : "Voice not configured",
 };
 
 export default function VoiceButton({ mode, matterId, token, label, onOpenSource, variant = "border", size }: VoiceButtonProps) {
@@ -123,7 +124,7 @@ export default function VoiceButton({ mode, matterId, token, label, onOpenSource
         variant={variant}
         size={size}
         disabled={configured === false}
-        title={configured === false ? "Voice is not configured on this server" : undefined}
+        title={configured === false ? (DEMO_MODE ? DEMO_VOICE_OFF : "Voice is not configured on this server") : undefined}
         aria-pressed={active}
       >
         {configured === false ? "Voice unavailable" : active ? "End call" : text}

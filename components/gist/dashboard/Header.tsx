@@ -9,6 +9,7 @@ import type { Digest } from "@/lib/types";
 import { CitedValue, useCites } from "./cite";
 import { fmtDate, fmtUsd, initials } from "./format";
 import { extras } from "./ext";
+import DemoBanner from "@/components/gist/demo-mode/DemoBanner";
 
 export default function Header({ d, fixture }: { d: Digest; fixture: boolean }) {
   const m = d.matter;
@@ -18,6 +19,8 @@ export default function Header({ d, fixture }: { d: Digest; fixture: boolean }) 
   const providerAsks = d.phase.gates.filter((g) => g.owed_by === "provider" && g.status !== "have").length;
   const photo = fixture ? null : m.photo_url;
   return (
+    <>
+    <DemoBanner />
     <motion.header
       className="gd-header"
       initial={{ opacity: 0, y: 10 }}
@@ -121,5 +124,6 @@ export default function Header({ d, fixture }: { d: Digest; fixture: boolean }) 
         <SessionChip />
       </div>
     </motion.header>
+    </>
   );
 }

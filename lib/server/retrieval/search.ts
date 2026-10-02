@@ -1,4 +1,5 @@
 import "server-only";
+import { isDemoMode } from "../demo-mode";
 import { z } from "zod";
 import { db } from "../db";
 import { embed, structured } from "../llm";
@@ -135,8 +136,10 @@ export function dedupHits(hits: Hit[], opts: { maxPerSource?: number; jaccard?: 
 
 export async function search(matterId: number, q: string, opts: SearchOpts = {}): Promise<Hit[]> {
   const k = opts.k ?? 10;
-  const queries = opts.expand === false ? [q] : await expandQuery(q, matterId);
-  const embs = await embedQueries(queries, matterId);
+  // Public demo: no model calls, so no expansion and no query embeddings. hybrid_search runs keyword-only.
+  const demo = isDemoMode();
+  const queries = opts.expand === false || demo ? [q] : await expandQuery(q, matterId);
+  const embs = demo ? [] : await embedQueries(queries, matterId);
   const res = await db().rpc("hybrid_search", {
     p_matter: matterId,
     q_text: queries.join(" "),

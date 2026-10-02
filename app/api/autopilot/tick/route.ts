@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { demoBody, isDemoMode } from "@/lib/server/demo-mode";
 import { autopilotTick, cleanupSimulated, getState, isDue, type Simulate } from "@/lib/server/autopilot/tick";
 
 export const runtime = "nodejs";
@@ -11,6 +12,7 @@ export const dynamic = "force-dynamic";
  * Dev only: ?simulate=stage|all fakes a stale snapshot to exercise the diff, ?simulate=cleanup removes those rows.
  */
 export async function POST(req: Request) {
+  if (isDemoMode()) return NextResponse.json(demoBody(undefined, { ran: false, reason: "demo", events: [] }));
   const url = new URL(req.url);
   const sim = url.searchParams.get("simulate");
   const devSim = process.env.NODE_ENV !== "production" || process.env.AUTOPILOT_DEV === "1";
