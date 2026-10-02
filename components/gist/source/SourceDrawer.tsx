@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "motion/react";
 import type { Citation } from "@/lib/types";
 import { fmtDateAgo, refKindLabel } from "@/components/gist/dashboard/format";
@@ -86,7 +87,8 @@ export default function SourceDrawer({
   const isDoc = !!data?.doc;
   const onCitedPage = isDoc && page === (data?.doc?.page ?? 1);
 
-  return (
+  return createPortal(
+    <div className="gd-portal">
     <AnimatePresence>
       {cite ? (
         <>
@@ -198,5 +200,7 @@ export default function SourceDrawer({
         </>
       ) : null}
     </AnimatePresence>
+    </div>,
+    document.body,
   );
 }

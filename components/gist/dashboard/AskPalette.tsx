@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "motion/react";
 import type { Citation } from "@/lib/types";
 import { CiteChip, Cites } from "./cite";
@@ -120,6 +121,8 @@ export default function AskPalette({ matterId, fixture }: { matterId: number | n
         Ask the case
         <kbd>⌘K</kbd>
       </button>
+      {createPortal(
+      <div className="gd-portal">
       <AnimatePresence>
         {open ? (
           <motion.div className="gd-ask" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }} onClick={() => setOpen(false)}>
@@ -167,6 +170,9 @@ export default function AskPalette({ matterId, fixture }: { matterId: number | n
           </motion.div>
         ) : null}
       </AnimatePresence>
+      </div>,
+      document.body,
+      )}
     </>
   );
 }

@@ -1,6 +1,7 @@
 /* gist dashboard: the lawyer view. Light ink on the night hall, calm surfaces, tabular numbers. */
 
-.gd-root {
+.gd-root,
+.gd-portal {
   --ink: #e8ebf4;
   --ink-2: rgba(232, 235, 244, 0.7);
   --ink-3: rgba(232, 235, 244, 0.45);
@@ -23,7 +24,38 @@
   --serif: "Saol Display", "Times New Roman", serif;
   --sans: "Neue Montreal", "Helvetica Neue", Arial, sans-serif;
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
-
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+.gd-portal *,
+.gd-portal *::before,
+.gd-portal *::after {
+  box-sizing: border-box;
+}
+:where(.gd-portal) button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+:where(.gd-portal) :where(h1, h2, h3, p, ul, ol, dl, dd, blockquote) {
+  margin: 0;
+  padding: 0;
+}
+.gd-portal kbd {
+  font-family: var(--sans);
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(232, 235, 244, 0.08);
+  color: var(--ink-3);
+}
+.gd-root {
   position: fixed;
   inset: 0;
   overflow-x: hidden;
@@ -1285,7 +1317,7 @@ button.gd-cite:focus-visible {
 .gd-ask {
   position: fixed;
   inset: 0;
-  z-index: 60;
+  z-index: 2147482000;
   background: rgba(6, 9, 18, 0.6);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
@@ -1432,7 +1464,7 @@ button.gd-cite:focus-visible {
 .gs-scrim {
   position: fixed;
   inset: 0;
-  z-index: 80;
+  z-index: 2147482100;
   background: rgba(6, 9, 18, 0.45);
 }
 .gs-drawer {
@@ -1440,7 +1472,7 @@ button.gd-cite:focus-visible {
   top: 0;
   right: 0;
   bottom: 0;
-  z-index: 81;
+  z-index: 2147482101;
   width: min(560px, 100vw);
   display: flex;
   flex-direction: column;
