@@ -41,7 +41,9 @@ export default function VoiceButton({ mode, matterId, token, label, onOpenSource
   const orb = useRef<HTMLDivElement | null>(null);
   const tail = useRef<HTMLDivElement | null>(null);
   const openRef = useRef(onOpenSource);
-  openRef.current = onOpenSource;
+  useEffect(() => {
+    openRef.current = onOpenSource;
+  }, [onOpenSource]);
 
   // Probe once so an unconfigured server shows a calm disabled state instead of a failing button.
   useEffect(() => {

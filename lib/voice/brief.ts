@@ -174,7 +174,7 @@ ${JSON.stringify(brief)}`;
 /** Provider mode: only the gated provider view. Nothing else from the case is ever in scope. */
 export function providerContext(view: ProviderView): VoiceContext {
   // Internal keys never reach the agent.
-  const v: ProviderView = { ...view, firm_needs: view.firm_needs?.map(({ requirement_key: _k, ...n }) => n) ?? null };
+  const v: ProviderView = { ...view, firm_needs: view.firm_needs?.map((n) => ({ label: n.label, due_date: n.due_date, days_outstanding: n.days_outstanding })) ?? null };
   const who = v.client_initials.replace(/\.$/, "");
   const prompt = `You are gist, the read-only case line a law firm${v.firm_name ? ` (${v.firm_name})` : ""} shares with a treating provider's office. You are speaking with someone at ${v.provider_name} about a patient the firm represents, referred to only as ${v.client_initials}.
 ${SPEECH}
