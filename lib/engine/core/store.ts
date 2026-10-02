@@ -6,7 +6,6 @@ import { Vector2 } from "three";
 import type { RAFCollection } from "./raf";
 import type { AssetLoader } from "./asset-loader";
 import type { Gl } from "./gl";
-import type { Audio } from "./audio";
 import type { TaskScheduler } from "./task-scheduler";
 import type { FPSChecker } from "./fps-checker";
 import type { ObserverRegistry } from "./observer";
@@ -65,7 +64,8 @@ export interface Store {
   Dom2WebglObserver: ObserverRegistry | null;
   TaskScheduler: TaskScheduler | null;
   Gl: Gl | null;
-  Audio: Audio | null;
+  /** Silent stub (see boot.ts): same call surface, no sound. */
+  Audio: any;
 
   // Instances owned by other areas (typed loosely on purpose).
   ASScroll: any;

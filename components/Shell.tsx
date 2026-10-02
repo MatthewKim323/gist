@@ -315,7 +315,7 @@ function Footer() {
   return (
     <div className="footer">
       <button
-        className="btn btn--circle d-flex mute-btn js-mute mute-btn--global z-60 js-global-mute-btn"
+        className="btn btn--circle d-none mute-btn js-mute mute-btn--global z-60 js-global-mute-btn"
         data-cursor="hide"
         data-audio-enter="audio.hover"
       >

@@ -1,5 +1,4 @@
-// CaseMenu: the /matter backdrop. Fogged hall of arches, floor tiles, god rays and flocking butterflies
-// (wheel / drag scroll). The card grid is kept but ships empty.
+// CaseMenu: the /matter backdrop. Fogged hall of arches, floor tiles and god rays (wheel / drag scroll). The card grid is kept but ships empty.
 import {
   AdditiveBlending,
   Box3,
@@ -38,7 +37,6 @@ import { E } from "../../core/event-bus";
 import { assetUrl } from "../../core/asset-url";
 import { BrownianMotion } from "../../core/brownian";
 import { ResourceTracker } from "../../core/dispose";
-import { Butterflies } from "./butterflies";
 import { ensureProjects, type ProjectEntry } from "./projects-data";
 import { projectsCardWaveBendFluidVert } from "../../shaders/projects-card-wave-bend-fluid.vert.glsl";
 import { projectsCardCoverFogFrag } from "../../shaders/projects-card-cover-fog.frag.glsl";
@@ -131,7 +129,6 @@ export class CaseMenu {
   dragging = false;
   animatingFilter = false;
   ctaVisible = false;
-  butterflies: Butterflies;
   assets: { projects: { textures: Record<string, any>; models: Record<string, any> }[]; models: Record<string, any>; textures: Record<string, any> } = {
     projects: [],
     models: {},
@@ -269,7 +266,6 @@ export class CaseMenu {
   };
 
   onRaf = () => {
-    this.butterflies.update();
     this.calculateVelocity();
     this.updateScrollPos();
     this.updateProjectHoverPositions();
@@ -326,7 +322,6 @@ export class CaseMenu {
     this.originalScreenFxVignetteStrength = store.Gl.screenFxPass.uniforms.u_vignetteStrength.value;
     this.scrollPos = this.initialScrollPos;
     this.tweenParams.smoothScrollPos = this.initialScrollPos;
-    this.butterflies = new Butterflies();
     this.loadArches();
     this.load();
   }
@@ -338,8 +333,6 @@ export class CaseMenu {
     this.buildGodRays();
     this.buildProjects();
     this.buildProjectTextCanvas();
-    this.butterflies.build(this.globalUniforms);
-    this.scene.add(this.butterflies);
     this.onResize();
     E.on(store.events.RESIZE, this.onResize);
   }

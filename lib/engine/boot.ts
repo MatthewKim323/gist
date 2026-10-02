@@ -15,7 +15,6 @@ import { AssetLoader } from "./core/asset-loader";
 import { ObserverRegistry } from "./core/observer";
 import { TaskScheduler } from "./core/task-scheduler";
 import { Gl } from "./core/gl";
-import { Audio } from "./core/audio";
 import { $ } from "./core/component-manager";
 import { MODULE_ORDER, getFactory, hasModule, runBootHooks, type ModuleKey } from "./registry";
 import { registerModules } from "./modules";
@@ -64,7 +63,10 @@ function firstLoad() {
   store.TaskScheduler = new TaskScheduler();
   store.Gl = new Gl();
   store.Gl.addPasses();
-  store.Audio = new Audio();
+  // no sound: every Audio call is a no-op (isPlaying is always false, duration 0)
+  store.Audio = new Proxy({} as any, {
+    get: (_, key) => (key === "isPlaying" ? () => false : key === "duration" ? () => 0 : () => {}),
+  });
   MODULE_ORDER.afterAudio.forEach(construct);
   gsap.registerPlugin(CustomEase);
   CustomEase.create("projectMenuToProject", "M0,0 C0.532,0 0.5,0.5 1,1 ");
