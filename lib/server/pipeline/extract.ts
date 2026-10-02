@@ -5,7 +5,7 @@ import { db, must } from "../db";
 import { env } from "../env";
 import { structured } from "../llm";
 import type { RunCtx } from "./ctx";
-import { PROMPT_VERSION, SYSTEM_PROMPT, ShardOutput, type ShardOutputT } from "./prompt";
+import { PROMPT_VERSION, VERIFY_VERSION, SYSTEM_PROMPT, ShardOutput, type ShardOutputT } from "./prompt";
 import { verifyFacts, type RawFact, type SourceText, type VerifiedFact } from "./verify";
 import { auditFacts, type AuditInput } from "./audit";
 
@@ -183,7 +183,9 @@ export async function extractMatter(ctx: RunCtx, opts: { includeDocs?: boolean; 
   let lastError = "";
 
   await Promise.all(shards.map((shard) => limit(async () => {
-    const key = cacheKey(shard.content, model);
+    const cacheK = cacheKey(shard.content, model);
+    // Facts are keyed by model output + verifier version, so verifier changes re-derive facts for free.
+    const key = `${cacheK}:${VERIFY_VERSION}`;
     liveKeys.add(key);
     // One failed shard must not sink the run: its task tile shows failed, the rest carry on.
     try { await ctx.task("extract", shard.label, async (t) => {
@@ -200,7 +202,7 @@ export async function extractMatter(ctx: RunCtx, opts: { includeDocs?: boolean; 
       }
 
       let out: ShardOutputT;
-      const hit = await db().from("extraction_cache").select("output").eq("cache_key", key).maybeSingle();
+      const hit = await db().from("extraction_cache").select("output").eq("cache_key", cacheK).maybeSingle();
       if (hit.data?.output) {
         out = hit.data.output as ShardOutputT;
         t.cached();
@@ -218,7 +220,7 @@ export async function extractMatter(ctx: RunCtx, opts: { includeDocs?: boolean; 
         out = res.data;
         t.usage({ input: res.usage.input, output: res.usage.output, cost: res.usage.cost });
         stats.cost += res.usage.cost;
-        await db().from("extraction_cache").upsert({ cache_key: key, output: out });
+        await db().from("extraction_cache").upsert({ cache_key: cacheK, output: out });
       }
 
       const srcMap = new Map(shard.sources.map((s) => [s.ref, s]));

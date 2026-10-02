@@ -142,6 +142,21 @@ function hasAmount(textNorm: string, amount: number): boolean {
   return [...forms].map(normalize).some((f) => f && padded.includes(` ${f} `));
 }
 
+function matchQuote(q: string, norm: string, map: number[]): { score: number; charStart: number | null } {
+  const exact = norm.indexOf(q);
+  if (exact >= 0) return { score: 1, charStart: map[exact] ?? null };
+  const ov = tokenOverlap(q, norm);
+  if (ov.tokenStart < 0) return { score: 0, charStart: null };
+  const starts = [...norm.matchAll(/\S+/g)].map((m) => m.index ?? 0);
+  return { score: ov.score, charStart: map[starts[ov.tokenStart] ?? 0] ?? null };
+}
+
+/** Normalized source text around the quote: the whole item when it is short and structured. */
+function nearby(text: string, charStart: number | null, len: number): string {
+  if (text.length <= 1500 || charStart == null) return normalize(text.slice(0, 1500));
+  return normalize(text.slice(Math.max(0, charStart - 400), charStart + len * 2 + 400));
+}
+
 export function verifyFacts(raw: RawFact[], sources: Map<string, SourceText>): VerifiedFact[] {
   const normCache = new Map<string, ReturnType<typeof normalizeWithMap>>();
   const srcNorm = (ref: string, text: string) => {
@@ -158,19 +173,14 @@ export function verifyFacts(raw: RawFact[], sources: Map<string, SourceText>): V
     if (q.length < 3) return { ...base, status: "rejected", reject_reason: "empty quote" };
 
     const { norm, map } = srcNorm(src.ref, src.text);
-    let score = 0;
+    // A quote stitched with an ellipsis is checked part by part; every part must be in the source.
+    const parts = (f.quote ?? "").split(/\.{3,}|\u2026/).map(normalize).filter((p) => p.length >= 3);
+    let score = 1;
     let charStart: number | null = null;
-    const exact = norm.indexOf(q);
-    if (exact >= 0) {
-      score = 1;
-      charStart = map[exact] ?? null;
-    } else {
-      const ov = tokenOverlap(q, norm);
-      score = ov.score;
-      if (ov.tokenStart >= 0) {
-        const starts = [...norm.matchAll(/\S+/g)].map((m) => m.index ?? 0);
-        charStart = map[starts[ov.tokenStart] ?? 0] ?? null;
-      }
+    for (const part of parts.length ? parts : [q]) {
+      const m = matchQuote(part, norm, map);
+      if (charStart == null) charStart = m.charStart;
+      score = Math.min(score, m.score);
     }
     score = Math.round(score * 1000) / 1000;
     if (score < QUOTE_THRESHOLD) {
@@ -179,18 +189,20 @@ export function verifyFacts(raw: RawFact[], sources: Map<string, SourceText>): V
 
     const out: VerifiedFact = { ...base, quote_verified: true, quote_score: score, char_start: charStart, status: "pending", reject_reason: null };
 
-    // Dates and amounts are what lawyers act on, so they must be visible in the quote itself.
+    // Dates and amounts are what lawyers act on, so code must find them: in the quote, or in the
+    // source right around the quote (structured headers like "Date: ..." sit next to the text).
     // The item's own date (an email's sent date) also counts: "spoke with client today".
+    const near = nearby(src.text, charStart, q.length);
     if (f.event_date) {
       const sameAsItem = src.date && src.date.slice(0, 10) === f.event_date.slice(0, 10);
-      if (!sameAsItem && !hasDate(q, f.event_date) && !hasMonthYear(q, f.event_date)) {
+      if (!sameAsItem && !hasDate(q, f.event_date) && !hasMonthYear(q, f.event_date) && !hasDate(near, f.event_date)) {
         out.status = "needs_review";
-        out.reject_reason = "event_date not visible in quote";
+        out.reject_reason = "event_date not found near quote";
       }
     }
-    if (f.amount_usd != null && !hasAmount(q, f.amount_usd)) {
+    if (f.amount_usd != null && !hasAmount(q, f.amount_usd) && !hasAmount(near, f.amount_usd)) {
       out.status = "needs_review";
-      out.reject_reason = out.reject_reason ? `${out.reject_reason}; amount not visible in quote` : "amount not visible in quote";
+      out.reject_reason = out.reject_reason ? `${out.reject_reason}; amount not found near quote` : "amount not found near quote";
     }
     return out;
   });

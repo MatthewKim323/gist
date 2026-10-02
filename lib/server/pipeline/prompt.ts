@@ -2,6 +2,8 @@ import { z } from "zod";
 
 // Bump when the prompt or schema changes: it is part of the extraction cache key.
 export const PROMPT_VERSION = "x1";
+// Bump when verify.ts or audit rules change: facts are re-derived from the cached model output ($0 model cost).
+export const VERIFY_VERSION = "v2";
 
 export const FACT_KINDS = [
   "event", "injury", "treatment", "provider", "coverage", "liability", "money",
