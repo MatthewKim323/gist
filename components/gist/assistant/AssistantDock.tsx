@@ -240,6 +240,7 @@ export function AssistantDock({ matterId, tab: tabProp, caseName: caseProp }: As
             landed = true;
             patchLast((m) => ({ ...m, text: String(e.text), cites: e.cites as Citation[], pending: false }));
             setFace((e.cites as Citation[]).length ? "notify" : "exclaim");
+            setBusy(false);
             if (!open) setUnread(true);
           } else if (e.type === "memory") patchLast((m) => ({ ...m, memory: e.items as string[] }));
           else if (e.type === "error") throw new Error(String(e.message));
@@ -321,13 +322,16 @@ export function AssistantDock({ matterId, tab: tabProp, caseName: caseProp }: As
                         {m.text ? <Markdown text={m.text} cites={m.pending ? [] : m.cites} onCite={openCite} /> : null}
                         {m.pending && !m.text ? <div className="ga-dots" aria-label="thinking"><i /><i /><i /></div> : null}
                         {!m.pending && m.cites.length ? (
-                          <div className="ga-sources">
-                            {m.cites.map((c, j) => (
-                              <button key={c.source_ref} type="button" className="ga-source" onClick={() => openCite(c)} title={c.quote ?? c.label}>
-                                <span className="ga-cite ga-cite--static">{j + 1}</span>{c.label ?? c.source_ref}
-                              </button>
-                            ))}
-                          </div>
+                          <details className="ga-sources">
+                            <summary>{m.cites.length} source{m.cites.length === 1 ? "" : "s"}</summary>
+                            <div className="ga-sources__list">
+                              {m.cites.map((c, j) => (
+                                <button key={c.source_ref} type="button" className="ga-source" onClick={() => openCite(c)} title={c.quote ?? c.label}>
+                                  <span className="ga-cite ga-cite--static">{j + 1}</span><span className="ga-source__label">{c.label ?? c.source_ref}</span>
+                                </button>
+                              ))}
+                            </div>
+                          </details>
                         ) : null}
                         {m.memory.map((t, j) => <div key={j} className="ga-meta ga-meta--memory">remembered: {t}</div>)}
                       </>

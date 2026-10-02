@@ -196,7 +196,14 @@
 button.ga-cite:hover { background: rgba(214, 194, 154, 0.24); transform: translateY(-1px); }
 .ga-cite--static { cursor: inherit; margin-right: 6px; }
 
-.ga-sources { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.ga-sources { margin-top: 2px; font-size: 11.5px; color: var(--ga-ink-3); }
+.ga-sources summary { cursor: pointer; width: fit-content; list-style: none; padding: 2px 0; }
+.ga-sources summary::-webkit-details-marker { display: none; }
+.ga-sources summary::before { content: "+ "; }
+.ga-sources[open] summary::before { content: "- "; }
+.ga-sources summary:hover { color: var(--ga-ink-2); }
+.ga-sources__list { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; margin-top: 6px; }
+.ga-source__label { overflow: hidden; text-overflow: ellipsis; }
 .ga-source {
   display: inline-flex;
   align-items: center;
