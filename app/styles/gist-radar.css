@@ -1,0 +1,183 @@
+/* gist radar (/cases): the firm-wide "Needs attention" strip. Inherits the gc- night palette tokens. Prefix gr. */
+.gr {
+  --hi: #ee9585;
+  --med: #d6c29a;
+  --low: rgba(232, 235, 244, 0.45);
+  --ok: #9fd0ae;
+  margin: 0 0 28px;
+  padding: 22px 22px 14px;
+  border: 1px solid var(--line, rgba(232, 235, 244, 0.1));
+  border-radius: 18px;
+  background:
+    radial-gradient(80% 120% at 0% 0%, rgba(238, 149, 133, 0.06), transparent 55%),
+    var(--panel, rgba(13, 18, 32, 0.74));
+  backdrop-filter: blur(14px);
+}
+.gr--loading {
+  min-height: 132px;
+  opacity: 0.5;
+}
+.gr__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line, rgba(232, 235, 244, 0.1));
+}
+.gr__eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3, rgba(232, 235, 244, 0.45));
+}
+.gr__title {
+  margin: 6px 0 0;
+  font-family: var(--serif, "Saol Display", serif);
+  font-weight: 400;
+  font-size: 30px;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  color: var(--ink, #e8ebf4);
+}
+.gr__tally {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--ink-2, rgba(232, 235, 244, 0.7));
+}
+.gr__num {
+  font-family: var(--serif, "Saol Display", serif);
+  font-size: 26px;
+  line-height: 1;
+  color: var(--ink, #e8ebf4);
+}
+.gr__hi {
+  color: var(--hi);
+}
+.gr__empty {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 0 6px;
+  color: var(--ink-2, rgba(232, 235, 244, 0.7));
+}
+.gr__group + .gr__group {
+  margin-top: 6px;
+}
+.gr__case {
+  padding: 14px 0 2px;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-2, rgba(232, 235, 244, 0.7));
+}
+.gr__row {
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: start;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line, rgba(232, 235, 244, 0.1));
+}
+.gr__group:last-child .gr__row:last-child {
+  border-bottom: 0;
+}
+.gr__dot {
+  width: 8px;
+  height: 8px;
+  margin-top: 7px;
+  border-radius: 50%;
+  flex: none;
+  background: var(--low);
+}
+.gr__dot--high {
+  background: var(--hi);
+  box-shadow: 0 0 0 4px rgba(238, 149, 133, 0.14), 0 0 14px rgba(238, 149, 133, 0.5);
+}
+.gr__dot--medium {
+  background: var(--med);
+  box-shadow: 0 0 0 4px rgba(214, 194, 154, 0.12);
+}
+.gr__dot--ok {
+  margin-top: 0;
+  background: var(--ok);
+  box-shadow: 0 0 0 4px rgba(159, 208, 174, 0.14);
+}
+.gr__meta {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.gr__kind {
+  color: var(--ink-2, rgba(232, 235, 244, 0.7));
+}
+.gr__row--high .gr__kind {
+  color: var(--hi);
+}
+.gr__faint {
+  color: var(--ink-3, rgba(232, 235, 244, 0.45));
+}
+.gr__headline {
+  margin: 4px 0 0;
+  font-family: var(--sans, "Neue Montreal", sans-serif);
+  font-weight: 500;
+  font-size: 15.5px;
+  line-height: 1.35;
+  color: var(--ink, #e8ebf4);
+}
+.gr__detail {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--ink-2, rgba(232, 235, 244, 0.7));
+}
+.gr__cite {
+  display: inline-block;
+  max-width: 100%;
+  margin-top: 8px;
+  padding: 3px 9px;
+  overflow: hidden;
+  font-size: 11.5px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--brass, #d6c29a);
+  text-decoration: none;
+  border: 1px solid rgba(214, 194, 154, 0.28);
+  border-radius: 999px;
+  transition: background 0.3s var(--ease, ease), border-color 0.3s var(--ease, ease);
+}
+.gr__cite:hover {
+  background: rgba(214, 194, 154, 0.1);
+  border-color: rgba(214, 194, 154, 0.5);
+}
+.gr__btn {
+  padding-top: 2px;
+}
+.gr__more {
+  display: block;
+  margin: 8px 0 0;
+  padding: 8px 0;
+  font: inherit;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-2, rgba(232, 235, 244, 0.7));
+  background: none;
+  border: 0;
+}
+.gr__more:hover {
+  color: var(--ink, #e8ebf4);
+}
+@media (max-width: 560px) {
+  .gr {
+    padding: 18px 16px 10px;
+  }
+  .gr__row {
+    grid-template-columns: 10px minmax(0, 1fr);
+  }
+  .gr__btn {
+    grid-column: 2;
+  }
+}

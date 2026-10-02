@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState, type MouseEvent } from "react";
 import Button from "@/components/gist/ui/Button";
 import SessionChip from "@/components/gist/auth/SessionChip";
 import AutopilotCard from "@/components/gist/autopilot/AutopilotCard";
+import Radar from "@/components/gist/radar/Radar";
 
 interface Clio {
   connected: boolean;
@@ -222,6 +223,8 @@ export default function CasesView({ session }: { session: { role: string; name: 
           </div>
         </section>
       )}
+
+      {data && data.matters.length > 0 && <Radar />}
 
       {data && data.matters.length > 0 && (
         <section className="gc-list" aria-label="Matters">
