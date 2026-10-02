@@ -108,7 +108,7 @@ export function ProviderLanes({ d }: { d: Digest }) {
                   style={{ left: `${pct(g.from)}%`, width: `${pct(g.to) - pct(g.from)}%` }}
                   title={`${g.days} day gap, ${fmtDate(g.from)} to ${fmtDate(g.to)}`}
                 >
-                  <span className="gd-lane__gaplabel">{g.days}d</span>
+                  {pct(g.to) - pct(g.from) > 4 ? <span className="gd-lane__gaplabel">{g.days}d</span> : null}
                 </span>
               ))}
               {l.visits.map((v, i) => (
