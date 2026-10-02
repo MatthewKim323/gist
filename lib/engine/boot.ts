@@ -101,6 +101,7 @@ export function onFirstAssetsLoadCore(onEnterCompleted?: () => void) {
     }
   };
   guard("HomeContact.build", () => store.HomeContact?.build?.());
+  guard("CaseMenu.preBuild", () => store.CaseMenu?.preBuild?.());
   const textLoaded = store.TextLoader!.loaded || Promise.resolve();
   textLoaded.then(() => {
     const hidden: Promise<void> = store.PageLoader?.hiddenPromise || Promise.resolve();

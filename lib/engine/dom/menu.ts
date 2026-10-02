@@ -199,7 +199,7 @@ export class Menu {
     this.btnTL.play();
     setTimeout(() => store.Audio?.play({ key: "audio.menu_swoosh" }), 100);
     store.ASScroll?.disable();
-    if (store.ProjectMenu) store.ProjectMenu.allowControl = false;
+    if (store.CaseMenu) store.CaseMenu.allowControl = false;
   }
 
   closeMenu() {
@@ -210,7 +210,7 @@ export class Menu {
     this.openTL.reverse();
     this.btnTL.reverse();
     setTimeout(() => store.Audio?.play({ key: "audio.menu_close" }), 400);
-    if (store.ProjectMenu) store.ProjectMenu.allowControl = true;
+    if (store.CaseMenu) store.CaseMenu.allowControl = true;
     store.ASScroll?.enable();
   }
 

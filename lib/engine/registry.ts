@@ -8,7 +8,7 @@ export const MODULE_ORDER = {
   // constructed right after Audio
   afterAudio: ["Dom2Webgl"],
   // constructed after CustomEase registration
-  scenes: ["HomeContact", "ProjectMenu", "ProjectFilters", "World", "Navigation", "Menu", "WorldButton", "Cursor"],
+  scenes: ["HomeContact", "CaseMenu", "Navigation", "Menu", "Cursor"],
   // constructed last; owns the first view (BaseRenderer.onEnter + onFirstAssetsLoad). Stored as store.Highway.
   router: ["Router"],
 } as const;

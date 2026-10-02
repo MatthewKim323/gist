@@ -1,7 +1,6 @@
 // Transition `toHome` (source `Oo`, theme.js 15976-16176).
 import gsap from "gsap";
 import { store } from "../../core/store";
-import { paperTexture } from "./to-matter";
 import { Transition, removeView, type TransitionInArgs, type TransitionOutArgs } from "./base";
 
 export class ToHomeTransition extends Transition {
@@ -23,33 +22,40 @@ export class ToHomeTransition extends Transition {
     }
 
     if (view === "matter") {
+      // exact reverse of toMatter
       const home = store.HomeContact;
-      home.transitionPass.uniforms.u_fromScene.value = home.savePass.renderTarget.texture;
-      home.transitionPass.uniforms.u_toScene.value = paperTexture();
+      const menu = store.CaseMenu;
       const toContact = store.Highway.location.pathname.includes("contact");
+      home.transitionPass.uniforms.u_fromScene.value = home.savePass.renderTarget.texture;
+      home.transitionPass.uniforms.u_toScene.value = menu.savePass.renderTarget.texture;
+      menu.allowControl = false;
       home.enable();
       home.isHome = !toContact;
       home.tweenParams.cameraPathProgress = toContact ? 0 : 1;
       toContact ? home.showContact(true) : home.showHome(true);
       gsap
         .timeline({
-          defaults: { duration: 2.4, ease: "power4.inOut" },
+          defaults: { duration: 3, ease: "power4.inOut" },
           onStart: () => {
             home.savePass.enabled = true;
             home.transitionPass.enabled = true;
+            menu.savePass.enabled = true;
           },
           onComplete: () => {
             home.savePass.enabled = false;
             home.transitionPass.enabled = false;
+            menu.savePass.enabled = false;
+            menu.renderPass.enabled = false;
+            menu.removePreSceneEvents();
+            store.Gl!.fluidSim.disable();
             removeView(from);
             done();
           },
         })
-        .to(from, { autoAlpha: 0, y: -40, duration: 0.8, ease: "power2.in" }, 0)
-        .fromTo(home.transitionPass.uniforms.u_progress, { value: 1 }, { value: 0 }, 0.2)
-        .fromTo(home.tweenParams, { cameraYOffset: (store.window.h / 2) * -5e-5 }, { cameraYOffset: 0 }, "<");
+        .fromTo(home.transitionPass.uniforms.u_progress, { value: 1 }, { value: 0 }, 0)
+        .fromTo(home.tweenParams, { cameraYOffset: (store.window.h / 2) * -5e-5 }, { cameraYOffset: 0 }, "<")
+        .fromTo(menu.tweenParams, { cameraYOffset: 0 }, { cameraYOffset: 2 * store.window.h }, "<");
     }
-
   }
 }
 

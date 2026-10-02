@@ -103,6 +103,7 @@ export class BaseRenderer extends Renderer {
 
   onFirstAssetsLoad = () => {
     store.HomeContact.build();
+    store.CaseMenu.preBuild();
     this.rebrandBtn = new SvgButton($(".js-rebrand-btn") as any);
     this.muteBtn = new MuteButton($(".js-global-mute-btn") as any);
     (store.TextLoader!.loaded as Promise<void>).then(() => {

@@ -3771,34 +3771,3 @@ html.theme-dark .btn--fill.btn--light {
 .mykm-loader__line span {
   display: inline-block;
 }
-
-/* matter dashboard: own scroll layer above the GL canvas (z-40), under the header (z-80) */
-.matter {
-  position: fixed;
-  inset: 0;
-  z-index: 50;
-  overflow-y: auto;
-  background: #f4f1ea;
-  color: #1a1a1a;
-}
-.matter__inner {
-  max-width: 120rem;
-  margin: 0 auto;
-  padding: 12rem 2rem 6rem;
-}
-.matter__eyebrow {
-  font-size: 1.1rem;
-  letter-spacing: 0.08em;
-  opacity: 0.6;
-  margin-bottom: 1rem;
-}
-.matter__title {
-  font-size: clamp(4rem, 8vw, 9rem);
-  line-height: 0.95;
-  letter-spacing: -0.02em;
-  margin: 0 0 2rem;
-}
-.matter__lede {
-  font-size: 1.6rem;
-  opacity: 0.7;
-}

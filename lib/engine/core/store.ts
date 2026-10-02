@@ -74,12 +74,9 @@ export interface Store {
   NakedLoader: any;
   ScrollAnimations: any;
   HomeContact: any;
-  ProjectMenu: any;
-  ProjectFilters: any;
-  World: any;
+  CaseMenu: any;
   Navigation: any;
   Menu: any;
-  WorldButton: any;
   Cursor: any;
   Highway: any;
   Gui?: any;
@@ -97,8 +94,7 @@ export const store = {
   Dom2Webgl: null,
   Gl: null,
   HomeContact: null,
-  ProjectMenu: null,
-  World: null,
+  CaseMenu: null,
   Audio: null,
   audioMuted: false,
   events,
