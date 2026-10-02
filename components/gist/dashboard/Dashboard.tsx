@@ -398,7 +398,7 @@ function Sidebar({ d, fixture, tab, go }: { d: Digest; fixture: boolean; tab: Ta
   );
 }
 
-type CaseRow = { id: number; display_number: string; client_name: string | null; stage: string | null };
+type CaseRow = { id: number; display_number: string; client_name: string | null; stage: string | null; is_demo?: boolean };
 
 /** Top of the sidebar: the open case, and a menu of the firm's other cases (GET /api/cases). */
 function CaseSwitcher({ d, photo, onPhotoError }: { d: Digest; photo: string | null; onPhotoError: () => void }) {
@@ -463,7 +463,10 @@ function CaseSwitcher({ d, photo, onPhotoError }: { d: Digest; photo: string | n
                   data-active={here ? "" : undefined}
                   onClick={() => (here ? setOpen(false) : goTo(`/matter?view=digest&id=${c.id}${window.location.hash}`))}
                 >
-                  <span className="gd-switch__name">{c.client_name ?? c.display_number}</span>
+                  <span className="gd-switch__name">
+                    {c.client_name ?? c.display_number}
+                    {c.is_demo ? <span className="gd-switch__demo">Demo</span> : null}
+                  </span>
                   <span className="gd-switch__meta">
                     {c.display_number}
                     {c.stage ? ` · ${c.stage}` : ""}
