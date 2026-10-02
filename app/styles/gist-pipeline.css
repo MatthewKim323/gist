@@ -128,7 +128,7 @@
 .gp-counters {
   backdrop-filter: blur(14px) saturate(1.2);
   -webkit-backdrop-filter: blur(14px) saturate(1.2);
-  background: rgba(10, 15, 27, 0.5);
+  background: rgba(10, 15, 27, 0.78);
   border: 1px solid var(--gp-hair);
   border-radius: 999px;
   display: inline-grid;
@@ -143,7 +143,7 @@
   padding: 0 16px;
   pointer-events: none;
   position: sticky;
-  top: 1.25rem;
+  top: 4.5rem; /* clears the fixed site nav */
   z-index: 5;
 }
 .gp-counter {
@@ -247,6 +247,7 @@
 
 /* icons */
 .gp-tl .vertical-timeline-element-icon.gp-icon {
+  z-index: 2; /* the spine-tip light slides in underneath and parks behind the newest icon */
   background: rgba(10, 15, 27, 0.85);
   box-shadow: 0 0 0 1px var(--gp-hair) !important;
   color: var(--gp-ink);
@@ -728,4 +729,18 @@
 .gp-preview-done {
   color: #8fe0b0;
   margin-left: 0.3rem;
+}
+
+/* a stage the runner skipped because its module isn't available yet */
+.gp-tile--skipped {
+  background: transparent;
+  border: 1px dashed rgba(228, 231, 241, 0.3);
+  color: var(--gp-ink-3);
+}
+.gp-pill--skipped {
+  border-style: dashed;
+  color: var(--gp-ink-3);
+}
+.gp-node--skipped .gp-card {
+  opacity: 0.6;
 }

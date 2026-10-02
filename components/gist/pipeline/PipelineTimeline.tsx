@@ -18,6 +18,7 @@ import {
   fmtDur,
   fmtInt,
   fmtUsd,
+  isSkipped,
   type AgentRun,
   type RunCounters,
   type StageView,
@@ -272,7 +273,7 @@ function Counters({ c, cached }: { c: RunCounters; cached: boolean }) {
 
 // ------------------------------------------------------------------------------------------------
 
-const STATE_LABEL: Record<StageView["state"], string> = { working: "working", done: "done", cached: "cached", failed: "failed" };
+const STATE_LABEL: Record<StageView["state"], string> = { working: "working", done: "done", cached: "cached", failed: "failed", skipped: "skipped" };
 
 const StageNode = memo(function StageNode({ stage, on, now, side }: { stage: StageView; on: boolean; now: number; side: "left" | "right" }) {
   const { def, counts, tasks } = stage;
@@ -281,7 +282,9 @@ const StageNode = memo(function StageNode({ stage, on, now, side }: { stage: Sta
   const elapsed =
     stage.startedAt == null ? null : (stage.finishedAt ?? (stage.state === "working" ? now : stage.startedAt)) - stage.startedAt;
   const date =
-    stage.state === "cached"
+    stage.state === "skipped"
+      ? "not wired yet"
+      : stage.state === "cached"
       ? "from cache"
       : elapsed == null
         ? ""
@@ -339,10 +342,12 @@ function tileTitle(t: AgentTask) {
 }
 
 const Tile = memo(function Tile({ t, dense }: { t: AgentTask; dense: boolean }) {
-  const tail =
-    t.status === "cached" ? "$0" : t.status === "failed" ? "failed" : t.status === "done" && t.facts_emitted ? `+${t.facts_emitted}` : null;
+  const skipped = isSkipped(t);
+  const tail = skipped
+    ? null
+    : t.status === "cached" ? "$0" : t.status === "failed" ? "failed" : t.status === "done" && t.facts_emitted ? `+${t.facts_emitted}` : null;
   return (
-    <span className={`gp-tile gp-tile--${t.status}`} title={tileTitle(t)}>
+    <span className={`gp-tile gp-tile--${skipped ? "skipped" : t.status}`} title={tileTitle(t)}>
       {!dense && (
         <>
           <span className="gp-tile__label">{t.shard_label ?? `task ${t.id}`}</span>
@@ -360,7 +365,7 @@ function StageIcon({ index, state }: { index: number; state: StageView["state"] 
         <circle cx="20" cy="20" r="18" />
       </svg>
       <span className="gp-icon__num">
-        {state === "done" || state === "cached" ? <Check /> : state === "failed" ? "!" : index}
+        {state === "done" || state === "cached" ? <Check /> : state === "failed" ? "!" : state === "skipped" ? "\u00b7" : index}
       </span>
     </span>
   );

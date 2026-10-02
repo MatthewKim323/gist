@@ -33,7 +33,10 @@ export const STAGES: StageDef[] = [
 
 const ORDER = new Map(STAGES.map((s, i) => [s.role, i]));
 
-export type StageState = "working" | "done" | "cached" | "failed";
+export type StageState = "working" | "done" | "cached" | "failed" | "skipped";
+
+/** The runner writes a cached "<stage> (skipped)" row when a stage module is not available. */
+export const isSkipped = (t: AgentTask) => (t.status === "cached" || t.status === "done") && /^skipped\b/i.test(t.last_event ?? "");
 
 export interface StageView {
   def: StageDef;
@@ -147,12 +150,14 @@ export function deriveStages(tasks: AgentTask[], run: AgentRun | null): StageVie
     const events: StageView["events"] = {};
     for (const t of list) {
       counts[t.status]++;
-      facts += t.facts_emitted;
+      const parsed = parseEvent(t.last_event);
+      // cached shards report their carried-over facts in last_event ("12 facts unchanged") instead of facts_emitted
+      facts += Math.max(t.facts_emitted, parsed.fact?.n ?? 0);
       cost += t.cost_usd;
       const s = ts(t.started_at), f = ts(t.finished_at);
       if (!Number.isNaN(s)) start = Math.min(start, s);
       if (!Number.isNaN(f)) end = Math.max(end, f);
-      for (const [k, v] of Object.entries(parseEvent(t.last_event))) {
+      for (const [k, v] of Object.entries(parsed)) {
         const e = (events[k] ??= { n: 0, of: 0 });
         e.n += v.n;
         e.of += v.of;
@@ -164,6 +169,7 @@ export function deriveStages(tasks: AgentTask[], run: AgentRun | null): StageVie
     let state: StageState = "working";
     if (open === 0 && (laterStarted || runOver)) {
       if (counts.failed > 0 && counts.failed === list.length) state = "failed";
+      else if (list.every(isSkipped)) state = "skipped";
       else if (counts.cached === list.length) state = "cached";
       else state = "done";
     }
@@ -193,6 +199,8 @@ export function deriveCounters(stages: StageView[], run: AgentRun | null): RunCo
   const stats = run?.stats ?? null;
   const all = stages.flatMap((s) => s.tasks);
 
+  const sumEv = (key: string) =>
+    stages.reduce((a, s) => ({ n: a.n + (s.events[key]?.n ?? 0), of: a.of + (s.events[key]?.of ?? 0) }), { n: 0, of: 0 });
   const entriesEv = ev("sync", "entry");
   const pagesEv = ev("ocr", "page");
   const taskCost = all.reduce((s, t) => s + t.cost_usd, 0);
@@ -200,23 +208,26 @@ export function deriveCounters(stages: StageView[], run: AgentRun | null): RunCo
 
   return {
     entries: {
-      n: statNum(stats, "entries_read") ?? entriesEv?.n ?? 0,
-      of: statNum(stats, "entries_total") ?? (entriesEv?.of || null),
+      n: statNum(stats, "entries_read") ?? statNum(stats, "entries") ?? entriesEv?.n ?? 0,
+      // a denominator is only shown when it is authoritative (run stats), never a partial sum of finished shards
+      of: statNum(stats, "entries_total") ?? statNum(stats, "entries"),
     },
     pages: {
-      n: statNum(stats, "pages_read") ?? pagesEv?.n ?? 0,
-      of: statNum(stats, "pages_total") ?? (pagesEv?.of || null),
+      n: statNum(stats, "pages_read") ?? statNum(stats, "pages") ?? pagesEv?.n ?? 0,
+      of: statNum(stats, "pages_total") ?? statNum(stats, "pages"),
     },
     factsEmitted: get("extract")?.facts ?? 0,
     verified: statNum(stats, "facts_verified") ?? ev("verify", "verified")?.n ?? null,
-    rejected: statNum(stats, "facts_rejected") ?? ev("verify", "rejected")?.n ?? 0,
+    // the quote verifier runs inside the extractor shards ("8 facts, 2 rejected") and/or as its own verify stage
+    rejected: statNum(stats, "facts_rejected") ?? sumEv("rejected").n,
     jevChecks:
       statNum(stats, "jev_checks") ??
+      (ev("jev", "supported")?.of || null) ??
       ev("jev", "check")?.n ??
       (jevStage ? jevStage.counts.done + jevStage.counts.cached : 0),
     cost: run && (run.status === "done" || run.status === "failed") && run.cost_usd > 0 ? run.cost_usd : taskCost,
     tasks: all.length,
-    cachedTasks: all.filter((t) => t.status === "cached").length,
+    cachedTasks: all.filter((t) => t.status === "cached" || isSkipped(t)).length,
     terminalTasks: all.filter((t) => isTerminal(t.status)).length,
     failedTasks: all.filter((t) => t.status === "failed").length,
   };
