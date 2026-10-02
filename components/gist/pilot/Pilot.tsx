@@ -8,6 +8,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Bot } from "./Bot";
 import { block } from "@/lib/captain/cycles";
 import type { Look } from "@/lib/captain/cycles";
+import { startScan } from "./scanFx";
 
 type Mode = "waiting" | "flying" | "scanning" | "done" | "cached" | "failed" | "final";
 
@@ -27,7 +28,41 @@ const FACE: Record<Mode, { expression: string; anim: string[] }> = {
   final: { expression: "hilare", anim: ["ahoy", "bob"] },
 };
 
-type Target = { x: number; y: number; card: HTMLElement | null; side: "left" | "right"; mode: Mode; key: string };
+type Target = { x: number; y: number; card: HTMLElement | null; side: "left" | "right"; mode: Mode; role: string; key: string };
+
+// while scanning, the face and the eyes act out what the stage is doing
+const SCAN_FACE: Record<string, string> = {
+  sync: "curieux",
+  ocr: "attentif",
+  extract: "excite",
+  verify: "attentif",
+  jev: "mefiant",
+  embed: "curieux",
+  reconcile: "confus",
+  gate: "attentif",
+  synth: "fier",
+};
+type Gaze = (t: number, toward: number) => Omit<Look, "mix" | "spin" | "wander">;
+const saw = (t: number, period: number) => (t / period) % 1;
+const SCAN_GAZE: Record<string, Gaze> = {
+  // left to right along the resource list
+  sync: (t, d) => ({ yaw: d * (12 + 22 * Math.sin(t * 1.4)), pitch: -12 }),
+  // reading lines: sweep across, drop a line, snap back
+  ocr: (t, d) => ({ yaw: d * (6 + 30 * saw(t, 0.9)), pitch: -6 - 4 * (Math.floor(t / 0.9) % 4) }),
+  // darting between shards
+  extract: (t, d) => ({ yaw: d * (18 + 18 * Math.sign(Math.sin(t * 5.3))), pitch: -12 + 6 * Math.sign(Math.sin(t * 3.1)) }),
+  // nodding along as each quote checks out
+  verify: (t, d) => ({ yaw: d * 22, pitch: -10 - 7 * Math.abs(Math.sin(t * 3.2)) }),
+  // long, suspicious holds
+  jev: (t, d) => ({ yaw: d * (20 + 10 * Math.sign(Math.sin(t * 1.1))), pitch: -12 }),
+  // taking in the whole space
+  embed: (t, d) => ({ yaw: d * (18 + 16 * Math.sin(t * 0.9)), pitch: -8 + 8 * Math.sin(t * 0.7) }),
+  // one side, then the other
+  reconcile: (t, d) => ({ yaw: d * 20 + 18 * Math.sign(Math.sin(t * 1.6)), pitch: -12 }),
+  gate: (t, d) => ({ yaw: d * (10 + 28 * saw(t, 1.6)), pitch: -12 }),
+  // following the caret as it writes
+  synth: (t, d) => ({ yaw: d * (4 + 34 * saw(t, 0.75)), pitch: -8 }),
+};
 
 function readTarget(root: HTMLElement): Target | null {
   const nodes = root.querySelectorAll<HTMLElement>(".gp-node.is-on");
@@ -39,15 +74,16 @@ function readTarget(root: HTMLElement): Target | null {
     const head = root.querySelector<HTMLElement>(".gp-title");
     if (!head) return null;
     const r = head.getBoundingClientRect();
-    return { x: r.right + 24, y: r.top + r.height * 0.4, card: null, side: "right", mode: "waiting", key: "head" };
+    return { x: r.right + 24, y: r.top + r.height * 0.4, card: null, side: "right", mode: "waiting", role: "", key: "head" };
   }
   const card = node.querySelector<HTMLElement>(".gp-card");
   if (!card) return null;
   const r = card.getBoundingClientRect();
   // which side of the spine the card sits on (single column on narrow screens: always right)
   const side: "left" | "right" = r.left + r.width / 2 < vw / 2 && vw >= 1170 ? "left" : "right";
-  const x = side === "right" ? r.right - SIZE * 0.55 : r.left + SIZE * 0.55;
-  const y = r.top - SIZE * 0.42;
+  // perch on the card's outer top corner, clear of the title
+  const x = side === "right" ? r.right - SIZE * 0.12 : r.left + SIZE * 0.12;
+  const y = r.top - SIZE * 0.36;
   const cls = node.className;
   const mode: Mode = cls.includes("gp-node--final")
     ? cls.includes("gp-node--failed")
@@ -66,6 +102,7 @@ function readTarget(root: HTMLElement): Target | null {
     card,
     side,
     mode,
+    role: node.className.match(/gp-node--(\w+)/)?.[1] ?? "",
     key: node.className.match(/gp-node--(\w+)/)?.[1] + ":" + nodes.length,
   };
 }
@@ -77,6 +114,7 @@ export default function Pilot({ rootRef }: { rootRef: React.RefObject<HTMLElemen
   const [mode, setMode] = useState<Mode>("waiting");
   const [side, setSide] = useState<"left" | "right">("right");
   const modeRef = useRef<Mode>("waiting");
+  const [role, setRole] = useState("");
 
   useEffect(() => {
     const root = rootRef.current;
@@ -88,9 +126,11 @@ export default function Pilot({ rootRef }: { rootRef: React.RefObject<HTMLElemen
     let launchAt = 0;
     let dipX = 0;
     let scanned: HTMLElement | null = null;
+    let stopScan: (() => void) | null = null;
     let raf = 0;
     let last = performance.now();
 
+    const setR = (r: string) => setRole((x) => (x === r ? x : r));
     const setM = (m: Mode) => {
       if (modeRef.current === m) return;
       modeRef.current = m;
@@ -148,12 +188,18 @@ export default function Pilot({ rootRef }: { rootRef: React.RefObject<HTMLElemen
 
       // scan: beam from the pilot onto the card it is reading, sweep on the card itself
       const scanning = !travelling && t.mode === "scanning" && t.card;
-      if (scanned && scanned !== t.card) scanned.removeAttribute("data-scan");
-      if (t.card) {
-        if (scanning) t.card.setAttribute("data-scan", "");
-        else t.card.removeAttribute("data-scan");
-        scanned = t.card;
+      const want = scanning ? t.card : null;
+      if (want !== scanned) {
+        stopScan?.();
+        stopScan = null;
+        scanned?.removeAttribute("data-scan");
+        scanned = want;
+        if (want) {
+          want.setAttribute("data-scan", "");
+          if (!reduce) stopScan = startScan(want, t.role);
+        }
       }
+      setR(t.role);
       if (beam.current) {
         if (scanning && t.card) {
           const r = t.card.getBoundingClientRect();
@@ -168,6 +214,7 @@ export default function Pilot({ rootRef }: { rootRef: React.RefObject<HTMLElemen
     raf = requestAnimationFrame(frame);
     return () => {
       cancelAnimationFrame(raf);
+      stopScan?.();
       scanned?.removeAttribute("data-scan");
     };
   }, [rootRef]);
@@ -175,15 +222,19 @@ export default function Pilot({ rootRef }: { rootRef: React.RefObject<HTMLElemen
   // eyes: toward the direction of travel, or down at the card while reading it
   const gaze = useMemo<((t: number) => Look) | null>(() => {
     if (mode === "flying") return null;
-    if (mode === "scanning" || mode === "waiting") {
-      const yaw = side === "right" ? -22 : 22;
-      return (t: number) => ({ yaw: yaw + Math.sin(t * 2.4) * 9, pitch: -14, mix: Math.min(1, t * 2), spin: 0, wander: 0 });
+    const toward = side === "right" ? -1 : 1;
+    if (mode === "scanning") {
+      const g = SCAN_GAZE[role] ?? SCAN_GAZE.ocr;
+      return (t: number) => ({ ...g(t, toward), mix: Math.min(1, t * 2.5), spin: 0, wander: 0 });
     }
+    if (mode === "waiting")
+      return (t: number) => ({ yaw: toward * 22 + Math.sin(t * 2.4) * 9, pitch: -14, mix: Math.min(1, t * 2), spin: 0, wander: 0 });
     return null;
-  }, [mode, side]);
+  }, [mode, side, role]);
 
-  const face = FACE[mode];
-  const cycle = useMemo(() => face.anim.map(block), [face]);
+  const face = mode === "scanning" ? { ...FACE.scanning, expression: SCAN_FACE[role] ?? "attentif" } : FACE[mode];
+  const animKey = face.anim.join(",");
+  const cycle = useMemo(() => animKey.split(",").map(block), [animKey]);
 
   return (
     <div className="gp-pilot" ref={el} data-mode={mode} aria-hidden="true">

@@ -1,7 +1,7 @@
 import { mixHex, NOTIF_COLOR } from "./engine";
 import { hatMarkup, type HatId } from "./hats";
 import type { HatPose } from "./hat3d";
-import { faceMarkup, MOUTH_BY_EXPRESSION, type Eye } from "./face";
+import type { Eye } from "./face";
 
 export const VIEW = 158;
 
@@ -34,6 +34,8 @@ export function frameMarkup(f: Frame, o: { uid: string; color: string; paper: st
   const V = VIEW;
   let s = `<defs><mask id="${m}" maskUnits="userSpaceOnUse" x="${-V}" y="${-V}" width="${V * 2}" height="${V * 2}">`;
   s += `<path d="${f.bodyPath}" fill="#fff"></path>`;
+  // the original grok eyes: cut straight out of the body, no pupils, mouth or blush
+  for (const e of f.eyes) s += `<path d="${e.d}" transform="${e.matrix}" opacity="${e.alpha}" fill="#000"></path>`;
   if (f.notch) s += `<circle cx="${f.notch.x}" cy="${f.notch.y}" r="${f.notch.r}" fill="#000"></circle>`;
   s += `</mask>`;
   for (const a of f.arcs) {
@@ -47,7 +49,6 @@ export function frameMarkup(f: Frame, o: { uid: string; color: string; paper: st
   const dots = () => f.dots.map((d) => dot(d, o.color, o.paper)).join("");
   if (f.dotsBehind) s += `<g>${dots()}</g>`;
   s += `<g opacity="${f.bodyAlpha}"><path d="${f.bodyPath}" fill="${esc(o.paper)}"></path><g mask="url(#${m})"><rect x="${-V}" y="${-V}" width="${V * 2}" height="${V * 2}" fill="${esc(o.color)}"></rect></g></g>`;
-  if (f.eyes.length) s += `<g opacity="${f.bodyAlpha}">${faceMarkup(f.eyes, { uid: o.uid, mouth: MOUTH_BY_EXPRESSION[o.expression ?? "neutre"] ?? "smile", blush: o.color !== "#e152b0" })}</g>`;
   if (o.hat !== "aucun" && f.hat.s > 0.04) s += hatMarkup(o.hat, f.hat, f.bodyAlpha);
   if (!f.dotsBehind) s += `<g>${dots()}</g>`;
   if (f.notif) s += `<circle cx="${f.notif.x}" cy="${f.notif.y}" r="${f.notif.r}" fill="${NOTIF_COLOR}"></circle>`;

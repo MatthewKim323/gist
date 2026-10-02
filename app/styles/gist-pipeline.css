@@ -831,41 +831,137 @@
     0 0 36px -8px rgba(141, 184, 255, 0.35);
   overflow: hidden;
 }
-.gp-tl .gp-card[data-scan]::after {
-  animation: gp-scan 2.1s var(--gp-carry) infinite;
-  background: linear-gradient(
-    180deg,
-    rgba(141, 184, 255, 0) 0,
-    rgba(141, 184, 255, 0.1) 42%,
-    rgba(228, 231, 241, 0.6) 49.6%,
-    rgba(228, 231, 241, 0.6) 50.4%,
-    rgba(141, 184, 255, 0.06) 54%,
-    rgba(141, 184, 255, 0) 100%
-  );
-  border-radius: inherit;
-  content: "";
-  height: 220%;
-  left: 0;
-  mix-blend-mode: screen;
-  pointer-events: none;
-  position: absolute;
-  right: 0;
-  top: -120%;
-}
-@keyframes gp-scan {
-  from {
-    transform: translateY(0);
-  }
-  to {
-    transform: translateY(100%);
-  }
-}
 .gp-tl .gp-card[data-scan] .gp-tile--running {
   box-shadow: 0 0 10px rgba(141, 184, 255, 0.55);
 }
 @media (prefers-reduced-motion: reduce) {
-  .gp-tl .gp-card[data-scan]::after,
   .gp-pilot__beam::after {
     animation: none;
   }
+}
+
+/* scan choreography layer (scanFx.ts builds these, GSAP moves them) */
+.gp-fx {
+  border-radius: inherit;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  position: absolute;
+  z-index: 1;
+}
+.gp-fx > * {
+  position: absolute;
+  will-change: transform, opacity;
+}
+.gp-fx-bar {
+  background: linear-gradient(90deg, rgba(228, 231, 241, 0), rgba(228, 231, 241, 0.95) 18%, rgba(228, 231, 241, 0.95) 82%, rgba(228, 231, 241, 0));
+  box-shadow: 0 0 18px 2px rgba(141, 184, 255, 0.55);
+}
+.gp-fx-band {
+  background: linear-gradient(180deg, rgba(141, 184, 255, 0), rgba(141, 184, 255, 0.14));
+}
+.gp-fx-ring {
+  border: 1px solid rgba(228, 231, 241, 0.85);
+  border-radius: 9px;
+  box-shadow: 0 0 16px rgba(141, 184, 255, 0.45);
+  left: 0;
+  top: 0;
+  transform-origin: 50% 50%;
+}
+.gp-fx-plus {
+  color: var(--gp-green);
+  font-size: 0.7rem;
+  font-weight: 600;
+  left: 0;
+  letter-spacing: 0.02em;
+  text-shadow: 0 0 10px rgba(143, 224, 176, 0.6);
+  top: 0;
+}
+.gp-fx-comb {
+  background: linear-gradient(180deg, rgba(143, 224, 176, 0), rgba(143, 224, 176, 0.95) 20%, rgba(143, 224, 176, 0.95) 80%, rgba(143, 224, 176, 0));
+  box-shadow: 0 0 16px 2px rgba(143, 224, 176, 0.45);
+}
+.gp-fx-reticle {
+  left: 0;
+  top: 0;
+  transform-origin: 50% 50%;
+}
+.gp-fx-reticle > div {
+  border-color: rgba(228, 231, 241, 0.95);
+  border-style: solid;
+  height: 9px;
+  position: absolute;
+  width: 9px;
+  filter: drop-shadow(0 0 4px rgba(141, 184, 255, 0.8));
+}
+.gp-fx-reticle__tl {
+  border-width: 1.5px 0 0 1.5px;
+  left: 0;
+  top: 0;
+}
+.gp-fx-reticle__tr {
+  border-width: 1.5px 1.5px 0 0;
+  right: 0;
+  top: 0;
+}
+.gp-fx-reticle__bl {
+  border-width: 0 0 1.5px 1.5px;
+  bottom: 0;
+  left: 0;
+}
+.gp-fx-reticle__br {
+  border-width: 0 1.5px 1.5px 0;
+  bottom: 0;
+  right: 0;
+}
+.gp-fx-grid {
+  display: grid;
+  inset: 14px;
+  place-items: center;
+}
+.gp-fx-grid > .gp-fx-dot {
+  background: rgba(228, 231, 241, 0.55);
+  border-radius: 50%;
+  box-shadow: 0 0 6px rgba(141, 184, 255, 0.6);
+  height: 3px;
+  position: static;
+  width: 3px;
+}
+.gp-fx-half {
+  background: linear-gradient(90deg, rgba(141, 184, 255, 0), rgba(141, 184, 255, 0.85));
+  height: 1px;
+  top: 50%;
+  width: 50%;
+}
+.gp-fx-half:nth-child(2) {
+  background: linear-gradient(270deg, rgba(141, 184, 255, 0), rgba(141, 184, 255, 0.85));
+}
+.gp-fx-flash {
+  background: radial-gradient(ellipse at center, rgba(228, 231, 241, 0.9), rgba(141, 184, 255, 0) 70%);
+  height: 40px;
+  left: calc(50% - 60px);
+  margin-top: -20px;
+  top: 50%;
+  width: 120px;
+}
+.gp-fx-rail {
+  background: linear-gradient(90deg, rgba(143, 224, 176, 0.2), rgba(143, 224, 176, 0.95));
+  bottom: 0;
+  box-shadow: 0 0 12px rgba(143, 224, 176, 0.5);
+  height: 2px;
+  left: 0;
+  right: 0;
+  transform-origin: 0 50%;
+}
+.gp-fx-caret {
+  background: var(--gp-ink);
+  box-shadow: 0 0 8px rgba(228, 231, 241, 0.8);
+  left: 0;
+  top: 0;
+  width: 2px;
+}
+.gp-fx-ink {
+  background: linear-gradient(90deg, rgba(141, 184, 255, 0.5), rgba(228, 231, 241, 0.7));
+  height: 1px;
+  transform-origin: 0 50%;
 }
