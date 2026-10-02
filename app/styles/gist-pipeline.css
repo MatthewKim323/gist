@@ -13,6 +13,8 @@
   --gp-red: #ff8a8a;
   --gp-queued: rgba(228, 231, 241, 0.16);
   --gp-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* slow-fast-slow, same curve as the auto-scroll carry, so the spine and the page move together */
+  --gp-carry: cubic-bezier(0.76, 0, 0.24, 1);
   --gp-line: 0px;
 
   position: fixed;
@@ -209,7 +211,7 @@
 .gp-tl .vertical-timeline::before {
   background: linear-gradient(to bottom, rgba(228, 231, 241, 0) 0, rgba(228, 231, 241, 0.55) 60px, rgba(228, 231, 241, 0.55) 100%);
   height: var(--gp-line);
-  transition: height 1.1s var(--gp-ease);
+  transition: height 1.6s var(--gp-carry);
   width: 1px;
   margin-left: 1.5px;
 }
@@ -227,7 +229,7 @@
   position: absolute;
   top: var(--gp-line);
   transition:
-    top 1.1s var(--gp-ease),
+    top 1.6s var(--gp-carry),
     opacity 0.4s;
   width: 5px;
 }
@@ -251,9 +253,12 @@
 /* icons */
 .gp-tl .vertical-timeline-element-icon.gp-icon {
   z-index: 2; /* the spine-tip light slides in underneath and parks behind the newest icon */
-  background: rgba(10, 15, 27, 0.85);
+  background: #000;
   box-shadow: 0 0 0 1px var(--gp-hair) !important;
-  color: var(--gp-ink);
+  color: #e9e9e9;
+  transition:
+    color 0.8s var(--gp-ease),
+    box-shadow 0.8s var(--gp-ease);
 }
 .gp-icon__inner {
   align-items: center;
@@ -263,56 +268,51 @@
   position: relative;
   width: 100%;
 }
-.gp-tl .vertical-timeline-element-icon .gp-icon__ring {
-  fill: none;
-  height: 100%;
-  inset: 0;
-  left: 0;
+/* the evolve spark: turned 147deg per stage, spins while its stage works, settles when it lands */
+.gp-tl .vertical-timeline-element-icon svg.gp-spark {
+  fill: currentColor;
+  height: 74%;
+  left: 13%;
   margin: 0;
   position: absolute;
-  stroke: var(--gp-ink);
-  stroke-dasharray: 26 87;
-  stroke-linecap: round;
-  stroke-width: 1.2;
-  top: 0;
-  width: 100%;
-  opacity: 0;
+  top: 13%;
+  transform: rotate(var(--gp-rot, 0deg));
+  transition: transform 1.4s var(--gp-carry);
+  width: 74%;
 }
-.gp-icon--working .gp-icon__ring {
-  animation: gp-spin 1.3s linear infinite;
-  opacity: 1 !important;
+.gp-icon--working svg.gp-spark {
+  animation: gp-spark-spin 6s linear infinite;
+  filter: drop-shadow(0 0 6px rgba(233, 233, 233, 0.45));
 }
-.gp-tl .vertical-timeline-element-icon .gp-icon__num svg {
-  height: 14px;
-  left: 0;
-  margin: 0;
-  top: 0;
-  width: 14px;
-}
-.gp-icon__num {
-  font-family: "Saol Display", Georgia, serif;
-  font-size: 1.05rem;
-  line-height: 1;
-}
-.gp-tl .vertical-timeline-element-icon.gp-icon--done {
-  background: var(--gp-ink);
-  color: #0d1422;
+@keyframes gp-spark-spin {
+  from {
+    transform: rotate(var(--gp-rot, 0deg));
+  }
+  to {
+    transform: rotate(calc(var(--gp-rot, 0deg) + 360deg));
+  }
 }
 .gp-tl .vertical-timeline-element-icon.gp-icon--cached {
-  background: var(--gp-blue);
-  color: #0d1422;
-  box-shadow: 0 0 22px rgba(141, 184, 255, 0.45) !important;
+  color: var(--gp-blue);
+  box-shadow:
+    0 0 0 1px rgba(141, 184, 255, 0.35),
+    0 0 22px rgba(141, 184, 255, 0.35) !important;
 }
 .gp-tl .vertical-timeline-element-icon.gp-icon--failed {
-  background: var(--gp-red);
-  color: #1b0d0d;
+  color: var(--gp-red);
+  box-shadow: 0 0 0 1px rgba(255, 138, 138, 0.45) !important;
+}
+.gp-tl .vertical-timeline-element-icon.gp-icon--skipped {
+  color: var(--gp-ink-3);
 }
 .gp-tl .vertical-timeline-element-icon.gp-icon--final {
-  background: var(--gp-ink);
   box-shadow:
     0 0 0 1px var(--gp-ink),
-    0 0 40px rgba(228, 231, 241, 0.45) !important;
-  color: #0d1422;
+    0 0 40px rgba(228, 231, 241, 0.4) !important;
+  color: var(--gp-ink);
+}
+.gp-tl .vertical-timeline-element-icon.gp-icon--final.gp-icon--failed {
+  color: var(--gp-red);
 }
 
 /* cards */
