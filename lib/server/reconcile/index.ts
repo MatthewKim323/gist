@@ -1,6 +1,7 @@
 import "server-only";
 import { z } from "zod";
 import pLimit from "p-limit";
+import { createHash } from "node:crypto";
 import { db, must } from "../db";
 import { embed, structured } from "../llm";
 import { env } from "../env";
@@ -238,6 +239,25 @@ async function reviewGroup(ctx: RunCtx, g: F[], label: string): Promise<Finding_
     const listing = g.map((f, i) =>
       `#${i} | source ${f.source_ref} | written ${f.written ?? "n/a"} | event date ${f.event_date ?? "n/a"} | ${f.kind}${f.event_key ? ` ${f.event_key}` : ""}\n   summary: ${f.summary}\n   quote: "${f.quote}"`,
     ).join("\n");
+    // Same facts in, same findings out: a group whose facts haven't changed is answered from cache for $0.
+    const cacheKey = "reconcile:" + createHash("sha256").update(`${env.swarmModel()}\n${SYSTEM}\n${JEV_MIN}/${JEV_MIN_BURIED}\n${g.map((f) => f.id).join(",")}\n${listing}`).digest("hex");
+    const byId = new Map(g.map((f) => [f.id, f]));
+    const hit = await db().from("extraction_cache").select("output").eq("cache_key", cacheKey).maybeSingle();
+    if (hit.data?.output) {
+      t.cached();
+      const cached = (hit.data.output as { findings: (Omit<Finding_, "claims"> & { claims: { id: string; says: string }[] })[] }).findings;
+      const out = cached.map((fd) => ({ ...fd, claims: fd.claims.filter((c) => byId.has(c.id)).map((c) => ({ fact: byId.get(c.id)!, says: c.says })) }));
+      t.facts(out.length);
+      await t.event(`${out.length} findings unchanged`);
+      return out;
+    }
+    const remember = async (list: Finding_[]) => {
+      await db().from("extraction_cache").upsert({
+        cache_key: cacheKey,
+        output: { findings: list.map((fd) => ({ ...fd, claims: fd.claims.map((c) => ({ id: c.fact.id, says: c.says })) })) },
+      });
+      return list;
+    };
     const { data, usage } = await structured({
       model: env.swarmModel(),
       system: SYSTEM,
@@ -276,13 +296,14 @@ async function reviewGroup(ctx: RunCtx, g: F[], label: string): Promise<Finding_
         });
         await t.event(`${kept.length}/${found.length} confirmed`);
         t.facts(kept.length);
-        return kept;
+        return remember(kept);
       } catch (e) {
         await t.event(`jev skipped: ${String((e as Error).message).slice(0, 80)}`);
       }
     }
     t.facts(found.length);
-    return found;
+    // Not cached when Jev was skipped, so the audit runs next time.
+    return jevAvailable() && found.length ? found : remember(found);
   });
 }
 
