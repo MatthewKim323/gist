@@ -65,7 +65,8 @@ function build(d: Digest, drafts: AgentAction[], subs: SubLite[], shares: ShareL
     a.push(g);
     byProvider.set(g.owed_by_contact_id, a);
   }
-  for (const [cid, gs] of byProvider) {
+  const provOrder = [...byProvider.entries()].sort((a, b) => Math.max(0, ...b[1].map((g) => g.days_outstanding ?? 0)) - Math.max(0, ...a[1].map((g) => g.days_outstanding ?? 0)) || b[1].length - a[1].length);
+  provOrder.forEach(([cid, gs], idx) => {
     const lane = laneByContact.get(cid);
     const name = shortName(gs[0].owed_by_name ?? lane?.name ?? "the provider");
     const keys = gs.map((g) => g.requirement_key);
@@ -75,14 +76,14 @@ function build(d: Digest, drafts: AgentAction[], subs: SubLite[], shares: ShareL
     const why = [days ? `${days} days outstanding` : `${plural(gs.length, "item")} missing`, asks ? `${plural(asks, "unanswered request")}` : null]
       .filter(Boolean).join(", ");
     out.push({
-      id: `records:${cid}`, rank: 100 + (draft ? 0 : 20) - Math.min(days, 2000) / 100,
+      id: `records:${cid}`, rank: (idx < 2 ? 100 : 650) + idx,
       title: `Chase ${name}'s ${gs.some((g) => /bill/i.test(g.label)) && gs.every((g) => /bill/i.test(g.label)) ? "bills" : "records"}`,
       why, unblocks: unblocks(gs.length, total, next), party: name, owner: "provider",
       cites: cites(gs), primary: draftAction(draft, keys, name),
       secondary: [{ kind: "open_share", label: `Share status with ${name}`, payload: { providerId: cid } }, { kind: "mark_done", label: "Mark done", payload: {} }],
       autoNote: DRAFT_DONE(draft),
     });
-  }
+  });
 
   // 2. client, 3. defense, 4. carrier
   const party: [Owner, AgentAction["kind"], number][] = [["client", "client_followup", 200], ["defense", "defense_demand", 300], ["carrier", "carrier_followup", 350]];
@@ -127,13 +128,13 @@ function build(d: Digest, drafts: AgentAction[], subs: SubLite[], shares: ShareL
 
   // 6. share case status with the providers we are waiting on (they cannot help without visibility)
   const active = new Set(shares.filter((s) => s.state === "active").map((s) => s.provider_contact_id));
-  const shareTargets = [...byProvider.keys(), ...d.providers.map((p) => p.contact_id)].filter((v, i, a) => a.indexOf(v) === i).slice(0, 2);
+  const shareTargets = [...provOrder.map(([cid]) => cid), ...d.providers.map((p) => p.contact_id)].filter((v, i, a) => a.indexOf(v) === i).slice(0, 2);
   for (const cid of shareTargets) {
     const lane = laneByContact.get(cid);
     const name = shortName(lane?.name ?? byProvider.get(cid)?.[0]?.owed_by_name ?? "provider");
     const owes = byProvider.get(cid)?.length ?? 0;
     out.push({
-      id: `share:${cid}`, rank: 400 + (owes ? 0 : 50),
+      id: `share:${cid}`, rank: 250 + shareTargets.indexOf(cid) * 300,
       title: `Share case status with ${name}`,
       why: owes ? `they owe ${plural(owes, "item")} and have no live link` : `${lane?.visits.length ?? 0} visits on file, no live status link`,
       unblocks: null, party: name, owner: "provider", cites: [],
@@ -147,7 +148,7 @@ function build(d: Digest, drafts: AgentAction[], subs: SubLite[], shares: ShareL
   const sig = signalsFor(d);
   const hi = d.red_flags.filter((f) => f.severity === "high");
   if (hi.length) out.push({
-    id: "flags:depo", rank: 600,
+    id: "flags:depo", rank: 420,
     title: `Prep the ${plural(hi.length, "high red flag")} before depositions`,
     why: hi.slice(0, 2).map((f) => f.title).join("; "),
     unblocks: null, party: "Firm", owner: "firm",
@@ -159,7 +160,7 @@ function build(d: Digest, drafts: AgentAction[], subs: SubLite[], shares: ShareL
   if (pl) {
     const lim = d.money.coverage_limit?.value, spec = d.money.specials?.value;
     out.push({
-      id: "demand:limits", rank: pl.severity === "high" ? 30 : 450,
+      id: "demand:limits", rank: pl.severity === "high" ? 380 : 470,
       title: spec != null && lim != null && spec > lim ? "Policy-limits demand: specials exceed the limit" : "Policy-limits demand: value exceeds the limit",
       why: spec != null && lim != null ? `specials ${usd(spec)} vs ${usd(lim)} limit` : pl.detail,
       unblocks: null, party: "Carrier", owner: "carrier", cites: pl.cite ? [pl.cite] : [],
@@ -213,6 +214,7 @@ export async function nextMoves(matterId: number, digest?: Digest): Promise<Move
   const live = moves.filter((m) => m.status === "todo" || m.status === "in_progress").slice(0, CAP);
   const closed = moves.filter((m) => m.status === "done" || m.status === "dismissed");
   live.forEach((m, i) => { m.priority = i + 1; });
+  closed.forEach((m) => { m.priority = 0; });
   const gates = d.phase.gates ?? [];
   return {
     matterId, client: d.matter.client_name, current_phase: String(d.phase.current), next_phase: d.phase.next ? String(d.phase.next) : null,
