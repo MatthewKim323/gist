@@ -16,3 +16,6 @@ next-env.d.ts
 docs/research/private/
 
 .DS_Store
+
+.gstack/
+*.pem
