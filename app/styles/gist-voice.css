@@ -121,3 +121,5 @@
   .gv-panel, .gv-orb { animation: none !important; transition: none; }
 }
 .gv-brief { display: flex; justify-content: flex-end; margin-bottom: 8px; }
+.gv-provider-cta { align-items: center; gap: 12px; flex-wrap: wrap; }
+.gv-note { font-size: 12px; color: rgba(233, 235, 243, 0.5); }

@@ -128,6 +128,7 @@ export default function VoiceButton({ mode, matterId, token, label, onOpenSource
       >
         {configured === false ? "Voice unavailable" : active ? "End call" : text}
       </Button>
+      {mode === "provider" ? <span className="gv-note">Answers from what your firm shared. Read-only.</span> : null}
       {open && typeof document !== "undefined"
         ? createPortal(
             <div className={`gv-panel gv-panel--${mode}`} role="dialog" aria-label={mode === "firm" ? "Voice brief" : "Case line"} data-state={state}>
