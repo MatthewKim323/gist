@@ -49,7 +49,7 @@ export default function SignInChoices({ offices, current }: { offices: OfficeOpt
             <div className="gs-eyebrow">Law firm</div>
             <h2 className="ga-card__title">I&apos;m with the firm</h2>
             <p className="ga-card__body">The full case: digest, gaps, money, timeline, and what you share with each provider.</p>
-            <FillButton label="Open the case" disabled={busy} onClick={() => go({ role: "firm" })} />
+            <FillButton label="Open my cases" disabled={busy} onClick={() => go({ role: "firm" })} />
           </section>
           <section className="ga-card">
             <div className="gs-eyebrow">Medical provider</div>

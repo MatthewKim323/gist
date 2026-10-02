@@ -250,7 +250,6 @@ html .gc-root button {
   align-items: center;
   gap: 8px;
   color: var(--ink-2);
-  font-variant-numeric: tabular-nums;
 }
 .gc-flag {
   color: var(--missing);
@@ -260,9 +259,6 @@ html .gc-root button {
   height: 3px;
   border-radius: 50%;
   background: var(--ink-4);
-}
-.gc-row__stats {
-  font-variant-numeric: tabular-nums;
 }
 .gc-row__btns {
   display: flex;

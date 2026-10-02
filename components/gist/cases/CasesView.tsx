@@ -57,7 +57,8 @@ function ago(iso: string | null): string {
 }
 
 function usd(n: number): string {
-  return `$${n < 1 ? n.toFixed(3) : n.toFixed(2)}`;
+  if (n === 0) return "$0";
+  return `$${n < 0.1 ? n.toFixed(3) : n.toFixed(2)}`;
 }
 
 function initials(name: string | null): string {
