@@ -34,6 +34,11 @@ export async function loadVoiceContext(q: URLSearchParams): Promise<Loaded> {
 
   if (mode === "firm") {
     if (session?.role === "provider") return no("Forbidden: provider accounts cannot access firm data", 403);
+    // Deployed builds bill real voice minutes, so firm briefs need a signed-in firm profile there.
+    // Local dev keeps the no-session demo flow.
+    if (process.env.NODE_ENV === "production" && process.env.VOICE_OPEN_DEMO !== "1" && session?.role !== "firm") {
+      return no("Sign in with your firm profile to use voice briefs", 401);
+    }
     if (!Number.isFinite(matterId) || matterId <= 0) return no("matterId required", 400);
     try {
       const { digest } = await getDigest(matterId, null);
