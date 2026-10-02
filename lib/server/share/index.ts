@@ -3,7 +3,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { db, must } from "@/lib/server/db";
 import { env } from "@/lib/server/env";
 import type { ProviderView, ShareConfig } from "@/lib/types";
-import { runGate, type GateFinding } from "./gate";
+import { runGate, type GateFinding, type GateMemo } from "./gate";
 import { normalizeConfig } from "./plain";
 import { applyBlocks, buildProviderDraft, listProviders, type FactCandidate, type ProviderOption } from "./view";
 
@@ -11,6 +11,7 @@ export { listProviders, normalizeConfig };
 export type { GateFinding, FactCandidate, ProviderOption };
 
 export interface GatedView {
+  memo: GateMemo;
   view: ProviderView;
   findings: GateFinding[];
   candidates: FactCandidate[];
@@ -18,10 +19,16 @@ export interface GatedView {
 }
 
 /** Build the provider view, then run every outgoing snippet through the redaction gate. */
-export async function buildGatedView(matterId: number, providerContactId: number, config: ShareConfig): Promise<GatedView> {
+export async function buildGatedView(
+  matterId: number,
+  providerContactId: number,
+  config: ShareConfig,
+  opts: { memo?: GateMemo; timeoutMs?: number } = {},
+): Promise<GatedView> {
   const draft = await buildProviderDraft(matterId, providerContactId, config);
-  const gate = await runGate({ matterId, providerName: draft.provider.name, snippets: draft.snippets });
+  const gate = await runGate({ matterId, providerName: draft.provider.name, snippets: draft.snippets, ...opts });
   return {
+    memo: gate.memo,
     view: applyBlocks(draft.view, gate.blocked),
     findings: gate.findings,
     candidates: draft.candidates,
@@ -43,7 +50,7 @@ export interface ShareRow {
   matter_id: number;
   provider_contact_id: number | null;
   provider_name: string | null;
-  config: ShareConfig & { _stage?: string | null };
+  config: ShareConfig & { _stage?: string | null; _gate?: GateMemo };
   created_by: string | null;
   expires_at: string | null;
   revoked_at: string | null;
@@ -73,7 +80,7 @@ export async function createShare(opts: {
         provider_contact_id: opts.providerContactId,
         provider_name: provider?.name ?? gated.view.provider_name,
         token_hash: hashToken(token),
-        config: { ...config, _stage: (matter as { stage?: string } | null)?.stage ?? null },
+        config: { ...config, _stage: (matter as { stage?: string } | null)?.stage ?? null, _gate: gated.memo },
         created_by: opts.createdBy ?? null,
         expires_at: new Date(Date.now() + days * 86_400_000).toISOString(),
       })

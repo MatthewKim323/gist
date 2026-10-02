@@ -52,7 +52,11 @@ export default async function SharePage({ params }: { params: Promise<{ token: s
   // Log first so the attorney's "opened" toast fires while the page is still building.
   await logView(share, ip || null, h.get("user-agent")).catch(() => null);
   const loaded = await Promise.all([
-    buildGatedView(Number(share.matter_id), Number(share.provider_contact_id), normalizeConfig(share.config)),
+    // Decisions saved at publish answer instantly; anything new since then gets a short timeout and fails closed.
+    buildGatedView(Number(share.matter_id), Number(share.provider_contact_id), normalizeConfig(share.config), {
+      memo: share.config._gate,
+      timeoutMs: 2500,
+    }),
     stageNotice(share).catch(() => null),
   ]).catch(() => null);
   if (!loaded)

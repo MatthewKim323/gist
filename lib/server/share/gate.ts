@@ -44,7 +44,12 @@ export interface GateFinding {
   engine: "jev" | "fallback" | "fail_closed";
 }
 
+/** Compact per-text decision persisted on the share so the public page never waits on a model. */
+export type GateDecision = { s: Scores; e: "jev" | "fallback" };
+export type GateMemo = Record<string, GateDecision>;
+
 export interface GateResult {
+  memo: GateMemo;
   blocked: Set<string>;
   findings: GateFinding[];
   checked: number;
@@ -115,16 +120,24 @@ export async function runGate(opts: {
   matterId: number;
   providerName: string;
   snippets: Snippet[];
+  /** Per-call Jev timeout. The fallback gets twice this. */
   timeoutMs?: number;
+  /** Decisions saved at publish time, keyed by cacheKey(provider, text). */
+  memo?: GateMemo;
 }): Promise<GateResult> {
   const t0 = Date.now();
   const { matterId, providerName, snippets } = opts;
   const results = new Map<string, { scores: Scores; engine: "jev" | "fallback" } | null>();
   const todo: Snippet[] = [];
+  const memoOut: GateMemo = {};
   for (const s of snippets) {
-    const hit = cache.get(cacheKey(providerName, s.text));
-    if (hit) results.set(s.key, hit);
-    else todo.push(s);
+    const ck = cacheKey(providerName, s.text);
+    const saved = opts.memo?.[ck];
+    const hit = cache.get(ck) ?? (saved ? { scores: saved.s, engine: saved.e } : undefined);
+    if (hit) {
+      results.set(s.key, hit);
+      memoOut[ck] = { s: hit.scores, e: hit.engine };
+    } else todo.push(s);
   }
 
   // Dedup identical texts so a repeated label costs one call.
@@ -137,7 +150,7 @@ export async function runGate(opts: {
       uniq.map((text) =>
         limit(async () => {
           try {
-            const scores = await withTimeout(viaJev(providerName, text, matterId), opts.timeoutMs ?? 8000);
+            const scores = await withTimeout(viaJev(providerName, text, matterId), opts.timeoutMs ?? 4000);
             byText.set(text, { scores, engine: "jev" });
           } catch {
             failed.push(text);
@@ -150,13 +163,18 @@ export async function runGate(opts: {
   }
   if (failed.length) {
     try {
-      const scores = await withTimeout(viaFallback(providerName, failed, matterId), opts.timeoutMs ?? 15000);
+      const scores = await withTimeout(viaFallback(providerName, failed, matterId), (opts.timeoutMs ?? 4000) * 2.5);
       failed.forEach((text, i) => byText.set(text, { scores: scores[i]!, engine: "fallback" }));
     } catch {
       failed.forEach((text) => byText.set(text, null));
     }
   }
-  for (const [text, r] of byText) if (r) cache.set(cacheKey(providerName, text), r);
+  for (const [text, r] of byText) {
+    if (!r) continue;
+    const ck = cacheKey(providerName, text);
+    cache.set(ck, r);
+    memoOut[ck] = { s: r.scores, e: r.engine };
+  }
   for (const s of todo) results.set(s.key, byText.get(s.text) ?? null);
 
   const blocked = new Set<string>();
@@ -184,6 +202,7 @@ export async function runGate(opts: {
     }
   }
   return {
+    memo: memoOut,
     blocked,
     findings,
     checked: snippets.length,

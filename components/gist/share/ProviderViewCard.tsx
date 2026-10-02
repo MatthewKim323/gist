@@ -48,7 +48,7 @@ export default function ProviderViewCard({ view, mode = "live", stageNotice, now
   const hidden = new Set(view.redacted_sections);
   const stage = plainStage(view.stage);
   const lastDays = daysAgo(view.case_alive?.last_activity ?? null, now);
-  const firm = view.firm_name ?? "The firm";
+  const firm = view.firm_name ?? "the firm";
   const slot = (s: ShareSection, node: React.ReactNode) => (hidden.has(s) ? (preview ? <Redacted key={s} section={s} /> : null) : node);
   const trackStages = PLAIN_STAGES.slice(0, 7);
 
@@ -187,7 +187,7 @@ export default function ProviderViewCard({ view, mode = "live", stageNotice, now
               <>
                 <div className="gs-att__big">
                   <strong>{view.attendance.attended}</strong>
-                  <span>of {view.attendance.scheduled} visits kept</span>
+                  <span>of {view.attendance.scheduled} visit{view.attendance.scheduled === 1 ? "" : "s"} kept</span>
                 </div>
                 <div className="gs-att__bar" aria-hidden>
                   <span style={{ width: `${Math.round((view.attendance.attended / view.attendance.scheduled) * 100)}%` }} />

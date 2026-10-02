@@ -33,6 +33,15 @@
     radial-gradient(80% 50% at 100% 100%, rgba(239, 222, 217, 0.06), transparent 60%),
     var(--gs-bg);
 }
+/* the router wrapper is its own stacking context, so z-index alone cannot beat the shell's loader,
+   menu and WebGL canvas: on share routes everything outside the wrapper is switched off */
+body:has(.gs-root) > :not([data-router-wrapper]):not(script):not(nextjs-portal) {
+  display: none !important;
+}
+body:has(.gs-root) {
+  overflow: hidden;
+  background: #0b0f19;
+}
 html .gs-root,
 html .gs-root *,
 html .gsc,

@@ -160,6 +160,16 @@ export function selfToYourOffice(text: string, mine: string[]): string {
   return out.replace(/(?:your office[\s,]*){2,}/g, "your office ").replace(/\s{2,}/g, " ").trim();
 }
 
+/** Gate labels read "<requirement>: <provider>"; on the provider's own page the name is noise. */
+function gateLabel(label: string, mine: string[]): string {
+  const out = selfToYourOffice(label, mine)
+    .replace(/\s*[:,\-]\s*(?:from\s+)?your office\s*$/i, "")
+    .replace(/^\s*your office\s*[:,\-]\s*/i, "")
+    .replace(/\s*\((?:from\s+)?your office\)\s*/gi, " ")
+    .trim();
+  return out ? out[0]!.toUpperCase() + out.slice(1) : "Requested item";
+}
+
 function cleanTaskLabel(label: string, mine: string[]): string {
   let out = label.replace(/^\s*by\s+(?:the\s+)?(?:medical\s+)?provider\s*[:\-]?\s*/i, "");
   // "Your office: updated records" reads worse than "Updated records".
@@ -295,7 +305,7 @@ export async function buildProviderDraft(
     const seen = new Set<string>();
     for (const g of mineGates) {
       if (g.status !== "missing" && g.status !== "partial") continue;
-      const label = clean(selfToYourOffice(String(g.label ?? "Requested item"), mine));
+      const label = clean(gateLabel(String(g.label ?? "Requested item"), mine));
       if (aboutOther(label) || seen.has(label.toLowerCase())) continue;
       seen.add(label.toLowerCase());
       const due = isoDay(g.due_date);
@@ -336,7 +346,7 @@ export async function buildProviderDraft(
   if (on("records_bills")) {
     const list: NonNullable<ProviderView["records_bills"]> = [];
     for (const g of mineGates) {
-      const label = clean(String(g.label ?? ""));
+      const label = clean(gateLabel(String(g.label ?? ""), mine));
       if (!label || !/record|bill|report|narrative|ledger|statement|imaging|mri|x-?ray|note/i.test(`${label} ${g.requirement_key ?? ""}`)) continue;
       if (aboutOther(label)) continue;
       const status: GateStatus = g.status === "conflicting" ? "partial" : (g.status as GateStatus);
@@ -428,9 +438,12 @@ export async function buildProviderDraft(
         audience: String(f.audience ?? "internal_only"),
         included: override ?? byDefault,
         overridden: override !== undefined,
+        importance: Number(f.importance ?? 3),
       };
     })
-    .sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""));
+    .sort((a, b) => b.importance - a.importance || (b.date ?? "").localeCompare(a.date ?? ""))
+    .slice(0, 60)
+    .map(({ importance: _i, ...c }) => c); // eslint-disable-line @typescript-eslint/no-unused-vars
 
   let updates: ProviderView["updates"] = null;
   if (on("updates")) {
