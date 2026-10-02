@@ -66,9 +66,19 @@ function supportProb(a: JevAnswer | undefined): { choice: "supports" | "contradi
   return { choice, p };
 }
 
+/** Group identical patches so a batch of 40 verdicts is a handful of updates, not 40. */
 async function writeResults(rows: { id: string; patch: Record<string, unknown> }[]) {
-  const limit = pLimit(10);
-  await Promise.all(rows.map((r) => limit(() => db().from("facts").update(r.patch).eq("id", r.id))));
+  const groups = new Map<string, { patch: Record<string, unknown>; ids: string[] }>();
+  for (const r of rows) {
+    const patch = { ...r.patch };
+    if (typeof patch.jev_confidence === "number") patch.jev_confidence = Math.round(patch.jev_confidence * 100) / 100;
+    const k = JSON.stringify(patch);
+    const g = groups.get(k) ?? { patch, ids: [] };
+    g.ids.push(r.id);
+    groups.set(k, g);
+  }
+  const limit = pLimit(6);
+  await Promise.all([...groups.values()].map((g) => limit(() => db().from("facts").update(g.patch).in("id", g.ids))));
 }
 
 /** Fallback when Jev is unavailable or errors: the quote check alone stands. */

@@ -109,12 +109,20 @@ export async function buildShards(matterId: number, opts: { includeDocs?: boolea
       (a, b) => db().from("documents").select("clio_id,name,folder,version_id,received_at").eq("matter_id", matterId).order("clio_id").range(a, b),
       "documents",
     );
-    for (const d of docs) {
-      if (d.version_id == null) continue;
-      const pages = await pageAll<{ page: number; text: string | null; page_type: string | null }>(
-        (a, b) => db().from("doc_pages").select("page,text,page_type").eq("doc_id", d.clio_id).eq("version_id", d.version_id!).order("page").range(a, b),
-        "doc_pages",
-      );
+    // One paged query for every page of every current document version (per-doc queries crawl under load).
+    const current = new Map(docs.filter((d) => d.version_id != null).map((d) => [d.clio_id, d]));
+    const allPages = current.size ? await pageAll<{ doc_id: number; version_id: number; page: number; text: string | null; page_type: string | null }>(
+      (a, b) => db().from("doc_pages").select("doc_id,version_id,page,text,page_type").in("doc_id", [...current.keys()])
+        .order("doc_id").order("page").range(a, b),
+      "doc_pages",
+    ) : [];
+    const pagesByDoc = new Map<number, typeof allPages>();
+    for (const p of allPages) {
+      if (current.get(p.doc_id)?.version_id !== p.version_id) continue;
+      pagesByDoc.set(p.doc_id, [...(pagesByDoc.get(p.doc_id) ?? []), p]);
+    }
+    for (const d of current.values()) {
+      const pages = pagesByDoc.get(d.clio_id) ?? [];
       const live = pages.filter((p) => p.text && p.text.trim().length > 20);
       // Fixed page windows (1-10, 11-20, ...) so a page finishing OCR later only changes its own slice.
       const windows = new Map<number, typeof live>();
